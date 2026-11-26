@@ -85,6 +85,16 @@ label{font-weight:500;font-size:.92rem}
 .ctype:nth-child(2){border-top-color:var(--gold)}
 .ctype:nth-child(3){border-top-color:var(--good)}
 .ctype:nth-child(4){border-top-color:var(--fg)}
+/* deck colors */
+:root{--dk-blue:#1f5fbf;--dk-blue-fg:#fff;--dk-black:#1b1b20;--dk-black-fg:#fff;--dk-green:#1f8a3b;--dk-green-fg:#fff;--dk-white:#f6f6f6;--dk-white-fg:#1b1b20;--dk-red:#c62828;--dk-red-fg:#fff;--dk-yellow:#f2c200;--dk-yellow-fg:#1a1400}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--dk-blue:#5b9bff;--dk-blue-fg:#07142b;--dk-black:#000;--dk-black-fg:#fff;--dk-green:#4cc16a;--dk-green-fg:#06200e;--dk-white:#f2f2f2;--dk-white-fg:#111;--dk-red:#ff6b60;--dk-red-fg:#2a0805;--dk-yellow:#ffd23f;--dk-yellow-fg:#1a1400}}
+:root[data-theme="dark"]{--dk-blue:#5b9bff;--dk-blue-fg:#07142b;--dk-black:#000;--dk-black-fg:#fff;--dk-green:#4cc16a;--dk-green-fg:#06200e;--dk-white:#f2f2f2;--dk-white-fg:#111;--dk-red:#ff6b60;--dk-red-fg:#2a0805;--dk-yellow:#ffd23f;--dk-yellow-fg:#1a1400}
+.dk-blue{--dk:var(--dk-blue);--dkfg:var(--dk-blue-fg)}.dk-black{--dk:var(--dk-black);--dkfg:var(--dk-black-fg)}.dk-green{--dk:var(--dk-green);--dkfg:var(--dk-green-fg)}.dk-white{--dk:var(--dk-white);--dkfg:var(--dk-white-fg)}.dk-red{--dk:var(--dk-red);--dkfg:var(--dk-red-fg)}.dk-yellow{--dk:var(--dk-yellow);--dkfg:var(--dk-yellow-fg)}
+.panel.ctype.dk{border-top:4px solid var(--dk)}
+.panel.ctype.dk-white{border-top-color:var(--muted)}
+.dkh{display:block;padding:8px 12px;margin-bottom:10px;border-radius:6px;background:var(--dk);color:var(--dkfg);border:1px solid var(--line)}
+.dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;background:var(--dk);border:1px solid var(--muted);margin-right:6px;vertical-align:-1px}
+
 .stat{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
 .stat dt{font-family:var(--font-mono);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:3px}
 .stat dd{margin:0}
@@ -147,7 +157,8 @@ label{font-weight:500;font-size:.92rem}
 .slotrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .slot{min-height:84px;border:2px dashed var(--line);border-radius:6px;padding:6px;font-size:.78rem;display:flex;flex-direction:column;gap:2px;min-width:0}
 .slot.ch{border-style:solid;border-color:var(--fg);background:var(--bg)}
-.slot.ch.sleep{opacity:.6;border-color:var(--muted)}
+.slot.ch.sleep,.slot.ch.stun{opacity:.6;border-color:var(--muted)}
+.slot.ch.stun{border-style:dotted}
 .slot b{font-size:.8rem;line-height:1.15;overflow-wrap:anywhere}
 .slot .s2{color:var(--muted);font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase}
 .slot.fresh .s2{color:var(--gold)}
@@ -173,7 +184,7 @@ footer p{max-width:80ch}
 </style>
 
 <nav><div class="wrap">
-  <a href="#goal">Goal</a><a href="#board">Board</a><a href="#cards">Cards</a><a href="#setup">Setup</a><a href="#turn">Turn</a><a href="#actions">Actions</a><a href="#contact">Contact</a><a href="#terms">Terms</a><a href="#practice">Practice</a><a href="#quiz">Quiz</a>
+  <a href="#goal">Goal</a><a href="#board">Board</a><a href="#cards">Cards</a><a href="#setup">Setup</a><a href="#turn">Turn</a><a href="#actions">Actions</a><a href="#contact">Contact</a><a href="#terms">Terms</a><a href="#practice">Practice</a><a href="#quiz">Quiz</a><a href="#author">Author</a>
 </div></nav>
 
 <div class="wrap">
@@ -182,6 +193,7 @@ footer p{max-width:80ch}
     <span class="mono">Detective Conan Trading Card Game</span>
     <h1>Conan TCG Primer</h1>
     <p class="lede">Learn the rules in the order you will meet them at the table, then try them on small tools and a quiz. You play a detective, gather evidence faster than your opponent, and solve the case first.</p>
+    <p class="lede" style="font-size:.95rem">Source: <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual (Japanese PDF, Takara Tomy)</a></p>
   </div>
   <svg class="keyhole" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="48" cy="38" r="12" fill="currentColor"/><path d="M42 46h12l6 28H36z" fill="currentColor"/></svg>
 </header>
@@ -360,8 +372,8 @@ footer p{max-width:80ch}
 <section id="practice">
   <span class="mono">Practice table</span>
   <h2>Play a practice game</h2>
-  <p>Pick one of the two starter decks and play a full game against a simple bot that uses the other. The page greys out moves you cannot make and tells you why. Tap a character in Scene to read its ability.</p>
-  <div class="note">Cards are the CT-D01 Conan and CT-D07 Black Organization starter decks, with ability text paraphrased. Simplified: no Disguise or stun (neither deck uses them), cards put on the bottom of the deck are not ordered, and the bot is simple. Check the official manual for exact wording.</div>
+  <p>Pick one of six starter decks and play a full game against a simple bot. You can choose its deck or leave it random. The page greys out moves you cannot make and tells you why. Tap a character in Scene to read its ability.</p>
+  <div class="note">Decks: CT-D01 Conan (blue), CT-D07 Black Organization (black), CT-D02 Heiji Hattori (green) and CT-D03 Kid the Phantom Thief (white). CT-D04 Akai (red) and CT-D05 Amuro (yellow). Ability text is paraphrased. Simplified: no Disguise (none of these decks use it), cards put on the bottom of the deck are not ordered, and the bot is simple. Check the official manual for exact wording.</div>
   <div class="panel" id="pgame"></div>
 </section>
 
@@ -371,8 +383,20 @@ footer p{max-width:80ch}
   <div class="panel" id="quizBox"></div>
 </section>
 
+<section id="author">
+  <span class="mono">Author</span>
+  <h2>Get in touch</h2>
+  <div class="panel">
+    <p style="margin:0 0 12px"><b>Quoc Chuong Nguyen</b> built this study aid. Questions, corrections to card text or rules, and requests for more decks are welcome.</p>
+    <ul class="tight" style="list-style:none;padding:0;margin:0;display:grid;gap:10px">
+      <li><span class="mono" style="display:block">Email</span><span id="mailTxt" style="overflow-wrap:anywhere">chuong.nguyenquoc1413017@gmail.com</span> <button class="btn ghost" id="mailCopy" type="button" style="margin-left:6px">Copy</button></li>
+      <li><span class="mono" style="display:block">GitHub</span><a href="https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game" target="_blank" rel="noopener" style="overflow-wrap:anywhere">github.com/ChuongQuoc1413017/Detective_Conan_Card_Game</a></li>
+    </ul>
+  </div>
+</section>
+
 <footer>
-  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game Official Rule Manual Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
 </footer>
 </div>
 
@@ -574,7 +598,7 @@ renderQ();
 <script>
 (function(){
 var root=document.getElementById("pgame"); if(!root) return;
-var OVER={over:true}, G=null, UID=0;
+var OVER={over:true}, G=null, UID=0, OPP="random";
 
 /* ---------- Card data (read from the two starter deck images) ---------- */
 var DECKS={
@@ -617,6 +641,86 @@ var DECKS={
    {k:"korn",n:"Korn",lv:3,ap:2000,lp:1,tr:["org"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
    {k:"ev5b",n:"“Traitors can't hide their scent...”",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."},
    {k:"ev1b",n:"Shadow of Renya Karasuma",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 black character to hand, put the rest on the bottom. Then enter a black character from hand whose level is at most your FILE count."}
+  ]},
+ heiji:{key:"heiji",name:"Heiji Hattori",color:"green",
+  blurb:"Green. Heiji and Kazuha put opposing characters to sleep, Heizo blocks Cut-ins, and Shizuka hands out Assault.",
+  partner:{n:"Heiji Hattori",lp:1},
+  caze:{n:"And Then the Mermaid Vanished",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"h8",n:"Heiji Hattori",lv:8,ap:7000,lp:2,tr:["det","hs"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"h7",n:"Heiji Hattori",lv:7,ap:6000,lp:1,tr:["det","hs"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"h4",n:"Heiji Hattori",lv:4,ap:4000,lp:1,tr:["det","hs"],x:3,actbonus:1,hira:"draw1",txt:"When this takes an Action: it gets +1000 AP until the Action ends for each sleeping or stunned character in the opponent's Scene. Flash: draw 1."},
+   {k:"kaz6",n:"Kazuha Toyama",lv:6,ap:5000,lp:1,tr:["hs"],x:3,kazuha:1,hira:"sleep1",txt:"Once per turn: when this or a card named Heiji Hattori enters your Scene, sleep up to 1 character. Flash: sleep up to 1 character."},
+   {k:"kaz3",n:"Kazuha Toyama",lv:3,ap:2000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"oki",n:"Soji Okita",lv:5,ap:5000,lp:0,tr:["hs"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"heizo",n:"Heizo Hattori",lv:6,ap:6000,lp:1,tr:["police"],x:3,nocut:1,heizodraw:1,hira:"draw1",txt:"When this takes an Action: the opponent cannot use Cut-in until the Action ends. When an opposing character is removed by a Contact with this, draw 1. Flash: draw 1."},
+   {k:"ginshiro",n:"Ginshiro Toyama",lv:3,ap:2000,lp:1,tr:["police"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"muga",n:"Muga Iori",lv:4,ap:4000,lp:1,tr:["magistrate"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"momi4",n:"Momiji Ooka",lv:4,ap:4000,lp:1,tr:["hs"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 green card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"momi2",n:"Momiji Ooka",lv:2,ap:1000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"shizuka",n:"Shizuka Hattori",lv:5,ap:5000,lp:1,tr:[],x:3,decl:"shizuka",txt:"Declare, once per turn, remove 1 card from hand: give another of your characters of level 6 or less Assault until end of turn. Can only be declared while the opponent has 2 or more sleeping or stunned characters in total."},
+   {k:"ev1h",n:"Omamori (Charm)",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 green character to hand, put the rest on the bottom. Then enter a green character from hand whose level is at most your FILE count."},
+   {k:"ev5h",n:"Heiji's Insight",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ kid:{key:"kid",name:"Kid the Phantom Thief",color:"white",
+  blurb:"White. Stun effects keep opposing characters down longer, plus Makoto's tough comeback and Hakuba's card draw.",
+  partner:{n:"Kid the Phantom Thief",lp:1},
+  caze:{n:"Reunion",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"k8",n:"Kid the Phantom Thief",lv:8,ap:7000,lp:2,tr:["thief"],x:3,enter:"stungain",txt:"On entry: you may remove 1 card from hand. If you do, stun up to 1 character and gain 1 evidence. (Activating a stunned character puts it to sleep instead.)"},
+   {k:"k7",n:"Kid the Phantom Thief",lv:7,ap:6000,lp:1,tr:["thief"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"k4",n:"Kid the Phantom Thief",lv:4,ap:4000,lp:1,tr:["thief"],x:3,leave:"kid4",hira:"draw1",txt:"When removed from Scene during the opponent's turn: stun up to 1 sleeping character of level 5 or less. Flash: draw 1."},
+   {k:"aoko",n:"Aoko Nakamori",lv:2,ap:1000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"ginzo",n:"Ginzo Nakamori",lv:5,ap:5000,lp:0,tr:["police"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"saguru6",n:"Saguru Hakuba",lv:6,ap:5000,lp:1,tr:["det","hs"],x:3,hakdraw:1,txt:"Once per turn: when this deduces or takes an Action, draw 1."},
+   {k:"saguru3",n:"Saguru Hakuba",lv:3,ap:2000,lp:1,tr:["det","hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"son4",n:"Sonoko Suzuki",lv:4,ap:4000,lp:1,tr:["hs","suzuki"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 white card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"son3",n:"Sonoko Suzuki",lv:3,ap:2000,lp:1,tr:["hs","suzuki"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"makoto",n:"Makoto Kyogoku",lv:6,ap:7000,lp:0,tr:["hs","karate"],x:3,endact:1,hira:"draw1",txt:"At the end of your turn: you may remove 1 card from hand. If you do, make this character active. Flash: draw 1."},
+   {k:"tomoko",n:"Tomoko Suzuki",lv:4,ap:4000,lp:1,tr:["suzuki"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"jiro",n:"Jirokichi Suzuki",lv:5,ap:5000,lp:1,tr:["suzuki"],x:3,leave:"jiro",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: draw 1. Flash: sleep up to 1 character."},
+   {k:"ev1k",n:"\u201cLadies and... Gentlemen!!\u201d",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 white character to hand, put the rest on the bottom. Then enter a white character from hand whose level is at most your FILE count."},
+   {k:"ev5k",n:"\u201cApril Fool...\u201d",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ akai:{key:"akai",name:"Akai (Red)",color:"red",
+  blurb:"Red (CT-D04). FBI attackers with unguardable Actions, case-hitting bonuses and hand disruption.",
+  partner:{n:"Shuichi Akai",lp:1},
+  caze:{n:"The Scarlet Return",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"a8",n:"Shuichi Akai",lv:8,ap:7000,lp:2,tr:["fbi","akai"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"a7",n:"Shuichi Akai",lv:7,ap:6000,lp:1,tr:["fbi","akai"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"a4",n:"Shuichi Akai",lv:4,ap:4000,lp:1,tr:["fbi","akai"],x:3,bullet:1,hira:"draw1",txt:"Bullet: this character's Actions cannot be guarded. Flash: draw 1."},
+   {k:"mas6",n:"Masumi Sera",lv:6,ap:5000,lp:1,tr:["det","hs","akai"],x:3,masumi:1,hira:"draw1",txt:"When a character in your Scene takes an Action against a case: this character gains Assault until end of turn. Flash: draw 1."},
+   {k:"shu",n:"Shukichi Haneda",lv:3,ap:2000,lp:1,tr:["shogi","akai"],x:3,cutin:2000,txt:"Cut-in: during a Contact, remove from hand to give +2000 AP."},
+   {k:"mary",n:"Mary Sera",lv:6,ap:6000,lp:1,tr:["akai"],x:3,md:1,mary:1,txt:"Misdirect 1. Once per turn, when an Action by a character in your Scene against a case gains you evidence: you may remove 1 card from hand. If you do, gain 1 evidence."},
+   {k:"mas3",n:"Masumi Sera",lv:3,ap:2000,lp:1,tr:["det","hs","akai"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"hondo",n:"Eisuke Hondo",lv:2,ap:1000,lp:1,tr:["cia"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"jodie5",n:"Jodie Starling",lv:5,ap:5000,lp:1,tr:["fbi"],x:3,leave:"jodie",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: the opponent removes 1 card from hand. Flash: sleep up to 1 character."},
+   {k:"jodie4",n:"Jodie Starling",lv:4,ap:4000,lp:1,tr:["fbi"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 red card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"james",n:"James Black",lv:4,ap:4000,lp:1,tr:["fbi"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"camel",n:"Andre Camel",lv:5,ap:5000,lp:0,tr:["fbi"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"ev1a",n:"The Mysterious Passenger",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 red character to hand, put the rest on the bottom. Then enter a red character from hand whose level is at most your FILE count."},
+   {k:"ev5a",n:"Akai's Shot",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ amuro:{key:"amuro",name:"Amuro (Yellow)",color:"yellow",
+  blurb:"Yellow (CT-D05). Public Security and Metropolitan Police: team AP boosts and bringing characters back from the Remove area.",
+  partner:{n:"Toru Amuro",lp:1},
+  caze:{n:"The Scarlet Suspicion",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"f8",n:"Rei Furuya",lv:8,ap:7000,lp:2,tr:["police","koan"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"f7",n:"Rei Furuya",lv:7,ap:6000,lp:1,tr:["police","koan"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"f4",n:"Rei Furuya",lv:4,ap:4000,lp:1,tr:["police","koan"],x:3,enter:"reveal",hira:"draw1",txt:"On entry: the opponent reveals their hand (then returns it). Flash: draw 1."},
+   {k:"kuroda",n:"Hyoe Kuroda",lv:6,ap:6000,lp:1,tr:["police","mpd"],x:3,stat:"rum",hira:"draw1",txt:"During your turn: your other yellow characters get +1000 AP. Flash: draw 1."},
+   {k:"megure",n:"Juzo Megure",lv:6,ap:5000,lp:1,tr:["police","mpd"],x:3,enter:"megure",txt:"On entry: you may remove 1 card from hand. If you do, enter a yellow character of level 4 or less from your Remove area, asleep."},
+   {k:"mat5",n:"Jinpei Matsuda",lv:5,ap:5000,lp:1,tr:["police","mpd"],x:3,leave:"haibara",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: look at your top 3, enter up to 1 yellow character of level 4 or less asleep, put the rest on the bottom. Flash: sleep up to 1 character."},
+   {k:"mat3",n:"Jinpei Matsuda",lv:3,ap:2000,lp:1,tr:["police","mpd"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"kaz5",n:"Yusuke Kazami",lv:5,ap:5000,lp:0,tr:["police","mpd","koan"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"kaz2",n:"Yusuke Kazami",lv:2,ap:1000,lp:1,tr:["police","mpd","koan"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"shira",n:"Ninzaburo Shiratori",lv:3,ap:2000,lp:1,tr:["police","mpd"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"sato",n:"Miwako Sato",lv:4,ap:4000,lp:1,tr:["police","mpd"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 yellow card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"taka",n:"Wataru Takagi",lv:4,ap:4000,lp:1,tr:["police","mpd"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"ev1y",n:"Private Eye",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 yellow character to hand, put the rest on the bottom. Then enter a yellow character from hand whose level is at most your FILE count."},
+   {k:"ev5y",n:"Amuro's Strike",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
   ]}
 };
 
@@ -630,11 +734,14 @@ function mkDeck(def){var d=[];def.cards.forEach(function(k){for(var i=0;i<k.x;i+
 function mkP(i,def){return {i:i,def:def,deck:mkDeck(def),hand:[],file:[],ev:[],rem:[],scene:[],partner:"active",phase:"case",lv:7,usedHand:false,usedHint:false}}
 function cap(p){return p.file.length+(p.partner==="file"?1:0)}
 function apOf(c,o){
-  var b=c.ap+(c.mod||0);
+  var b=c.ap+(c.mod||0)+(c.actBonus||0);
   if(G.cur===o.i){var n=o.scene.filter(function(x){return x!==c&&x.stat==="rum"}).length;b+=1000*n}
   return b;
 }
 function lpOf(c){return c.lp+(c.lpm||0)}
+function isDown(c){return c.state==="sleep"||c.state==="stun"}
+function activate(c){c.state=c.state==="stun"?"sleep":"active"}
+function downCount(o){return o.scene.filter(isDown).length}
 function canAct(c){return c.state==="active"&&(!c.fresh||!!c.swift||!!c.assault||!!c.tmpAssault)}
 function canDeduce(c){return c.state==="active"&&(!c.fresh||!!c.swift)}
 function score(c){return c.lp*2+c.ap/2000+(c.swift?1:0)+(c.assault?0.6:0)+(c.cutin?0.8:0)+(c.hira?0.5:0)}
@@ -644,7 +751,7 @@ function best(list){return list.slice().sort(function(a,b){return cardVal(b)-car
 function log(t){G.log.unshift(t);if(G.log.length>40)G.log.pop();render()}
 function tip(t){G.tip=t;render()}
 function mkChar(b){var c=Object.assign({},b);c.base=b;c.state="active";c.fresh=true;c.mod=0;c.lpm=0;c.usedTurn=false;c.tmpAssault=false;return c}
-function trName(c){var T={det:"Detective",mouri:"Mouri Detective Agency",boys:"Detective Boys",hs:"High schooler",karate:"Karate",inv:"Inventor",sci:"Scientist",org:"Black Organization"};return (c.tr||[]).map(function(x){return T[x]}).join(", ")}
+function trName(c){var T={police:"Police",thief:"Phantom thief",magistrate:"Magistrate",suzuki:"Suzuki family",det:"Detective",mouri:"Mouri Detective Agency",boys:"Detective Boys",hs:"High schooler",karate:"Karate",inv:"Inventor",sci:"Scientist",org:"Black Organization",fbi:"FBI",akai:"Akai family",cia:"CIA",shogi:"Shogi player",mpd:"Metropolitan Police",koan:"Public Security"};return (c.tr||[]).map(function(x){return T[x]}).join(", ")}
 
 /* ---------- game end, deck handling ---------- */
 function endGame(w,why){G.over={w:w,why:why};G.act=null;G.ask=null;render();throw OVER}
@@ -656,10 +763,10 @@ function refresh(p){
   var o=G.p[1-p.i];o.ev.push(takeTop(o));
 }
 function draw(p,n){for(var i=0;i<n;i++)p.hand.push(takeTop(p))}
-function cleanup(){G.p.forEach(function(p){p.scene.forEach(function(c){c.mod=0;c.lpm=0;c.tmpAssault=false})})}
+function cleanup(){G.p.forEach(function(p){p.scene.forEach(function(c){c.mod=0;c.lpm=0;c.tmpAssault=false;c.trig=false})})}
 function autoPhase(p){
   p.partner="active";
-  p.scene.forEach(function(c){c.state="active";c.fresh=false;c.usedTurn=false});
+  p.scene.forEach(function(c){activate(c);c.fresh=false;c.usedTurn=false});
   draw(p,1);
   var n=G.turn===1?1:2;
   for(var i=0;i<n;i++)p.file.push(takeTop(p));
@@ -678,7 +785,7 @@ function allChars(filter){var r=[];G.p.forEach(function(o){o.scene.forEach(funct
 async function pickChar(pi,title,note,filter,mode){
   var cands=allChars(filter);
   if(!cands.length)return null;
-  var opts=cands.map(function(x){return {l:(x.o.i===pi?"Your ":"Their ")+x.c.n+" (AP "+apOf(x.c,x.o)+(x.c.state==="sleep"?", sleeping":"")+")",v:x.c.uid}});
+  var opts=cands.map(function(x){return {l:(x.o.i===pi?"Your ":"Their ")+x.c.n+" (AP "+apOf(x.c,x.o)+(x.c.state==="sleep"?", sleeping":(x.c.state==="stun"?", stunned":""))+")",v:x.c.uid}});
   opts.push({l:"No target",v:null});
   var pref=null;
   if(!isHuman(pi)){
@@ -711,7 +818,16 @@ async function removeChar(o,c,why){
 }
 async function onLeave(o,c){
   if(G.cur===o.i)return;
-  if(c.leave==="rye"){
+  if(c.leave==="jiro"){draw(o,1);log(nm(o.i)+" draw"+(o.i?"s":"")+" 1 card (Jirokichi).")}
+  else if(c.leave==="jodie"){
+    var op2=G.p[1-o.i];
+    if(op2.hand.length){log(c.n+": "+nm(op2.i).toLowerCase()+" must remove 1 card from hand.");await removeHandCard(op2,c.n+": you must remove 1 card from hand")}
+  }
+  else if(c.leave==="kid4"){
+    var kt=await pickChar(o.i,"Kid: stun a sleeping character?","Up to 1 sleeping character of level 5 or less.",function(x){return x.state==="sleep"&&x.lv<=5},"harm");
+    if(kt){kt.c.state="stun";log(kt.c.n+" is stunned.")}
+  }
+  else if(c.leave==="rye"){
     var opp=G.p[1-o.i];
     var t=await pickChar(o.i,"Rye: remove an opposing character?","Level 4 or less. If you remove one, the opponent draws 1.",function(x,ow){return ow.i!==o.i&&x.lv<=4},"harm");
     if(t){await removeChar(t.o,t.c,"Rye");draw(opp,1);log(nm(opp.i)+" draw"+(opp.i?"s":"")+" 1 card.")}
@@ -735,16 +851,62 @@ async function enterChar(p,b,opts){
   p.scene.push(ch);
   log(nm(p.i)+" enter"+(p.i?"s":"")+" "+b.n+" (level "+b.lv+")"+(opts.sleep?" asleep":"")+".");
   await onEnter(p,ch);
+  await kazuhaTrig(p,ch);
   return ch;
 }
 async function onEnter(p,ch){
   if(ch.enter==="snipe")await snipe(p,ch);
   else if(ch.enter==="boost")await boost(p,ch);
   else if(ch.enter==="agasa")await agasa(p,ch);
+  else if(ch.enter==="stungain")await stunGain(p,ch);
+  else if(ch.enter==="reveal"){
+    var ro=G.p[1-p.i];
+    log(nm(ro.i)+" reveal"+(ro.i?"s":"")+" "+(ro.i?"their":"your")+" hand: "+(ro.hand.length?ro.hand.map(function(x){return x.n}).join(", "):"no cards")+".");
+  }
+  else if(ch.enter==="megure")await megure(p,ch);
   else if(ch.enter==="search4"){
     var added=await lookAdd(p,4,function(){return true});
     if(added)await removeHandCard(p,ch.n+": remove 1 card from hand");
   }
+}
+async function megure(p,src){
+  var cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
+  if(!cands.length||!p.hand.length)return;
+  var card=null;
+  if(isHuman(p.i)){
+    var v=await ask(src.n+": remove a card from hand?","If you do, enter a character of level 4 or less from your Remove area, asleep.",p.hand.map(function(c){return {l:c.n,v:c.uid}}).concat([{l:"Do not use",v:null}]));
+    if(v===null)return;
+    card=p.hand.find(function(c){return c.uid===v});
+  }else{
+    var lo=p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0];
+    if(cardVal(best(cands))<=cardVal(lo)+0.5)return;
+    card=lo;
+  }
+  p.hand=p.hand.filter(function(c){return c.uid!==card.uid});p.rem.push(card);
+  log(nm(p.i)+" remove"+(p.i?"s":"")+" "+card.n+" from hand to use "+src.n+".");
+  cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
+  if(!cands.length)return;
+  var cv=await pick(p.i,"Enter which character from your Remove area?","Level 4 or less, entering asleep.",cands.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}),best(cands).uid);
+  var b=cands.find(function(c){return c.uid===cv})||cands[0];
+  p.rem=p.rem.filter(function(c){return c.uid!==b.uid});
+  var e=await enterChar(p,b,{sleep:true});
+  if(!e)p.rem.push(b);
+}
+async function kazuhaTrig(p,ch){
+  var ks=p.scene.filter(function(k){return k.kazuha&&!k.trig&&(k===ch||ch.n==="Heiji Hattori")});
+  if(!ks.length)return;
+  var k=ks[0];k.trig=true;
+  var t=await pickChar(p.i,"Kazuha: sleep a character?","Once per turn, when she or Heiji Hattori enters your Scene. Up to 1 character, either side.",function(x){return x.state==="active"},"sleep");
+  if(t){t.c.state="sleep";log(t.c.n+" falls asleep (Kazuha).")}
+}
+async function stunGain(p,src){
+  if(!p.hand.length)return;
+  var yes=await pick(p.i,src.n+": remove a card from hand?","If you do, stun up to 1 character and gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],true);
+  if(!yes)return;
+  await removeHandCard(p,src.n+": remove 1 card from hand");
+  var t=await pickChar(p.i,src.n+": stun which character?","Up to 1 character, either side. Stunned characters become sleeping instead of active in the Auto phase.",function(x){return x!==src&&x.state!=="stun"},"sleep");
+  if(t){t.c.state="stun";log(t.c.n+" is stunned.")}
+  p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 evidence.");
 }
 async function snipe(p,src){
   if(!p.hand.length)return;
@@ -831,7 +993,7 @@ async function hirameki(o,c){
   if(c.hira==="draw1")draw(o,1);
   else if(c.hira==="sleep1"){
     var t=await pickChar(o.i,"Flash: sleep which character?","Up to 1 character, either side.",function(){return true},"sleep");
-    if(t){t.c.state="sleep";log(t.c.n+" falls asleep.")}
+    if(t){if(t.c.state==="active")t.c.state="sleep";log(t.c.n+" falls asleep.")}
   }
 }
 
@@ -862,6 +1024,7 @@ async function deduce(p,src){
   if(src==="partner"){p.partner="sleep";lp=p.def.partner.lp;who="partner"}
   else{src.state="sleep";lp=lpOf(src);who=src.n}
   log(nm(p.i)+" deduce"+(p.i?"s":"")+" with "+who+" (LP "+lp+").");
+  if(src!=="partner"&&src.hakdraw&&!src.trig){src.trig=true;draw(p,1);log(nm(p.i)+" draw"+(p.i?"s":"")+" 1 card (Hakuba).")}
   var md=o.scene.filter(function(c){return c.state==="active"&&c.md});
   while(md.length&&lp>0){
     var v=await pick(o.i,"Misdirect?","Sleep a character with Misdirect to give the deducing card LP -"+md[0].md+" until the deduction ends. Current LP: "+lp+".",md.map(function(c){return {l:c.n+" (Misdirect "+c.md+")",v:c.uid}}).concat([{l:"No",v:null}]),md[0].uid);
@@ -897,6 +1060,11 @@ function solveReason(p){
 function declReason(p,c){
   if(c.usedTurn)return c.n+" already used its ability this turn.";
   if(c.decl==="conan4"&&!p.scene.some(function(x){return x!==c&&x.state==="active"}))return "Conan's ability needs another active character to sleep.";
+  if(c.decl==="shizuka"){
+    if(!p.hand.length)return "Shizuka's ability needs a card in hand to remove.";
+    if(downCount(G.p[1-p.i])<2)return "Shizuka's ability needs 2 or more sleeping or stunned characters in the opponent's Scene.";
+    if(!p.scene.some(function(x){return x!==c&&x.lv<=6}))return "Shizuka needs another character of level 6 or less in your Scene.";
+  }
   if(c.decl==="vermouth"){
     if(c.state!=="active")return "Vermouth must be active to use her ability.";
     if(!p.hand.some(function(x){return x.t==="c"&&x.lv<=5}))return "Vermouth's ability needs a level 5 or lower character in your hand.";
@@ -919,6 +1087,13 @@ async function useDecl(p,c){
   }else if(c.decl==="ran6"){
     log(nm(p.i)+" use"+(p.i?"s":"")+" Ran's ability.");
     await boost(p,c);
+  }else if(c.decl==="shizuka"){
+    var tg=p.scene.filter(function(x){return x!==c&&x.lv<=6});
+    var sv=await pick(p.i,"Shizuka: give Assault to which character?","Level 6 or less. First remove 1 card from your hand as the cost.",tg.map(function(x){return {l:x.n+" (AP "+apOf(x,p)+")",v:x.uid}}).concat(isHuman(p.i)?[{l:"Cancel",v:null}]:[]),(tg.filter(function(x){return x.fresh&&x.state==="active"}).sort(function(a,b){return val(b,p)-val(a,p)})[0]||tg[0]).uid);
+    if(sv===null||sv===undefined){c.usedTurn=false;return}
+    await removeHandCard(p,"Shizuka: remove 1 card from hand");
+    var tt=tg.find(function(x){return x.uid===sv});
+    if(tt){tt.tmpAssault=true;log(tt.n+" gains Assault this turn.")}
   }else if(c.decl==="vermouth"){
     p.scene=p.scene.filter(function(x){return x!==c});p.deck=[c.base].concat(p.deck);
     log(nm(p.i)+" put"+(p.i?"s":"")+" Vermouth on the bottom of the deck.");
@@ -940,6 +1115,7 @@ async function contact(pi,atk,def){
   var first=a0<d0?pi:dpi;
   log("Contact: "+atk.n+" (AP "+a0+") vs "+def.n+" (AP "+d0+"). "+nm(first)+" can act first"+(a0===d0?" because equal AP puts the non-turn player first.":" because the lower AP goes first."));
   async function turnOf(pl){
+    if(G.noCutin===pl){log(nm(pl)+" cannot use Cut-in during this Action.");return null}
     var cis=G.p[pl].hand.filter(function(c){return c.t==="c"&&c.cutin});
     if(!cis.length)return null;
     var mineA=(pl===pi),my=mineA?a0+ba:d0+bd,their=mineA?d0+bd:a0+ba,card=null;
@@ -965,6 +1141,7 @@ async function contact(pi,atk,def){
   if(fa>=fd){
     log("Result: attacker AP "+fa+" vs "+fd+". "+def.n+" is removed.");
     await removeChar(o,def,"lost the Contact");
+    if(atk.heizodraw){draw(p,1);log(nm(pi)+" draw"+(pi?"s":"")+" 1 card (Heizo).")}
   }else log("Result: attacker AP "+fa+" vs "+fd+". Nothing happens.");
 }
 async function chooseGuard(dpi,atk,tgt,guards,pi){
@@ -983,8 +1160,17 @@ async function chooseGuard(dpi,atk,tgt,guards,pi){
 async function doAction(pi,atk,tgt){
   var p=G.p[pi],o=G.p[1-pi];
   atk.state="sleep";
+  if(atk.actbonus){atk.actBonus=1000*downCount(o);if(atk.actBonus)log(atk.n+" gets +"+atk.actBonus+" AP during this Action.")}
+  if(atk.nocut)G.noCutin=1-pi;
+  if(tgt.kind==="case")p.scene.forEach(function(m){if(m.masumi){m.tmpAssault=true;log(m.n+" gains Assault this turn.")}});
+  if(atk.hakdraw&&!atk.trig){atk.trig=true;draw(p,1);log(nm(pi)+" draw"+(pi?"s":"")+" 1 card (Hakuba).")}
+  try{await doActionInner(pi,atk,tgt)}finally{atk.actBonus=0;G.noCutin=null}
+}
+async function doActionInner(pi,atk,tgt){
+  var p=G.p[pi],o=G.p[1-pi];
   log(nm(pi)+" take"+(pi?"s":"")+" an Action with "+atk.n+" against "+(tgt.kind==="case"?"the opposing case":"the sleeping "+tgt.c.n)+".");
   var guards=o.scene.filter(function(c){return c.state==="active"});
+  if(atk.bullet&&guards.length){guards=[];log(atk.n+" has Bullet: this Action cannot be guarded.")}
   var g=guards.length?await chooseGuard(1-pi,atk,tgt,guards,pi):null;
   if(g){g.state="sleep";log(nm(1-pi)+" guard"+(pi?"":"s")+" with "+g.n+".");await contact(pi,atk,g);return}
   if(tgt.kind==="char"){await contact(pi,atk,tgt.c);return}
@@ -994,6 +1180,14 @@ async function doAction(pi,atk,tgt){
     await hirameki(o,c);
     o.rem.push(c);
     p.ev.push(takeTop(p));
+    for(var mi=0;mi<p.scene.length;mi++){
+      var mm=p.scene[mi];
+      if(mm.mary&&!mm.trig&&p.hand.length){
+        var my=await pick(p.i,mm.n+": remove a card from hand?","If you do, gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],p.hand.length>2);
+        if(my){mm.trig=true;await removeHandCard(p,mm.n+": remove 1 card from hand");p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 more evidence ("+mm.n+").")}
+        break;
+      }
+    }
   }
 }
 
@@ -1039,8 +1233,19 @@ async function aiDeclares(p){
     }else if(c.decl==="vermouth"){
       var hs=p.hand.filter(function(x){return x.t==="c"&&x.lv<=5});
       if(hs.length&&score(best(hs))>score(c))await useDecl(p,c);
+    }else if(c.decl==="shizuka"){
+      if(p.scene.some(function(x){return x!==c&&x.lv<=6&&x.fresh&&x.state==="active"&&!canAct(x)}))await useDecl(p,c);
     }
     await sleep(400);
+  }
+}
+async function endTurnEffects(p){
+  var list=p.scene.filter(function(c){return c.endact&&c.state!=="active"});
+  for(var i=0;i<list.length;i++){
+    var c=list[i];if(!p.hand.length||p.scene.indexOf(c)<0)continue;
+    var low=p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0];
+    var yes=await pick(p.i,c.n+": remove a card to become active?","At the end of your turn you may remove 1 card from hand to make this character active"+(c.state==="stun"?" (a stunned character becomes sleeping instead)":"")+".",[{l:"Remove a card",v:true},{l:"No",v:false}],cardVal(low)<3);
+    if(yes){await removeHandCard(p,c.n+": remove 1 card from hand");activate(c);log(c.n+" is "+(c.state==="active"?"active again.":"now sleeping."))}
   }
 }
 async function aiTurn(pi){
@@ -1054,7 +1259,7 @@ async function aiTurn(pi){
   for(var i=0;i<units.length;i++){
     var c=units[i];
     if(c.state!=="active"||p.scene.indexOf(c)<0)continue;
-    var sl=o.scene.filter(function(x){return x.state==="sleep"&&apOf(x,o)<=apOf(c,p)}).sort(function(a,b){return val(b,o)-val(a,o)});
+    var sl=o.scene.filter(function(x){return isDown(x)&&apOf(x,o)<=apOf(c,p)}).sort(function(a,b){return val(b,o)-val(a,o)});
     if(canAct(c)&&sl.length&&rnd(10)<7)await doAction(pi,c,{kind:"char",c:sl[0]});
     else if(canAct(c)&&o.ev.length>0&&rnd(10)<4)await doAction(pi,c,{kind:"case"});
     else if(canDeduce(c))await deduce(p,c);
@@ -1062,6 +1267,7 @@ async function aiTurn(pi){
   }
   await aiSolve(p);
   if(p.partner==="active"){await deduce(p,"partner");await sleep(500)}
+  await endTurnEffects(p);
   log(nm(pi)+" end"+(pi?"s":"")+" the turn.");
 }
 
@@ -1078,7 +1284,7 @@ async function humanTurn(){
   var p=G.p[0],o=G.p[1];
   for(;;){
     var a=await waitAct();
-    if(a.t==="end"){log("You end your turn.");G.tip="";return}
+    if(a.t==="end"){await endTurnEffects(p);log("You end your turn.");G.tip="";return}
     if(a.t==="hand"){await humanPlay(p,a.v,false)}
     else if(a.t==="hint"){
       p.hand.push(p.file.pop());p.usedHint=true;
@@ -1115,7 +1321,7 @@ async function humanTurn(){
       var atk=p.scene.find(function(c){return c.uid===av2});
       var ts=[];
       if(o.ev.length)ts.push({l:"Opposing case ("+o.ev.length+" evidence)",v:"case"});
-      o.scene.filter(function(c){return c.state==="sleep"}).forEach(function(c){ts.push({l:c.n+" (AP "+apOf(c,o)+", sleeping)",v:c.uid})});
+      o.scene.filter(isDown).forEach(function(c){ts.push({l:c.n+" (AP "+apOf(c,o)+(c.state==="stun"?", stunned)":", sleeping)"),v:c.uid})});
       ts.push({l:"Back",v:null});
       var tv=await ask("Target of "+atk.n+"'s Action","You can only target the opposing case if it has evidence, or an opposing character that is sleeping.",ts);
       if(tv===null)continue;
@@ -1179,7 +1385,7 @@ async function startGame(keyA,keyB,sim){
 /* ---------- rendering ---------- */
 function slot(c,o){
   if(!c)return '<div class="slot"></div>';
-  var st=c.state==="sleep"?"Sleeping":(c.fresh?"Just arrived":"Active");
+  var st=c.state==="sleep"?"Sleeping":c.state==="stun"?"Stunned":(c.fresh?"Just arrived":"Active");
   return '<button class="slot ch '+c.state+(c.fresh&&c.state==="active"?" fresh":"")+'" data-a="info" data-v="'+c.uid+'"><b>'+c.n+'</b><span>AP '+apOf(c,o)+' · LP '+lpOf(c)+'</span><span class="s2">'+st+'</span></button>';
 }
 function stats(p){
@@ -1197,7 +1403,7 @@ function handCard(c,p){
 }
 function controls(p){
   var o=G.p[1],live=!!G.act&&!G.over,hm=G.hintMode,R={};
-  var atk=p.scene.some(canAct),tg=o.ev.length>0||o.scene.some(function(c){return c.state==="sleep"});
+  var atk=p.scene.some(canAct),tg=o.ev.length>0||o.scene.some(isDown);
   var units=p.scene.some(canDeduce)||p.partner==="active";
   var decls=p.scene.filter(function(c){return c.decl});
   var usable=decls.filter(function(c){return !declReason(p,c)});
@@ -1224,8 +1430,8 @@ function findChar(uid){var r=null;G.p.forEach(function(o){o.scene.forEach(functi
 function render(){
   if(G&&G.sim)return;
   if(!G){
-    root.innerHTML='<div class="panel"><p>Choose your deck. The bot plays the other one. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="cols">'+
-      Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype"><h3>'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div></div>';
+    root.innerHTML='<div class="panel"><p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
+      Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype dk dk-'+d.color+'"><h3 class="dkh">'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div></div>';
     return;
   }
   var me=G.p[0],op=G.p[1],h="";
@@ -1253,7 +1459,8 @@ function render(){
 root.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
   var a=b.dataset.a,v=b.dataset.v,nv=(v!==undefined&&v!==""&&!isNaN(v))?+v:v;
-  if(a==="start"){var other=nv==="conan"?"org":"conan";startGame(nv,other,false);return}
+  if(a==="opp"){OPP=v;render();return}
+  if(a==="start"){var ks=Object.keys(DECKS),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
   if(a==="menu"){G=null;render();return}
   if(a==="info"&&G){G.info=(G.info===nv?null:nv);render();return}
   if(a==="ask"&&G&&G.ask){var q=G.ask;G.ask=null;var val2=q.opts[+v].v;render();q.r(val2);return}
