@@ -82,7 +82,7 @@ label{font-weight:500;font-size:.92rem}
 .slots i{flex:1;height:34px;border:2px dashed var(--line);border-radius:4px}
 .a-scene{grid-area:scene}.a-partner{grid-area:partner}.a-case{grid-area:case}.a-evidence{grid-area:evidence}.a-file{grid-area:file}.a-deck{grid-area:deck}.a-remove{grid-area:remove}.a-hand{grid-area:hand}
 #areaInfo{margin-top:12px;min-height:3.2em}
-@media (max-width:560px){.board{grid-template-columns:repeat(2,1fr);grid-template-areas:"scene scene" "partner case" "evidence file" "deck remove" "hand hand"}}
+@media (max-width:560px){.board{grid-template-columns:repeat(2,1fr);grid-template-areas:"scene scene" "partner case" "evidence file" "deck remove" "hand hand" "act act"}}
 
 /* card types */
 .ctype{border-top:4px solid var(--accent)}
@@ -198,9 +198,9 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:9px;ba
 .area:hover{background:var(--surface2) var(--brick-img)}
 .pwide{width:min(1360px,calc(100vw - 2*max(16px,env(safe-area-inset-left,0px))));position:relative;left:50%;transform:translateX(-50%);margin-top:14px}
 .mat{background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;grid-template-columns:repeat(6,minmax(0,1fr));min-width:0;box-shadow:0 4px 0 var(--line)}
-.mat-me{border-color:var(--brown-line);box-shadow:0 4px 0 var(--brown-line);grid-template-areas:"label label label label label label" "scene scene scene scene scene scene" "partner case evidence file deck remove" "hand hand hand hand hand hand"}
+.mat-me{border-color:var(--brown-line);box-shadow:0 4px 0 var(--brown-line);grid-template-areas:"label label label label label label" "scene scene scene scene scene scene" "partner case evidence file deck remove" "hand hand hand hand act act"}
 .mat-op{grid-template-areas:"label label label label label label" "hand hand hand hand hand hand" "partner case evidence file deck remove" "scene scene scene scene scene scene"}
-.matlabel{grid-area:label}.c-scene{grid-area:scene}.c-partner{grid-area:partner}.c-case{grid-area:case}.c-evidence{grid-area:evidence}.c-file{grid-area:file}.c-deck{grid-area:deck}.c-remove{grid-area:remove}.c-hand{grid-area:hand}
+.matlabel{grid-area:label}.c-scene{grid-area:scene}.c-partner{grid-area:partner}.c-case{grid-area:case}.c-evidence{grid-area:evidence}.c-file{grid-area:file}.c-deck{grid-area:deck}.c-remove{grid-area:remove}.c-hand{grid-area:hand}.c-act{grid-area:act}
 .cell{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--bg);display:flex;flex-direction:column;gap:4px;min-width:0;font-size:.82rem}
 .cell>span{color:var(--muted);font-size:.74rem}
 .c-scene{background:transparent;border:2px dashed var(--line)}
@@ -215,16 +215,20 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:9px;ba
 @media (max-width:520px){.c-hand .hand{gap:8px}.c-hand .hand .pc{width:calc(50% - 4px);flex:0 0 auto}.c-hand .pc img.th{max-width:100%}}
 .c-scene .slotrow{gap:10px}
 .slot img.sl{max-width:120px;margin-left:auto;margin-right:auto}
-.under{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:start}
+.under{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.under:empty{display:none}
+.c-act{background:var(--surface);border:2px solid var(--brown-line)}
+.c-remove .chip{align-self:flex-start;margin-top:2px}
+.panel.ctype.dk{display:flex;flex-direction:column}
+.ctype.dk .btn{margin-top:auto;align-self:flex-start}
 .logbox .plog{max-height:15em}
 @media (max-width:1000px){
   .mat{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .mat-me{grid-template-areas:"label label label" "scene scene scene" "partner case evidence" "file deck remove" "hand hand hand"}
+  .mat-me{grid-template-areas:"label label label" "scene scene scene" "partner case evidence" "file deck remove" "hand hand act"}
   .mat-op{grid-template-areas:"label label label" "hand hand hand" "partner case evidence" "file deck remove" "scene scene scene"}
 }
 @media (max-width:760px){
   .mat{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .mat-me{grid-template-areas:"label label" "scene scene" "partner case" "evidence file" "deck remove" "hand hand"}
+  .mat-me{grid-template-areas:"label label" "scene scene" "partner case" "evidence file" "deck remove" "hand hand" "act act"}
   .mat-op{grid-template-areas:"label label" "hand hand" "deck remove" "evidence file" "partner case" "scene scene"}
   .under{grid-template-columns:1fr}
   .logbox .plog{max-height:10em}
@@ -232,7 +236,7 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:9px;ba
 }
 .pbtns{display:flex;flex-wrap:wrap;gap:8px}
 .mid{display:grid;gap:8px}
-.turnbar{font-family:var(--font-display);font-weight:700}
+.turnbar{font-family:var(--font-display);font-weight:700;background:var(--surface);border:2px solid var(--brown-line);border-radius:6px;padding:6px 12px;box-shadow:0 3px 0 var(--brown-line)}
 .prompt{background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:14px;display:grid;gap:8px;justify-items:start}
 .prompt p{margin:0;color:var(--muted);font-size:.92rem}
 .plog{margin:0;padding:0;list-style:none;display:grid;gap:2px;font-size:.88rem;color:var(--muted);max-height:11em;overflow-y:auto}
@@ -743,7 +747,7 @@ var DECKS={
    {k:"ev1k",n:"\u201cLadies and... Gentlemen!!\u201d",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 white character to hand, put the rest on the bottom. Then enter a white character from hand whose level is at most your FILE count."},
    {k:"ev5k",n:"\u201cApril Fool...\u201d",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
   ]},
- akai:{key:"akai",name:"Akai (Red)",color:"red",
+ akai:{key:"akai",name:"Akai",color:"red",
   blurb:"Red (CT-D04). FBI attackers with unguardable Actions, case-hitting bonuses and hand disruption.",
   partner:{n:"Shuichi Akai",lp:1},
   caze:{n:"The Scarlet Return",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
@@ -763,7 +767,7 @@ var DECKS={
    {k:"ev1a",n:"The Mysterious Passenger",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 red character to hand, put the rest on the bottom. Then enter a red character from hand whose level is at most your FILE count."},
    {k:"ev5a",n:"Akai's Shot",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
   ]},
- amuro:{key:"amuro",name:"Amuro (Yellow)",color:"yellow",
+ amuro:{key:"amuro",name:"Amuro",color:"yellow",
   blurb:"Yellow (CT-D05). Public Security and Metropolitan Police: team AP boosts and bringing characters back from the Remove area.",
   partner:{n:"Toru Amuro",lp:1},
   caze:{n:"The Scarlet Suspicion",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
@@ -1493,8 +1497,8 @@ function mat(p,isMe){
   h+='<div class="cell c-evidence"><div class="mono">Evidence area</div><div class="big">'+p.ev.length+' / '+p.lv+'</div><div class="pips">'+pips+'</div><span>Needed to solve the case</span></div>';
   h+='<div class="cell c-file"><div class="mono">FILE area</div><div class="big">'+p.file.length+(p.partner==="file"?" + 1":"")+'</div><span>Level cap '+cap(p)+(p.partner==="file"?" (partner counts)":"")+'</span></div>';
   h+='<div class="cell c-deck"><div class="mono">Deck</div><div class="big">'+p.deck.length+'</div><span>cards left</span></div>';
-  h+='<div class="cell c-remove"><div class="mono">Remove area</div><button type="button" class="chip" data-a="rem" data-v="'+p.i+'">'+p.rem.length+' card'+(p.rem.length===1?"":"s")+' · view list</button>'+(last?'<span class="lastrem">Latest: '+last.n+'</span>':'')+'</div>';
-  if(isMe)h+='<div class="cell c-hand"><div class="mono">Hand ('+p.hand.length+')</div><div class="hand">'+p.hand.map(function(c){return handCard(c,p)}).join("")+'</div></div>';
+  h+='<div class="cell c-remove"><div class="mono">Remove area</div><button type="button" class="chip" data-a="rem" data-v="'+p.i+'">'+p.rem.length+' card'+(p.rem.length===1?"":"s")+' · view list</button>'+(last?'<span class="lastrem">Latest: '+last.n+'</span>':'')+(isMe?'<button type="button" class="chip" data-a="log">Game log · view</button>':'')+'</div>';
+  if(isMe)h+='<div class="cell c-hand"><div class="mono">Hand ('+p.hand.length+')</div><div class="hand">'+p.hand.map(function(c){return handCard(c,p)}).join("")+'</div></div><div class="cell c-act"><div class="mono">Your turn actions</div>'+controls(p)+((G.over||G.act)?'<div><button class="btn ghost" data-a="menu">'+(G.over?"Play again":"Back to deck choice")+'</button></div>':'')+'</div>';
   else h+='<div class="cell c-hand"><div class="mono">Hand</div><div class="big">'+p.hand.length+'</div><span>cards (hidden)</span></div>';
   return h+'</div>';
 }
@@ -1541,10 +1545,9 @@ function render(){
     return;
   }
   var me=G.p[0],op=G.p[1],h="";
-  h+=mat(op,false)+mat(me,true);
-  h+='<div class="under"><div class="logbox">';
   if(G.turn>0)h+='<div class="turnbar">Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</div>';
-  h+='<div class="mono">Game log</div><ul class="plog">'+G.log.slice(0,14).map(function(l){return "<li>"+l+"</li>"}).join("")+'</ul></div>';
+  h+=mat(op,false)+mat(me,true);
+  h+='<div class="under">';
   h+='<div class="mid">';
   if(G.over){
     h+='<div class="out '+(G.over.w===0?"good":"bad")+'"><b>'+(G.over.w===0?"You win.":"You lose.")+'</b> '+G.over.why+'</div>';
@@ -1562,11 +1565,12 @@ function render(){
       (rp.rem.length?'<div class="remgrid">'+rp.rem.map(function(c,i){return {c:c,n:i+1}}).reverse().map(function(x){var c=x.c;return '<div class="remc"><span class="rn">'+x.n+'</span>'+cimg(c.set,c.img,"rm",c.n)+'<small>'+c.n+'</small></div>'}).join("")+'</div>':'<div class="why" style="margin-top:6px">Nothing has been removed yet.</div>')+
       '<div><button class="btn ghost" data-a="remclose" style="margin-top:8px">Close</button></div></div>';
   }
+  if(G.logView){
+    h+='<div class="note" style="margin:0"><b>Game log</b> · newest first.<ul class="plog" style="margin-top:6px;max-height:18em">'+G.log.slice(0,40).map(function(l){return "<li>"+l+"</li>"}).join("")+'</ul><div><button class="btn ghost" data-a="logclose" style="margin-top:8px">Close</button></div></div>';
+  }
   if(G.info){var ic=findChar(G.info);if(ic)h+='<div class="note infoimg" style="margin:0">'+cimg(ic.set,ic.img,"big",ic.n)+'<div><b>'+ic.n+'</b> · Level '+ic.lv+' · '+trName(ic)+'<br>'+ic.txt+'</div></div>'}
   if(G.zoom){h+='<div class="note infoimg" style="margin:0">'+cimg(G.zoom.set,G.zoom.img,"big",G.zoom.n)+'<div><b>'+G.zoom.n+'</b>'+(G.zoom.lv!==undefined?' · Level '+G.zoom.lv:'')+'<br>'+G.zoom.txt+'<br><button class="btn ghost" data-a="unzoom" style="margin-top:8px">Close</button></div></div>'}
   if(G.tip&&!G.over)h+='<div class="note" style="margin:0">'+G.tip+'</div>';
-  h+=controls(me);
-  if(G.over||G.act)h+='<div><button class="btn ghost" data-a="menu">'+(G.over?"Play again":"Back to deck choice")+'</button></div>';
   h+='</div></div>';
   root.innerHTML=h;
   if(G.ask&&G.ask!==lastAsk){var pr=root.querySelector(".prompt");if(pr&&pr.scrollIntoView)try{pr.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}
@@ -1580,6 +1584,8 @@ root.addEventListener("click",function(e){
   if(a==="menu"){G=null;render();return}
   if(a==="rem"&&G){G.remView=(G.remView===nv?null:nv);render();return}
   if(a==="remclose"&&G){G.remView=null;render();return}
+  if(a==="log"&&G){G.logView=!G.logView;render();return}
+  if(a==="logclose"&&G){G.logView=false;render();return}
   if(a==="zoomp"&&G){var d=G.p[nv].def;G.zoom={n:"Partner: "+d.partner.n,set:d.set,img:d.partnerNo,txt:"Partner (LP "+d.partner.lp+"). While active it can deduce, use Assist (moves to the FILE area) and declare Case Solved."};render();return}
   if(a==="zoomk"&&G){var d2=G.p[nv].def;G.zoom={n:"Case: "+d2.caze.n,set:d2.set,img:d2.cardNo,txt:d2.caze.txt};render();return}
   if(a==="zoom"&&G){var zc=G.p[0].hand.find(function(c){return c.uid===nv});G.zoom=zc||null;render();return}
