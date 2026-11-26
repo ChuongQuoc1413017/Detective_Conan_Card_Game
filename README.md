@@ -61,7 +61,7 @@ Rather than providing only a static rulebook, this repository offers a collectio
 
 The learning materials are organized in the order that players typically encounter the rules during an actual game, making the resource suitable for beginners as well as players who need a quick reference.
 
-**Main resource:** [`Conan TCG Primer.html`](./Conan%20TCG%20Primer.html)
+**Main resource:** [`index.html`](./index.html)
 
 ---
 
@@ -72,7 +72,7 @@ There are two ways to use this project.
 ### Option 1: Open the Interactive Primer
 
 1. Visit this repository.
-2. Open `Conan TCG Primer.html`.
+2. Open `index.html`.
 3. Download the HTML file.
 4. Open it using a modern web browser.
 
@@ -95,19 +95,19 @@ cd Detective_Conan_Card_Game
 Open the HTML file:
 
 ```bash
-open "Conan TCG Primer.html"
+open "index.html"
 ```
 
 On Windows, you can also double-click the HTML file or run:
 
 ```bash
-start "" "Conan TCG Primer.html"
+start "" "index.html"
 ```
 
 On Linux:
 
 ```bash
-xdg-open "Conan TCG Primer.html"
+xdg-open "index.html"
 ```
 
 No Node.js, Python environment, package manager, or external game engine is required.
