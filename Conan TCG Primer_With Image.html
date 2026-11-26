@@ -6,18 +6,21 @@
 :root{
   --bg:#eef1f6; --surface:#ffffff; --surface2:#e2e8f2; --fg:#16203a; --muted:#54607b; --line:#cbd3e2;
   --accent:#b8322a; --accent-fg:#ffffff; --gold:#8f6000; --gold-bg:#f6e8c4; --good:#1d7449; --good-bg:#d9f0e3; --bad:#b8322a; --bad-bg:#f8dcd9;
+  --brick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='36'%3E%3Cg fill='%23a9744a' fill-opacity='0.09'%3E%3Crect x='0' y='0' width='36' height='18'/%3E%3Crect x='18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cg fill='%23a9744a' fill-opacity='0.05'%3E%3Crect x='36' y='0' width='36' height='18'/%3E%3Crect x='54' y='18' width='36' height='18'/%3E%3Crect x='-18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cpath d='M0 0H72M0 18H72M0 0V18M36 0V18M18 18V36M54 18V36' stroke='%23a9744a' stroke-opacity='0.11000000000000001' stroke-width='2' fill='none'/%3E%3C/svg%3E");--brick-strong:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='18'%3E%3Cg fill='%23a9744a' fill-opacity='0.8'%3E%3Crect x='0' y='0' width='24' height='9'/%3E%3Crect x='12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cg fill='%23a9744a' fill-opacity='0.5'%3E%3Crect x='24' y='0' width='24' height='9'/%3E%3Crect x='36' y='9' width='24' height='9'/%3E%3Crect x='-12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cpath d='M0 0H48M0 9H48M0 0V9M24 0V9M12 9V18M36 9V18' stroke='%23a9744a' stroke-opacity='1.1' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  --brick-btn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='18'%3E%3Cpath d='M0 .5H36M0 9.5H36M.5 0V9M18.5 0V9M9.5 9V18M27.5 9V18' stroke='%23ffffff' stroke-opacity='.34' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  --brown:#8f5a36;--brown-fg:#ffffff;--brown-line:#a9744a;
   --font-display:'Bricolage Grotesque','Inter',system-ui,sans-serif;
   --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0e1526; --surface:#162038; --surface2:#1f2d4d; --fg:#e7ecf7; --muted:#9aa7c4; --line:#2b3b5e;
-  --accent:#ef6a5e; --accent-fg:#1a0a08; --gold:#e6b34a; --gold-bg:#3a2e12; --good:#5ccf98; --good-bg:#12362a; --bad:#ef7a70; --bad-bg:#3d1b1a; color-scheme:dark;}}
-:root[data-theme="dark"]{
+  --accent:#ef6a5e; --accent-fg:#1a0a08; --gold:#e6b34a; --gold-bg:#3a2e12; --good:#5ccf98; --good-bg:#12362a; --bad:#ef7a70; --bad-bg:#3d1b1a; color-scheme:dark;--brown:#c48a5c;--brown-fg:#1d1208;--brown-line:#d0a070;--brick-btn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='18'%3E%3Cpath d='M0 .5H36M0 9.5H36M.5 0V9M18.5 0V9M9.5 9V18M27.5 9V18' stroke='%23000000' stroke-opacity='.3' stroke-width='1' fill='none'/%3E%3C/svg%3E");--brick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='36'%3E%3Cg fill='%23d0a070' fill-opacity='0.1'%3E%3Crect x='0' y='0' width='36' height='18'/%3E%3Crect x='18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cg fill='%23d0a070' fill-opacity='0.06'%3E%3Crect x='36' y='0' width='36' height='18'/%3E%3Crect x='54' y='18' width='36' height='18'/%3E%3Crect x='-18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cpath d='M0 0H72M0 18H72M0 0V18M36 0V18M18 18V36M54 18V36' stroke='%23d0a070' stroke-opacity='0.132' stroke-width='2' fill='none'/%3E%3C/svg%3E");--brick-strong:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='18'%3E%3Cg fill='%23d0a070' fill-opacity='0.7'%3E%3Crect x='0' y='0' width='24' height='9'/%3E%3Crect x='12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cg fill='%23d0a070' fill-opacity='0.45'%3E%3Crect x='24' y='0' width='24' height='9'/%3E%3Crect x='36' y='9' width='24' height='9'/%3E%3Crect x='-12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cpath d='M0 0H48M0 9H48M0 0V9M24 0V9M12 9V18M36 9V18' stroke='%23d0a070' stroke-opacity='0.9900000000000001' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");}}
+:root[data-theme="dark"]{--brown:#c48a5c;--brown-fg:#1d1208;--brown-line:#d0a070;--brick-btn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='18'%3E%3Cpath d='M0 .5H36M0 9.5H36M.5 0V9M18.5 0V9M9.5 9V18M27.5 9V18' stroke='%23000000' stroke-opacity='.3' stroke-width='1' fill='none'/%3E%3C/svg%3E");--brick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='36'%3E%3Cg fill='%23d0a070' fill-opacity='0.1'%3E%3Crect x='0' y='0' width='36' height='18'/%3E%3Crect x='18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cg fill='%23d0a070' fill-opacity='0.06'%3E%3Crect x='36' y='0' width='36' height='18'/%3E%3Crect x='54' y='18' width='36' height='18'/%3E%3Crect x='-18' y='18' width='36' height='18'/%3E%3C/g%3E%3Cpath d='M0 0H72M0 18H72M0 0V18M36 0V18M18 18V36M54 18V36' stroke='%23d0a070' stroke-opacity='0.132' stroke-width='2' fill='none'/%3E%3C/svg%3E");--brick-strong:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='18'%3E%3Cg fill='%23d0a070' fill-opacity='0.7'%3E%3Crect x='0' y='0' width='24' height='9'/%3E%3Crect x='12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cg fill='%23d0a070' fill-opacity='0.45'%3E%3Crect x='24' y='0' width='24' height='9'/%3E%3Crect x='36' y='9' width='24' height='9'/%3E%3Crect x='-12' y='9' width='24' height='9'/%3E%3C/g%3E%3Cpath d='M0 0H48M0 9H48M0 0V9M24 0V9M12 9V18M36 9V18' stroke='%23d0a070' stroke-opacity='0.9900000000000001' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
   --bg:#0e1526; --surface:#162038; --surface2:#1f2d4d; --fg:#e7ecf7; --muted:#9aa7c4; --line:#2b3b5e;
   --accent:#ef6a5e; --accent-fg:#1a0a08; --gold:#e6b34a; --gold-bg:#3a2e12; --good:#5ccf98; --good-bg:#12362a; --bad:#ef7a70; --bad-bg:#3d1b1a; color-scheme:dark;}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6;
+body{background:var(--bg) var(--brick-img);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
 h1,h2,h3{font-family:var(--font-display);line-height:1.15;text-wrap:balance;margin:0}
@@ -58,8 +61,10 @@ ul.tight{margin:0 0 .75em;padding-left:1.15em}
 ul.tight li{margin-bottom:.3em}
 .jp{font-size:.85em;color:var(--muted)}
 button,input,select{font:inherit;color:inherit}
-.btn{background:var(--accent);color:var(--accent-fg);border:0;border-radius:6px;padding:9px 16px;font-weight:600;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn{background:var(--brown) var(--brick-btn);background-size:36px 18px;color:var(--brown-fg);border:2px solid rgba(0,0,0,.28);border-radius:5px;padding:8px 16px;font-weight:700;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.28);text-shadow:0 1px 0 rgba(0,0,0,.25);transition:transform .08s}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.32)}
+.btn.ghost{background:var(--surface);color:var(--fg);border:2px solid var(--brown-line);box-shadow:0 3px 0 var(--brown-line);text-shadow:none}
+.btn.ghost:hover:not(:disabled){background:var(--surface2) var(--brick-img)}
 .btn:disabled{opacity:.45;cursor:default}
 input[type=number],input[type=search],select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
 label{font-weight:500;font-size:.92rem}
@@ -173,6 +178,58 @@ label{font-weight:500;font-size:.92rem}
 .pc .zm{display:block;cursor:zoom-in}.pc img.th{width:100%;height:auto;margin-bottom:6px}
 .infoimg{display:flex;gap:14px;align-items:flex-start}.infoimg img.big{width:min(46%,220px);flex:none;height:auto}.infoimg>div{min-width:0}
 
+
+/* brick theme */
+header::before{content:"";display:block;height:18px;margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));grid-column:1/-1;background:var(--brick-strong);background-size:48px 18px;border-bottom:2px solid var(--brown-line)}
+section>h2::after{content:"";display:block;width:128px;height:12px;margin-top:8px;background:var(--brick-strong);background-size:48px 18px;border:1px solid var(--brown-line);border-radius:2px}
+footer{position:relative}
+footer::before{content:"";display:block;height:18px;margin-bottom:14px;background:var(--brick-strong);background-size:48px 18px;border-radius:2px;border:1px solid var(--brown-line)}
+.pcrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.pcrow button{background:none;border:0;padding:0;cursor:zoom-in;display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--muted);font-size:.7rem;font-family:var(--font-body);text-align:left;max-width:160px}
+.pcrow img.pt{height:92px;width:auto}.pcrow img.cs{height:70px;width:auto}
+button.chip{border:0;cursor:pointer;color:var(--fg);text-decoration:underline dotted}
+.logbox{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:10px 12px;display:grid;gap:6px}
+.remgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;margin-top:8px}
+.remc{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0}
+.remc img.rm{width:100%;height:auto}.remc small{font-size:.68rem;line-height:1.15;overflow-wrap:anywhere}
+.remc .rn{position:absolute;top:3px;left:3px;z-index:1;background:var(--accent);color:var(--accent-fg);font-family:var(--font-mono);font-size:.66rem;border-radius:3px;padding:0 5px}
+
+nav::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:9px;background:var(--brick-strong);background-size:48px 18px;border-top:1px solid var(--brown-line);pointer-events:none}
+.area:hover{background:var(--surface2) var(--brick-img)}
+.pwide{width:min(1360px,calc(100vw - 2*max(16px,env(safe-area-inset-left,0px))));position:relative;left:50%;transform:translateX(-50%);margin-top:14px}
+.mat{background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;grid-template-columns:repeat(6,minmax(0,1fr));min-width:0;box-shadow:0 4px 0 var(--line)}
+.mat-me{border-color:var(--brown-line);box-shadow:0 4px 0 var(--brown-line);grid-template-areas:"label label label label label label" "scene scene scene scene scene scene" "partner case evidence file deck remove" "hand hand hand hand hand hand"}
+.mat-op{grid-template-areas:"label label label label label label" "hand hand hand hand hand hand" "partner case evidence file deck remove" "scene scene scene scene scene scene"}
+.matlabel{grid-area:label}.c-scene{grid-area:scene}.c-partner{grid-area:partner}.c-case{grid-area:case}.c-evidence{grid-area:evidence}.c-file{grid-area:file}.c-deck{grid-area:deck}.c-remove{grid-area:remove}.c-hand{grid-area:hand}
+.cell{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--bg);display:flex;flex-direction:column;gap:4px;min-width:0;font-size:.82rem}
+.cell>span{color:var(--muted);font-size:.74rem}
+.c-scene{background:transparent;border:2px dashed var(--line)}
+.cell .big{font-family:var(--font-display);font-weight:700;font-size:1.6rem;line-height:1}
+.cell b{line-height:1.15}
+.imgbtn{background:none;border:0;padding:0;cursor:zoom-in;align-self:flex-start;max-width:100%}
+.cell img.pt{height:110px;width:auto;max-width:100%}.cell img.cs{height:84px;width:auto;max-width:100%}
+.hotx{color:var(--gold);font-weight:700}
+.pips{display:flex;flex-wrap:wrap;gap:3px}.pips i{width:14px;height:9px;border:1px solid var(--muted);border-radius:1px}.pips i.on{background:var(--accent);border-color:var(--accent)}
+.lastrem{color:var(--muted);font-size:.72rem;overflow-wrap:anywhere}
+.c-hand .hand{gap:10px}
+@media (max-width:520px){.c-hand .hand{gap:8px}.c-hand .hand .pc{width:calc(50% - 4px);flex:0 0 auto}.c-hand .pc img.th{max-width:100%}}
+.c-scene .slotrow{gap:10px}
+.slot img.sl{max-width:120px;margin-left:auto;margin-right:auto}
+.under{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:start}
+.logbox .plog{max-height:15em}
+@media (max-width:1000px){
+  .mat{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mat-me{grid-template-areas:"label label label" "scene scene scene" "partner case evidence" "file deck remove" "hand hand hand"}
+  .mat-op{grid-template-areas:"label label label" "hand hand hand" "partner case evidence" "file deck remove" "scene scene scene"}
+}
+@media (max-width:760px){
+  .mat{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mat-me{grid-template-areas:"label label" "scene scene" "partner case" "evidence file" "deck remove" "hand hand"}
+  .mat-op{grid-template-areas:"label label" "hand hand" "deck remove" "evidence file" "partner case" "scene scene"}
+  .under{grid-template-columns:1fr}
+  .logbox .plog{max-height:10em}
+}
+}
 .pbtns{display:flex;flex-wrap:wrap;gap:8px}
 .mid{display:grid;gap:8px}
 .turnbar{font-family:var(--font-display);font-weight:700}
@@ -188,7 +245,7 @@ footer p{max-width:80ch}
 </style>
 
 <nav><div class="wrap">
-  <a href="#goal">Goal</a><a href="#board">Board</a><a href="#cards">Cards</a><a href="#setup">Setup</a><a href="#turn">Turn</a><a href="#actions">Actions</a><a href="#contact">Contact</a><a href="#terms">Terms</a><a href="#practice">Practice</a><a href="#quiz">Quiz</a><a href="#author">Author</a>
+  <a href="#goal">Goal</a><a href="#practice">Practice</a><a href="#board">Board</a><a href="#cards">Cards</a><a href="#setup">Setup</a><a href="#turn">Turn</a><a href="#actions">Actions</a><a href="#contact">Contact</a><a href="#terms">Terms</a><a href="#quiz">Quiz</a><a href="#author">Author</a>
 </div></nav>
 
 <div class="wrap">
@@ -207,6 +264,14 @@ footer p{max-width:80ch}
   <div><b>How you get evidence</b><span>Deduce with characters or your partner, or take Actions against the opponent's case.</span></div>
   <div><b>How you lose ground</b><span>Your characters get removed in Contact, your evidence gets taken, and an empty deck hands your opponent evidence.</span></div>
 </div>
+
+<section id="practice">
+  <span class="mono">Practice table</span>
+  <h2>Play a practice game</h2>
+  <p>Pick one of six starter decks and play a full game against a simple bot. You can choose its deck or leave it random. The page greys out moves you cannot make and tells you why. Tap a character in Scene to read its ability.</p>
+  <div class="note">Decks: CT-D01 Conan (blue), CT-D07 Black Organization (black), CT-D02 Heiji Hattori (green) and CT-D03 Kid the Phantom Thief (white). CT-D04 Akai (red) and CT-D05 Amuro (yellow). Ability text is paraphrased. Simplified: no Disguise (none of these decks use it), cards put on the bottom of the deck are not ordered, and the bot is simple. Check the official manual for exact wording.</div>
+  <div class="pwide"><div id="pgame"></div></div>
+</section>
 
 <section id="board">
   <span class="mono">Manual FILE.1 · Getting ready</span>
@@ -371,14 +436,6 @@ footer p{max-width:80ch}
     <div class="panel"><h3>MR cards</h3><p>From expansion pack 5. An MR enters Scene as a character. Only one MR can exist across your Scene and partner area, so a new MR removes the old one.</p><p>If an MR leaves Scene during your opponent's turn, it moves to your partner area. There it cannot deduce or act, but its abilities still work.</p></div>
     <div class="panel"><h3>Names with several characters</h3><p>A card named with &amp; or parentheses, such as a double name, counts as every name in it, in every area. Bond and similar checks treat it as each of those names.</p></div>
   </div>
-</section>
-
-<section id="practice">
-  <span class="mono">Practice table</span>
-  <h2>Play a practice game</h2>
-  <p>Pick one of six starter decks and play a full game against a simple bot. You can choose its deck or leave it random. The page greys out moves you cannot make and tells you why. Tap a character in Scene to read its ability.</p>
-  <div class="note">Decks: CT-D01 Conan (blue), CT-D07 Black Organization (black), CT-D02 Heiji Hattori (green) and CT-D03 Kid the Phantom Thief (white). CT-D04 Akai (red) and CT-D05 Amuro (yellow). Ability text is paraphrased. Simplified: no Disguise (none of these decks use it), cards put on the bottom of the deck are not ordered, and the bot is simple. Check the official manual for exact wording.</div>
-  <div class="panel" id="pgame"></div>
 </section>
 
 <section id="quiz">
@@ -602,7 +659,7 @@ renderQ();
 <script>
 (function(){
 var root=document.getElementById("pgame"); if(!root) return;
-var OVER={over:true}, G=null, UID=0, OPP="random";
+var OVER={over:true}, G=null, UID=0, OPP="random", lastAsk=null;
 
 /* ---------- Card data (read from the two starter deck images) ---------- */
 var DECKS={
@@ -1425,10 +1482,21 @@ function slot(c,o){
   var st=c.state==="sleep"?"Sleeping":c.state==="stun"?"Stunned":(c.fresh?"Just arrived":"Active");
   return '<button class="slot ch '+c.state+(c.fresh&&c.state==="active"?" fresh":"")+'" data-a="info" data-v="'+c.uid+'">'+cimg(c.set,c.img,"sl",c.n)+'<b>'+c.n+'</b><span>AP '+apOf(c,o)+' · LP '+lpOf(c)+'</span><span class="s2">'+st+'</span></button>';
 }
-function stats(p){
-  var pt={active:"active",sleep:"sleeping",file:"in FILE area"}[p.partner];
-  return '<div class="stats"><span class="chip">Deck '+p.deck.length+'</span><span class="chip">Hand '+p.hand.length+'</span><span class="chip">FILE '+p.file.length+(p.partner==="file"?" + partner":"")+'</span><span class="chip hot">Evidence '+p.ev.length+' / '+p.lv+'</span><span class="chip">Remove '+p.rem.length+'</span><span class="chip'+(p.phase==="solution"?" hot":"")+'">'+(p.phase==="case"?"Case phase":"Solution phase")+'</span><span class="chip">Partner '+p.def.partner.n+', '+pt+'</span></div>'+
-    '<div class="why">Case: '+p.def.caze.n+'</div>';
+function mat(p,isMe){
+  var d=p.def,pt={active:"Active",sleep:"Sleeping",file:"In FILE area"}[p.partner],pips="";
+  for(var k=0;k<p.lv;k++)pips+='<i class="'+(k<p.ev.length?"on":"")+'"></i>';
+  var last=p.rem[p.rem.length-1];
+  var h='<div class="mat '+(isMe?"mat-me":"mat-op")+'"><div class="mono matlabel">'+(isMe?"You":"Opponent")+' · '+d.name+'</div>';
+  h+='<div class="cell c-scene"><div class="mono">Scene</div><div class="slotrow">'+[0,1,2,3,4].map(function(n){return slot(p.scene[n],p)}).join("")+'</div></div>';
+  h+='<div class="cell c-partner"><div class="mono">Partner</div><button type="button" class="imgbtn" data-a="zoomp" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.partnerNo,"pt",d.partner.n)+'</button><b>'+d.partner.n+'</b><span>'+pt+' · LP '+d.partner.lp+'</span></div>';
+  h+='<div class="cell c-case"><div class="mono">Case</div><button type="button" class="imgbtn" data-a="zoomk" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.cardNo,"cs",d.caze.n)+'</button><b>'+d.caze.n+'</b><span class="'+(p.phase==="solution"?"hotx":"")+'">'+(p.phase==="case"?"Case phase":"Solution phase")+'</span></div>';
+  h+='<div class="cell c-evidence"><div class="mono">Evidence area</div><div class="big">'+p.ev.length+' / '+p.lv+'</div><div class="pips">'+pips+'</div><span>Needed to solve the case</span></div>';
+  h+='<div class="cell c-file"><div class="mono">FILE area</div><div class="big">'+p.file.length+(p.partner==="file"?" + 1":"")+'</div><span>Level cap '+cap(p)+(p.partner==="file"?" (partner counts)":"")+'</span></div>';
+  h+='<div class="cell c-deck"><div class="mono">Deck</div><div class="big">'+p.deck.length+'</div><span>cards left</span></div>';
+  h+='<div class="cell c-remove"><div class="mono">Remove area</div><button type="button" class="chip" data-a="rem" data-v="'+p.i+'">'+p.rem.length+' card'+(p.rem.length===1?"":"s")+' · view list</button>'+(last?'<span class="lastrem">Latest: '+last.n+'</span>':'')+'</div>';
+  if(isMe)h+='<div class="cell c-hand"><div class="mono">Hand ('+p.hand.length+')</div><div class="hand">'+p.hand.map(function(c){return handCard(c,p)}).join("")+'</div></div>';
+  else h+='<div class="cell c-hand"><div class="mono">Hand</div><div class="big">'+p.hand.length+'</div><span>cards (hidden)</span></div>';
+  return h+'</div>';
 }
 function handCard(c,p){
   var ok=!canPlay(p,c,G.hintMode);
@@ -1473,27 +1541,36 @@ function render(){
     return;
   }
   var me=G.p[0],op=G.p[1],h="";
-  h+='<div class="side"><div class="mono">Opponent · '+op.def.name+'</div>'+stats(op)+'<div class="slotrow">'+[0,1,2,3,4].map(function(i){return slot(op.scene[i],op)}).join("")+'</div></div>';
-  h+='<div class="mid">';
+  h+=mat(op,false)+mat(me,true);
+  h+='<div class="under"><div class="logbox">';
   if(G.turn>0)h+='<div class="turnbar">Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</div>';
+  h+='<div class="mono">Game log</div><ul class="plog">'+G.log.slice(0,14).map(function(l){return "<li>"+l+"</li>"}).join("")+'</ul></div>';
+  h+='<div class="mid">';
   if(G.over){
     h+='<div class="out '+(G.over.w===0?"good":"bad")+'"><b>'+(G.over.w===0?"You win.":"You lose.")+'</b> '+G.over.why+'</div>';
   }
   if(G.mull){
     var n=Object.keys(G.mull.sel).filter(function(k){return G.mull.sel[k]}).length;
-    h+='<div class="prompt"><b>Opening hand</b><p>Tap the cards you want to put back and redraw, or keep your hand. You may do this once.</p><button class="btn" data-a="mullok">'+(n?"Redraw "+n+" card"+(n>1?"s":""):"Keep this hand")+'</button></div>';
+    h+='<div class="prompt"><b>Opening hand</b><p>Tap the cards in your Hand area that you want to put back and redraw, or keep your hand. You may do this once.</p><button class="btn" data-a="mullok">'+(n?"Redraw "+n+" card"+(n>1?"s":""):"Keep this hand")+'</button></div>';
   }
   if(G.ask){
     h+='<div class="prompt"><b>'+G.ask.title+'</b><p>'+G.ask.note+'</p><div class="pbtns">'+G.ask.opts.map(function(o,i){return '<button class="btn ghost" data-a="ask" data-v="'+i+'">'+o.l+'</button>'}).join("")+'</div></div>';
   }
+  if(G.remView!==null&&G.remView!==undefined){
+    var rp=G.p[G.remView];
+    h+='<div class="note" style="margin:0"><b>'+(G.remView?"Opponent":"Your")+' Remove area</b> · '+rp.rem.length+' card'+(rp.rem.length===1?"":"s")+', newest first. The number shows the order they were removed (1 is the oldest).'+
+      (rp.rem.length?'<div class="remgrid">'+rp.rem.map(function(c,i){return {c:c,n:i+1}}).reverse().map(function(x){var c=x.c;return '<div class="remc"><span class="rn">'+x.n+'</span>'+cimg(c.set,c.img,"rm",c.n)+'<small>'+c.n+'</small></div>'}).join("")+'</div>':'<div class="why" style="margin-top:6px">Nothing has been removed yet.</div>')+
+      '<div><button class="btn ghost" data-a="remclose" style="margin-top:8px">Close</button></div></div>';
+  }
   if(G.info){var ic=findChar(G.info);if(ic)h+='<div class="note infoimg" style="margin:0">'+cimg(ic.set,ic.img,"big",ic.n)+'<div><b>'+ic.n+'</b> · Level '+ic.lv+' · '+trName(ic)+'<br>'+ic.txt+'</div></div>'}
-  if(G.zoom){h+='<div class="note infoimg" style="margin:0">'+cimg(G.zoom.set,G.zoom.img,"big",G.zoom.n)+'<div><b>'+G.zoom.n+'</b> · Level '+G.zoom.lv+'<br>'+G.zoom.txt+'<br><button class="btn ghost" data-a="unzoom" style="margin-top:8px">Close</button></div></div>'}
+  if(G.zoom){h+='<div class="note infoimg" style="margin:0">'+cimg(G.zoom.set,G.zoom.img,"big",G.zoom.n)+'<div><b>'+G.zoom.n+'</b>'+(G.zoom.lv!==undefined?' · Level '+G.zoom.lv:'')+'<br>'+G.zoom.txt+'<br><button class="btn ghost" data-a="unzoom" style="margin-top:8px">Close</button></div></div>'}
   if(G.tip&&!G.over)h+='<div class="note" style="margin:0">'+G.tip+'</div>';
-  h+='<ul class="plog">'+G.log.slice(0,10).map(function(l){return "<li>"+l+"</li>"}).join("")+'</ul>';
+  h+=controls(me);
   if(G.over||G.act)h+='<div><button class="btn ghost" data-a="menu">'+(G.over?"Play again":"Back to deck choice")+'</button></div>';
-  h+='</div>';
-  h+='<div class="side me"><div class="mono">You · '+me.def.name+'</div>'+stats(me)+'<div class="slotrow">'+[0,1,2,3,4].map(function(i){return slot(me.scene[i],me)}).join("")+'</div><div class="hand">'+me.hand.map(function(c){return handCard(c,me)}).join("")+'</div>'+controls(me)+'</div>';
+  h+='</div></div>';
   root.innerHTML=h;
+  if(G.ask&&G.ask!==lastAsk){var pr=root.querySelector(".prompt");if(pr&&pr.scrollIntoView)try{pr.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}
+  lastAsk=G.ask||null;
 }
 root.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
@@ -1501,6 +1578,10 @@ root.addEventListener("click",function(e){
   if(a==="opp"){OPP=v;render();return}
   if(a==="start"){var ks=Object.keys(DECKS),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
   if(a==="menu"){G=null;render();return}
+  if(a==="rem"&&G){G.remView=(G.remView===nv?null:nv);render();return}
+  if(a==="remclose"&&G){G.remView=null;render();return}
+  if(a==="zoomp"&&G){var d=G.p[nv].def;G.zoom={n:"Partner: "+d.partner.n,set:d.set,img:d.partnerNo,txt:"Partner (LP "+d.partner.lp+"). While active it can deduce, use Assist (moves to the FILE area) and declare Case Solved."};render();return}
+  if(a==="zoomk"&&G){var d2=G.p[nv].def;G.zoom={n:"Case: "+d2.caze.n,set:d2.set,img:d2.cardNo,txt:d2.caze.txt};render();return}
   if(a==="zoom"&&G){var zc=G.p[0].hand.find(function(c){return c.uid===nv});G.zoom=zc||null;render();return}
   if(a==="unzoom"&&G){G.zoom=null;render();return}
   if(a==="info"&&G){G.info=(G.info===nv?null:nv);render();return}
