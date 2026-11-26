@@ -330,7 +330,7 @@ The repository currently has a deliberately lightweight structure:
 ```text
 Detective_Conan_Card_Game/
 │
-├── Conan TCG Primer.html
+├── index.html
 │   └── Interactive learning and practice environment
 │
 ├── README.md
