@@ -1,6 +1,6 @@
-# 🕵️ Detective Conan Trading Card Game (TCG)
+# 🕵️ Detective Conan Card Game (TCG)
 
-**An unofficial interactive learning and practice resource for the Detective Conan Trading Card Game published by Takara Tomy.**
+**An unofficial interactive learning and practice resource for the Detective Conan Card Game published by Takara Tomy.**
 
 Learn the rules, understand the game mechanics, explore card interactions, and practice playing through an interactive browser-based tutorial.
 
@@ -44,7 +44,7 @@ Learn the rules, understand the game mechanics, explore card interactions, and p
 
 ## 🔍 About the Project
 
-The **Detective Conan Trading Card Game (Conan TCG)** is a collectible trading card game published by **Takara Tomy**, based on the Detective Conan (Case Closed) franchise.
+The **Detective Conan Card Game (Conan TCG)** is a collectible trading card game published by **Takara Tomy**, based on the Detective Conan (Case Closed) franchise.
 
 For new players, learning the game can be challenging due to its different card types, game zones, turn phases, character abilities, and specific terminology.
 
@@ -464,7 +464,7 @@ For questions, suggestions, corrections, or collaboration:
 ---
 
 <p align="center">
-  <b>Enjoy learning and solving cases with the Detective Conan Trading Card Game!</b>
+  <b>Enjoy learning and solving cases with the Detective Conan Card Game!</b>
   <br>
   <i>Elementary, my dear detective.</i> 🔎
 </p>
