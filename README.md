@@ -1,454 +1,274 @@
-# 🕵️ Detective Conan Card Game (TCG)
+# 🕵️ Conan TCG Primer
 
-**An unofficial interactive learning and practice resource for the Detective Conan Card Game published by Takara Tomy.**
+**An unofficial, interactive guide to the Detective Conan Trading Card Game by Takara Tomy.**
 
-Learn the rules, understand the game mechanics, explore card interactions, and practice playing through an interactive browser-based tutorial.
+Learn the rules, explore the cards and game board, try interactive rule checkers, and play a simplified practice match against a bot — all in your browser.
 
 <p align="center">
   <a href="https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game">
-    <img src="https://img.shields.io/badge/GitHub-Repository-181717?logo=github" alt="GitHub Repository">
+    <img src="https://img.shields.io/badge/GitHub-Repository-181717?logo=github" alt="GitHub repository">
   </a>
-  <img src="https://img.shields.io/badge/Project-Unofficial-blue" alt="Unofficial Project">
-  <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="Apache 2.0 License">
-  <img src="https://img.shields.io/badge/Platform-Web%20Browser-orange" alt="Web Browser">
+  <img src="https://img.shields.io/badge/Project-Unofficial-blue" alt="Unofficial project">
+  <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="Apache 2.0 license">
+  <img src="https://img.shields.io/badge/Platform-Web%20Browser-orange" alt="Web browser">
 </p>
 
 ---
 
-## 📖 Table of Contents
+## 📌 Overview
 
-- [About the Project](#-about-the-project)
-- [Getting Started](#-getting-started)
-- [Features](#-features)
-  - [1. Interactive Game Board Guide](#1-interactive-game-board-guide)
-  - [2. Card Types and Card Attributes](#2-card-types-and-card-attributes)
-  - [3. Game Setup and Deck Construction](#3-game-setup-and-deck-construction)
-  - [4. Turn Structure and Game Mechanics](#4-turn-structure-and-game-mechanics)
-  - [5. Interactive Game Calculators](#5-interactive-game-calculators)
-  - [6. Contact and AP Calculator](#6-contact-and-ap-calculator)
-  - [7. Game Terminology and Glossary](#7-game-terminology-and-glossary)
-  - [8. Practice Game Against a Bot](#8-practice-game-against-a-bot)
-  - [9. Rules Quiz](#9-rules-quiz)
-- [Supported Practice Decks](#-supported-practice-decks)
-- [Who Is This Project For?](#-who-is-this-project-for)
-- [Project Structure](#-project-structure)
-- [Installation and Local Usage](#-installation-and-local-usage)
-- [Limitations and Accuracy](#-limitations-and-accuracy)
-- [Official Resources](#-official-resources)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Disclaimer](#-disclaimer)
-- [Contact](#-contact)
+The **Detective Conan Trading Card Game (Conan TCG)** is a two-player trading card game in which players work with their Partner and characters to gather evidence and solve their cases before their opponent.
 
----
+For new players, learning the game involves understanding card types, game areas, turn procedures, abilities, and Japanese terminology. This project makes that learning process easier through a guided, interactive browser experience.
 
-## 🔍 About the Project
+Instead of presenting the rules as one long document, **Conan TCG Primer** introduces the game in a practical order: first the board and cards, then setup and turn structure, followed by the actions players can take during a match. It also provides a simplified practice game so players can try the mechanics as they learn.
 
-The **Detective Conan Card Game (Conan TCG)** is a collectible trading card game published by **Takara Tomy**, based on the Detective Conan (Case Closed) franchise.
+## 🌐 Try the Primer
 
-For new players, learning the game can be challenging due to its different card types, game zones, turn phases, character abilities, and specific terminology.
+**[Open the GitHub repository](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game)**
 
-This project aims to make the learning process more accessible through an interactive, browser-based learning environment.
-
-Rather than providing only a static rulebook, this repository offers a collection of learning tools that allow players to:
-
-- Understand the game board and the purpose of each playing area.
-- Learn how different card types and attributes work.
-- Follow the game setup and turn sequence step by step.
-- Explore important game mechanics through interactive examples.
-- Practice playing with simplified starter decks against a basic AI opponent.
-- Test their understanding through a rules quiz.
-
-The learning materials are organized in the order that players typically encounter the rules during an actual game, making the resource suitable for beginners as well as players who need a quick reference.
-
-**Main resource:** [`index.html`](./index.html)
-
----
-
-## 🚀 Getting Started
-
-There are two ways to use this project.
-
-### Option 1: Open the Interactive Primer
-
-1. Visit this repository.
-2. Open `index.html`.
-3. Download the HTML file.
-4. Open it using a modern web browser.
-
-The primer runs directly in the browser and does not require installing additional software or setting up a development environment.
-
-### Option 2: Run Locally
-
-Clone the repository:
-
-```bash
-git clone https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game.git
-```
-
-Navigate to the project directory:
-
-```bash
-cd Detective_Conan_Card_Game
-```
-
-Open the HTML file:
-
-```bash
-open "index.html"
-```
-
-On Windows, you can also double-click the HTML file or run:
-
-```bash
-start "" "index.html"
-```
-
-On Linux:
-
-```bash
-xdg-open "index.html"
-```
-
-No Node.js, Python environment, package manager, or external game engine is required.
+Open [`index.html`](./index.html) in a modern web browser. No installation or account is required.
 
 ---
 
 ## ✨ Features
 
-### 1. Interactive Game Board Guide
+### 1. Practice Game Against a Bot
 
-Understand the layout of a player's game board through an interactive visual representation.
+Try a simplified game against a basic bot using one of six starter decks. Choose the bot's deck or let it be selected randomly.
 
-The board is divided into eight areas:
+- Play cards and take available game actions.
+- See which moves are currently unavailable.
+- Read explanations for unavailable actions.
+- Select characters on the Scene to inspect their abilities.
+- Follow the game state as the match progresses.
 
-| Area | Description |
+The practice game is intended for learning the basic flow of play, not competitive or tournament-level simulation.
+
+### 2. Interactive Game Board Guide
+
+Explore the eight areas on a player's side of the board. Select an area to see what it contains and how it is used.
+
+| Area | Purpose |
 |---|---|
-| Scene | Where characters are played and participate in the game. |
-| Partner | Holds your Partner card and supports important game actions. |
-| Case | Contains your Case card and tracks the current case phase. |
-| Evidence Area | Holds evidence cards collected during the game. |
-| FILE Area | Stores face-down cards used to determine which character levels you can play. |
-| Deck | Your main deck of cards. |
-| Remove Area | Holds removed cards and used Events. |
-| Hand | Cards available for you to play. |
+| **Scene** | Where characters enter play and perform deductions or Actions. |
+| **Partner** | Holds your Partner card and its abilities. |
+| **Case** | Tracks your case and whether it is in the Case phase or Solution phase. |
+| **Evidence Area** | Holds the evidence you have collected. |
+| **FILE Area** | Holds face-down cards that determine which character levels you can play. |
+| **Deck** | Your main 40-card deck. |
+| **Remove Area** | Holds removed cards and resolved Events; it is also used during Refresh. |
+| **Hand** | Cards available to play. |
 
-Click any area in the interactive board to learn about its function and how cards interact with it.
+### 3. Card Types and Attributes
 
-### 2. Card Types and Card Attributes
+Learn the four card types used in Conan TCG:
 
-Learn about the four fundamental card types:
+- **Partner** — your partner in solving the case, with the shared Assist and Case Solved abilities.
+- **Character** — enters the Scene and can perform deductions and Actions.
+- **Event** — provides a one-time effect and is then placed in the Remove Area.
+- **Case** — represents the case you must solve to win.
 
-- **Partner:** Your partner in solving the case. It supports abilities such as Assist and Case Solved, and can also perform deductions.
-- **Character:** Characters enter the Scene and participate in deductions, Contacts, and other actions.
-- **Event:** Cards that produce one-time effects when played.
-- **Case:** Represents the case you must solve to win the game.
+The guide also explains important character attributes:
 
-The primer also explains important character attributes:
-
-| Attribute | Meaning |
+| Attribute | Explanation |
 |---|---|
-| Level | Determines the FILE requirement for playing a character. |
-| AP | Action Point, used when comparing characters during a Contact. |
-| LP | Logic Point, determines the amount of evidence obtained through deduction. |
-| Color | Determines the color requirements for playing certain cards. |
-| ID | Identifies a card and determines whether two cards count as the same card. |
+| **Level** | Determines the FILE requirement for playing a character from your hand. |
+| **AP** | Action Point, used to determine the order of play during a Contact. |
+| **LP** | Logic Point, which determines how much evidence a character gains through deduction. |
+| **Color** | A requirement for playing certain cards. |
+| **ID** | Identifies whether cards count as the same card for deck-building restrictions. |
 
-Additional explanations cover:
+You can also review Active, Sleep, and Stun states, as well as parallel cards, reprints, and card-copy restrictions.
 
-- Card states: Active, Sleep, and Stun.
-- Parallel cards and reprints.
-- Card identification and copy restrictions.
-- How card attributes affect gameplay.
+### 4. Setup and Turn-by-Turn Guide
 
-### 3. Game Setup and Deck Construction
+Follow the preparation procedure and understand how a match progresses:
 
-Learn how to prepare for a match, including:
+- Deck construction and card-copy limits.
+- Choosing your Partner and Case.
+- Preparing the game and drawing your opening hand.
+- The Auto Phase, Main Phase, and End Phase.
+- The special procedure on the first player's first turn.
 
-- Deck construction requirements.
-- Card copy restrictions.
-- Partner and Case selection.
-- Initial game setup.
-- First-player determination.
-- Initial hand and redraw procedure.
+An interactive stepper lets you move through the turn sequence one step at a time.
 
-The primer explains the relationship between the main deck, Partner card, and Case card so that new players can prepare for their first match.
+### 5. Main Phase Actions
 
-### 4. Turn Structure and Game Mechanics
+Explore the actions available during the Main Phase through an interactive tabbed guide:
 
-Understand the structure of a normal turn.
+- Play a card from your hand.
+- Use Next Hint.
+- Declare Assist.
+- Declare Case Solved.
+- Activate card abilities.
+- Deduce to collect evidence.
+- Take an Action against an opposing character or case.
 
-Each turn consists of three major phases:
+Each section explains the basic procedure and important restrictions.
 
-1. **Auto Phase:** Activate cards, draw cards, and place cards into the FILE area.
-2. **Main Phase:** Play characters, use Events, perform deductions, and take other available actions.
-3. **End Phase:** Complete the remaining procedures and finish the turn.
+### 6. Interactive Rule Checkers
 
-An interactive step-by-step guide explains the individual procedures within each phase.
-
-The tutorial also covers important mechanics, including:
-
-- Playing characters from your hand.
-- Using the FILE area to satisfy card-level requirements.
-- Performing deductions to obtain evidence.
-- Using Partner abilities.
-- Switching characters in the Scene.
-- Taking Actions against opposing characters.
-- Understanding the conditions required to solve a Case.
-
-### 5. Interactive Game Calculators
-
-The primer includes small interactive tools that help players understand important numerical requirements.
+Experiment with different game states to understand important requirements.
 
 **Character Level Checker**
 
-Experiment with different FILE configurations to determine which character levels can be played.
-
-You can adjust:
-
-- The number of cards in your FILE area.
-- Whether the character is played from hand or through Next Hint.
-- Whether your Partner is currently in the FILE area following an Assist.
-
-The tool then displays the corresponding playable levels.
+Adjust the number of cards in your FILE Area, choose whether you are playing from hand or using Next Hint, and account for your Partner after Assist. The checker shows which character levels are available.
 
 **Case Solving Checker**
 
-Check whether your current game state satisfies the requirements for declaring Case Solved.
+Set your Case level, evidence count, FILE count, Case phase, and Partner state to check whether you can declare Case Solved. It also explains whether Assist can move your Case into the Solution phase.
 
-You can configure:
+**Contact AP Calculator**
 
-- Case level.
-- Number of evidence cards.
-- Number of cards in your FILE area.
-- Current Case phase.
-- Partner status.
+Compare the attacker's and defender's AP, including the example +2000 AP Cut-in bonus. The calculator explains the order in which players act during a Contact.
 
-The calculator evaluates the supplied conditions and explains whether the winning action is available.
+### 7. English–Japanese Glossary
 
-### 6. Contact and AP Calculator
+Look up game terminology using the searchable glossary. It provides English explanations alongside Japanese terms, making it easier to connect the primer with Japanese cards and official documentation.
 
-Learn how character interactions work during a Contact.
+Additional explanations cover mechanics such as Refresh, MR cards, and card names containing multiple characters.
 
-The interactive calculator allows you to compare:
+### 8. Rules Quiz
 
-- Attacking character AP.
-- Defending character AP.
-- Additional AP from Cut-in effects.
-
-It then displays the resulting comparison and helps explain the interaction between attacking and defending characters.
-
-This is particularly useful for understanding one of the important combat-related mechanics of Conan TCG.
-
-### 7. Game Terminology and Glossary
-
-The primer includes a searchable glossary of important game terminology.
-
-It is designed to help players understand English explanations while recognizing the corresponding Japanese terminology printed in official materials.
-
-Features include:
-
-- Searchable game terms.
-- English explanations.
-- Corresponding Japanese terminology.
-- Additional explanations of specific mechanics, including Refresh and MR cards.
-
-This section is especially useful for players learning the game using Japanese-language official resources.
-
-### 8. Practice Game Against a Bot
-
-The project includes a simplified playable practice environment where you can play a complete game against a basic bot.
-
-Players can:
-
-- Select one of the available starter decks.
-- Choose the opponent's deck or leave it randomized.
-- Play characters and use available actions.
-- Follow the game progression.
-- Receive explanations when certain actions are unavailable.
-- Select characters in the Scene to inspect their abilities.
-
-The practice environment is intended to help beginners become familiar with the basic gameplay loop and the relationship between different game mechanics.
-
-**Important:** The bot is a simplified practice opponent, not a competitive AI. Some mechanics and card interactions are not fully implemented.
-
-### 9. Rules Quiz
-
-Test your understanding of the rules through an interactive quiz.
-
-The quiz provides an opportunity to review concepts covered throughout the primer and identify areas that may require further study.
-
-It can be used as a self-assessment tool after completing the tutorial.
+Review what you have learned with an interactive quiz. Use it to check your understanding of the rules and identify topics that may need another look.
 
 ---
 
-## 🎴 Supported Practice Decks
+## 🎴 Practice Decks
 
-The current practice environment includes six starter decks:
+The practice environment currently includes six starter decks:
 
-| Deck ID | Deck Name | Color |
+| Deck ID | Deck | Color |
 |---|---|---|
 | CT-D01 | Conan | Blue |
 | CT-D07 | Black Organization | Black |
 | CT-D02 | Heiji Hattori | Green |
-| CT-D03 | Kid the Phantom Thief | White |
-| CT-D04 | Akai | Red |
-| CT-D05 | Amuro | Yellow |
+| CT-D03 | Kaito Kid | White |
+| CT-D04 | Shuichi Akai | Red |
+| CT-D05 | Toru Amuro | Yellow |
 
-These decks provide different starting points for exploring the basic gameplay mechanics.
-
-Note that the practice game uses simplified card ability descriptions and does not reproduce every interaction in the official physical game.
+You can choose a deck for your side and select the bot's deck, or leave the opponent's selection random.
 
 ---
 
-## 🎯 Who Is This Project For?
+## 🚀 Getting Started
 
-This project is intended for several groups of players.
+### Use the primer directly
 
-**New Players**
+1. Open the [GitHub repository](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game).
+2. Open `index.html`.
+3. Download the file.
+4. Open it in a modern browser.
 
-If you have never played Conan TCG before, the primer provides a structured introduction to the game, from understanding the board to learning the turn sequence.
+### Run it locally
 
-**Existing Players**
+Clone the repository:
 
-Players who already understand the basics can use the interactive calculators, glossary, and individual rule explanations as quick references.
-
-**Players Learning from Japanese Materials**
-
-The glossary helps connect English explanations with Japanese terminology, making it easier to navigate the official Japanese rulebook.
-
-**Casual Practice**
-
-The simplified practice game offers an opportunity to explore basic gameplay without requiring another human player.
-
----
-
-## 📁 Project Structure
-
-The repository currently has a deliberately lightweight structure:
-
-```text
-Detective_Conan_Card_Game/
-│
-├── index.html
-│   └── Interactive learning and practice environment
-│
-├── README.md
-│   └── Project documentation
-│
-└── LICENSE
-    └── Apache License 2.0
+```bash
+git clone https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game.git
+cd Detective_Conan_Card_Game
 ```
 
-The interactive primer is implemented as a standalone HTML resource containing its own styling and JavaScript functionality.
+Open `index.html` in your browser.
 
----
+macOS:
 
-## 🛠 Installation and Local Usage
+```bash
+open index.html
+```
+
+Windows:
+
+```bash
+start "" index.html
+```
+
+Linux:
+
+```bash
+xdg-open index.html
+```
 
 ### Requirements
 
-- A modern web browser (Chrome, Firefox, Safari, or Edge).
-- An internet connection for externally hosted resources such as web fonts, if needed.
+- A modern browser such as Chrome, Firefox, Safari, or Edge.
+- An internet connection is recommended for externally hosted resources, including web fonts and card images.
 
-### Technologies
-
-The current project uses standard web technologies:
-
-| Technology | Purpose |
-|---|---|
-| HTML5 | Structure and content of the learning environment. |
-| CSS3 | Layout, responsive design, and visual presentation. |
-| JavaScript | Interactive learning tools, calculators, quiz, and practice game. |
-
-There is currently no backend server, database, or external JavaScript framework required to run the primer.
+The primer is a browser-based HTML resource. It does not require a backend server or a separate application installation.
 
 ---
 
-## ⚠️ Limitations and Accuracy
+## 🧰 Technology
 
-This project is an independent learning resource and should not be considered a replacement for the official rulebook.
+The project uses standard web technologies:
 
-The following limitations should be kept in mind:
+| Technology | Role |
+|---|---|
+| **HTML5** | Page structure and learning content. |
+| **CSS3** | Layout, responsive presentation, and visual styling. |
+| **JavaScript** | Interactive guides, calculators, quiz, and practice-game logic. |
 
-1. **Unofficial explanations:** Some English descriptions are simplified or paraphrased to make the rules easier to understand.
-2. **Practice game:** The bot and its gameplay logic are simplified. Not all official mechanics are implemented.
-3. **Card abilities:** Individual card text and special effects may introduce exceptions that are not covered by the general tutorial.
-4. **Rule updates:** The primer is based on the official Takara Tomy rule manual, Version 2.6, referenced during its development. Players should check for newer official rules and rulings.
-5. **Translation:** English terminology and explanations are provided as learning aids. They should not be treated as official translations.
+The page includes responsive layouts and supports light and dark color schemes.
 
-When a discrepancy occurs, always prioritize the latest official rules, official card text, and rulings published by Takara Tomy.
+---
+
+## ⚠️ Scope and Limitations
+
+Conan TCG Primer is a learning aid, not an official rules engine or a replacement for the physical game.
+
+- **Simplified bot:** The opponent uses basic logic and is not designed for competitive play.
+- **Limited card interactions:** The practice environment does not implement every official mechanic or card effect.
+- **Paraphrased card text:** Ability descriptions in the practice game are simplified. Refer to the physical card for exact wording.
+- **Specific simplifications:** The current practice implementation does not model Disguise, and cards placed on the bottom of the deck are not tracked in their exact order.
+- **Unofficial translations:** English glossary entries are learning aids and are not official translations.
+
+The primer references **Takara Tomy's Official Rule Manual, Version 2.6**. Rules, card text, and official rulings may change. When there is a discrepancy, always prioritize the latest official documentation and the text of the relevant card.
 
 ---
 
 ## 📚 Official Resources
 
-The following resources are useful for learning more about the game.
+For authoritative rules and product information, consult Takara Tomy's official resources:
 
-| Resource | Description |
-|---|---|
-| [Takara Tomy – Detective Conan Card Game](https://www.takaratomy.co.jp/products/conan-cardgame/) | Official game website. |
-| [Official Rule Manual (Japanese PDF)](https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf) | Official rules and gameplay procedures. |
-| [Official Card Game Information](https://www.takaratomy.co.jp/products/conan-cardgame/) | Official product and game information. |
+- [Detective Conan Card Game — Official Website](https://www.takaratomy.co.jp/products/conan-cardgame/)
+- [Official Rule Manual (Japanese PDF)](https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf)
 
-**Recommendation:** Use this repository alongside the official rule manual. The primer is intended to make the rules easier to learn, while the official manual remains the authoritative reference.
+The primer is designed to complement these materials and make the learning process more approachable.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Feedback and Contributions
 
-Contributions, suggestions, and corrections are welcome!
+Feedback from players is very welcome. If you find an incorrect explanation, encounter a bug, or have an idea for improving the primer, please share it.
 
-There are several ways to help improve this project:
+You can contribute by:
 
-- Report incorrect rule explanations.
-- Suggest improvements to the learning materials.
-- Identify missing game mechanics.
-- Report bugs in interactive calculators or the practice game.
-- Suggest additional starter decks.
-- Improve the English explanations and terminology.
-- Suggest new interactive tools for learning the game.
+- Reporting rule explanations that need correction.
+- Identifying missing mechanics or card interactions.
+- Reporting issues with the calculators, quiz, or practice game.
+- Suggesting additional practice decks.
+- Improving the English explanations and terminology.
 
-### Reporting an Issue
+To report a problem, open an [Issue](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game/issues) and describe it clearly. For rules-related reports, include the relevant official rule or card reference when possible.
 
-If you find an error or have a suggestion:
-
-1. Visit the [Issues](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game/issues) page.
-2. Create a new issue.
-3. Clearly describe the problem or proposed improvement.
-4. When applicable, include the relevant official rule or card reference.
-
-### Submitting a Contribution
-
-1. Fork this repository.
-2. Create a new branch.
-3. Make your changes.
-4. Test the HTML resource in a modern browser.
-5. Submit a Pull Request describing your changes.
-
-Please ensure that rule-related contributions are supported by official documentation or card text whenever possible.
+To contribute code or content, fork the repository, create a branch, make and test your changes, and submit a Pull Request.
 
 ---
 
 ## 📄 License
 
-This repository is distributed under the **Apache License 2.0**.
+This repository is distributed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE) for the full license text.
 
-See the [LICENSE](./LICENSE) file for the full license text.
-
-The license applies to the original materials in this repository, subject to applicable third-party intellectual property rights. It does not grant rights to Detective Conan characters, trademarks, card artwork, or other copyrighted materials owned by their respective rights holders.
+The license applies to the original materials in this repository and does not grant rights to third-party intellectual property, including Detective Conan characters, trademarks, card artwork, or other materials owned by their respective rights holders.
 
 ---
 
 ## ⚖️ Disclaimer
 
-This is an **unofficial, fan-created educational project**.
+This is an **unofficial, fan-made educational project**. It is not affiliated with, sponsored by, or endorsed by Takara Tomy, Shogakukan, TMS Entertainment, or any other Detective Conan rights holder.
 
-It is not affiliated with, sponsored by, or endorsed by Takara Tomy, Shogakukan, TMS Entertainment, or any other Detective Conan rights holder.
-
-Detective Conan, its characters, trademarks, card designs, and related intellectual property belong to their respective owners.
-
-This project is created solely for educational, informational, and fan-community purposes.
+Detective Conan, its characters, trademarks, card designs, and related intellectual property belong to their respective owners. This project is created for educational, informational, and fan-community purposes.
 
 ---
 
@@ -456,15 +276,12 @@ This project is created solely for educational, informational, and fan-community
 
 **Author:** Quoc Chuong Nguyen
 
-For questions, suggestions, corrections, or collaboration:
-
 - **GitHub:** [ChuongQuoc1413017](https://github.com/ChuongQuoc1413017)
 - **Repository:** [Detective Conan Card Game](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game)
+- **Email:** chuong.nguyenquoc1413017@gmail.com
 
 ---
 
 <p align="center">
-  <b>Enjoy learning and solving cases with the Detective Conan Card Game!</b>
-  <br>
-  <i>Elementary, my dear detective.</i> 🔎
+  <b>Happy investigating, and good luck solving your cases!</b> 🔎
 </p>
