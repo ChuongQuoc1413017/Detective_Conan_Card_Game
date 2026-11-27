@@ -75,13 +75,13 @@ function side(key,s,hl){
   var where={active:T("Awake","Đang thức"),sleep:T("Asleep 💤","Đang ngủ 💤"),file:T("In FILE","Ở Khu FILE")}[s.partner];
   var zones='<div class="dzones">'+
     '<div class="dz'+on("ev")+'"><small>🔎 '+T("Evidence","Chứng cứ")+'</small><strong>'+s.ev+' / '+need+'</strong></div>'+
-    '<div class="dz'+on("file")+'"><small>📁 FILE</small><strong>'+s.file+(s.partner==="file"?" + 1":"")+'</strong></div>'+
+    '<div class="dz'+on("file")+'"><small>📁 FILE</small><strong>'+s.file+(s.partner==="file"?" + 1":"")+'</strong>'+(s.partner==="file"?img(pid,"sleep"):"")+'</div>'+
     '<div class="dz'+on("case")+'"><small>📜 '+T("Case","Vụ án")+'</small><strong style="font-size:1rem">'+(s.phase?T("Solution ⭐","Giải đáp ⭐"):T("Case phase","Giai đoạn vụ án"))+'</strong></div>'+
     '<div class="dz'+on("partner")+'"><small>🤝 '+T("Partner","Cộng sự")+'</small><strong style="font-size:1rem">'+where+'</strong></div>'+
     '<div class="dz"><small>🂠 '+T("Deck","Bộ bài")+'</small><strong>'+s.deck+'</strong></div>'+
     '<div class="dz'+on("rem")+'"><small>🗑 '+T("Removed","Loại bỏ")+'</small><strong>'+s.rem+'</strong></div>'+
     '<div class="dz'+on("hand")+'"><small>✋ '+T("Hand","Tay")+'</small><strong>'+(key==="me"?s.hand.length:s.hand)+'</strong></div></div>';
-  var scene='<div class="drow'+on("scene")+'"><small>🎭 '+T("Scene","Hiện trường")+'</small>'+img(pid,s.partner==="active"?"":s.partner==="sleep"?"sleep":"")+s.scene.map(function(x){return img(x[0],x[1])}).join("")+'</div>';
+  var scene='<div class="drow'+on("scene")+'"><small>🎭 '+T("Scene","Hiện trường")+'</small>'+img(pid,s.partner==="active"?"":s.partner==="sleep"?"sleep":"away")+s.scene.map(function(x){return img(x[0],x[1])}).join("")+'</div>';
   var head='<b>'+(key==="me"?T("🙂 You (blue)","🙂 Bạn (xanh)"):T("🦹 Opponent (black)","🦹 Đối thủ (đen)"))+'</b>';
   if(key==="op")return '<div class="dside">'+head+zones+scene+'</div>';
   var hand='<div class="drow'+on("hand")+'"><small>✋ '+T("Your hand","Bài trên tay bạn")+'</small>'+s.hand.map(function(id){return img(id)}).join("")+'</div>';

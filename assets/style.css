@@ -383,3 +383,19 @@ footer{background:var(--bg);color:var(--fg);margin-top:24px;padding:16px clamp(1
 footer p{color:var(--fg)}
 footer a{color:var(--accent);font-weight:700}
 footer{margin-left:auto;margin-right:auto;max-width:1080px}
+
+/* ===== card positions: upright = active, sideways = sleeping, upside down = stunned ===== */
+.slot img.sl,.imgbtn img.pt,.filepartner img{transition:transform .35s}
+.slot.ch.sleep,.slot.ch.stun{opacity:1}
+.slot.ch.sleep img.sl{transform:rotate(90deg) scale(.716);filter:none}
+.slot.ch.stun img.sl{transform:rotate(180deg);filter:none}
+.slot.ch.sleep .s2::after{content:" 💤"}
+.slot.ch.stun .s2::after{content:" 💫"}
+.c-partner .imgbtn.pos-sleep,.filepartner{margin:0 16px;align-self:flex-start}
+.c-partner .imgbtn.pos-sleep img.pt,.filepartner img.pt{transform:rotate(90deg)}
+.c-partner .imgbtn.pos-file{opacity:.22;filter:grayscale(1);outline:2px dashed var(--brown-line);outline-offset:2px}
+.filepartner{display:block;width:max-content}
+.filepartner img.pt{display:block;height:110px;width:auto}
+.dc.away img{opacity:.22;filter:grayscale(1)}
+.dz .dc{margin:4px auto 0;width:56px}
+.dz .dc figcaption{display:none}

@@ -14,6 +14,12 @@ var NAMES=[
 ];
 function nmz(s){if(LANG!=="vi")return s;for(var i=0;i<NAMES.length;i++){if(s.indexOf(NAMES[i][0])>-1)s=s.split(NAMES[i][0]).join(NAMES[i][1])}return s}
 var EX={
+ "The top FILE card of the opponent moves to their hand. This is not a free draw: their FILE area is 1 smaller.":"Lá FILE trên cùng của đối thủ chuyển lên tay họ. Đây không phải rút bài miễn phí: Khu FILE của họ giảm 1 lá.",
+ "Use Next Hint?":"Dùng Gợi ý kế tiếp?",
+ "This is not a free draw. The top card of your FILE area moves to your hand, so your FILE area gets 1 smaller. Then you may play one card.":"Đây không phải rút bài miễn phí. Lá trên cùng Khu FILE chuyển lên tay bạn, nên Khu FILE giảm 1 lá. Sau đó bạn được đánh một lá.",
+ "Use Next Hint":"Dùng Gợi ý kế tiếp",
+ "What the opponent is doing":"Đối thủ đang làm gì",
+ "What the opponent did last turn":"Đối thủ đã làm gì ở lượt trước",
  /* interface */
  "Scene":"Hiện trường","Partner":"Cộng sự","Case":"Vụ án","Evidence area":"Khu chứng cứ","FILE area":"Khu FILE","Deck":"Bộ bài","Remove area":"Khu loại bỏ","cards left":"lá còn lại",
  "Your turn actions":"Hành động trong lượt của bạn","Back to deck choice":"Quay lại chọn bộ bài","Play again":"Chơi lại","Needed to solve the case":"Cần để phá án","Game log · view":"Nhật ký ván · xem",
@@ -229,6 +235,7 @@ RU(/^(.+) \(AP (-?\d+), (sleeping|stunned)$/,function(m){return m[0]});
 RU(/^Target of (.+)'s Action$/,function(m){return "Mục tiêu Hành động của "+m[1]});
 RU(/^(You|Opponent) redraws? (\d+) cards?\.$/,function(m){return S(m[1])+" rút lại "+m[2]+" lá."});
 RU(/^(You go|The opponent goes) first \(coin toss\)\. Case levels: first player (\d+) evidence, second player (\d+)(?: evidence)?\. Each side draws 5 cards\.$/,function(m){return (m[1]==="You go"?"Bạn đi trước":"Đối thủ đi trước")+" (tung đồng xu). Cấp vụ án: người đi trước cần "+m[2]+" chứng cứ, người đi sau cần "+m[3]+". Mỗi bên rút 5 lá."});
+RU(/^Opponent evidence: (\d+) → (\d+)\. Your evidence: (\d+) → (\d+)\.$/,function(m){return "Chứng cứ đối thủ: "+m[1]+" → "+m[2]+". Chứng cứ của bạn: "+m[3]+" → "+m[4]+"."});
 function tr(c){
   if(EX.hasOwnProperty(c))return EX[c];
   for(var i=0;i<RULES.length;i++){var m=RULES[i][0].exec(c);if(m)return RULES[i][1](m)}
@@ -361,7 +368,7 @@ var DECKS={
    {k:"shu",n:"Shukichi Haneda",lv:3,ap:2000,lp:1,tr:["shogi","akai"],x:3,cutin:2000,txt:"Cut-in: during a Contact, remove from hand to give +2000 AP."},
    {k:"mary",n:"Mary Sera",lv:6,ap:6000,lp:1,tr:["akai"],x:3,md:1,mary:1,txt:"Misdirect 1. Once per turn, when an Action by a character in your Scene against a case gains you evidence: you may remove 1 card from hand. If you do, gain 1 evidence."},
    {k:"mas3",n:"Masumi Sera",lv:3,ap:2000,lp:1,tr:["det","hs","akai"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
-   {k:"hondo",n:"Eisuke Hondo",lv:2,ap:1000,lp:1,tr:["cia"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"hondo",n:"Hidemi Hondo",lv:2,ap:1000,lp:1,tr:["cia"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
    {k:"jodie5",n:"Jodie Starling",lv:5,ap:5000,lp:1,tr:["fbi"],x:3,leave:"jodie",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: the opponent removes 1 card from hand. Flash: sleep up to 1 character."},
    {k:"jodie4",n:"Jodie Starling",lv:4,ap:4000,lp:1,tr:["fbi"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 red card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
    {k:"james",n:"James Black",lv:4,ap:4000,lp:1,tr:["fbi"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
@@ -448,7 +455,7 @@ function score(c){return c.lp*2+c.ap/2000+(c.swift?1:0)+(c.assault?0.6:0)+(c.cut
 function cardVal(c){if(c.t==="e")return c.ev==="snipeEv"?4:2.5;return score(c)+c.lv*0.1}
 function val(c,o){return lpOf(c)*2+apOf(c,o)/2000}
 function best(list){return list.slice().sort(function(a,b){return cardVal(b)-cardVal(a)})[0]}
-function log(t){G.log.unshift(t);if(G.log.length>40)G.log.pop();render()}
+function log(t){if(G.cur===1&&G.recap)G.recap.push(t);G.log.unshift(t);if(G.log.length>40)G.log.pop();render()}
 function tip(t){G.tip=t;render()}
 function mkChar(b){var c=Object.assign({},b);c.base=b;c.state="active";c.fresh=true;c.mod=0;c.lpm=0;c.usedTurn=false;c.tmpAssault=false;return c}
 function trName(c){var T={police:"Police",thief:"Phantom thief",magistrate:"Magistrate",suzuki:"Suzuki family",det:"Detective",mouri:"Mouri Detective Agency",boys:"Detective Boys",hs:"High schooler",karate:"Karate",inv:"Inventor",sci:"Scientist",org:"Black Organization",fbi:"FBI",akai:"Akai family",cia:"CIA",shogi:"Shogi player",mpd:"Metropolitan Police",koan:"Public Security"};return (c.tr||[]).map(function(x){return V(T[x])}).join(", ")}
@@ -571,8 +578,9 @@ async function onEnter(p,ch){
   }
 }
 async function megure(p,src){
-  var cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
-  if(!cands.length||!p.hand.length)return;
+  var ok=function(c){return c.t==="c"&&c.lv<=4};
+  var cands=p.rem.filter(ok);
+  if(!p.hand.length||(!cands.length&&!(isHuman(p.i)&&p.hand.some(ok))))return;
   var card=null;
   if(isHuman(p.i)){
     var v=await ask(src.n+": remove a card from hand?","If you do, enter a character of level 4 or less from your Remove area, asleep.",p.hand.map(function(c){return {l:c.n,v:c.uid}}).concat([{l:"Do not use",v:null}]));
@@ -587,7 +595,8 @@ async function megure(p,src){
   log(nm(p.i)+" remove"+(p.i?"s":"")+" "+card.n+" from hand to use "+src.n+".");
   cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
   if(!cands.length)return;
-  var cv=await pick(p.i,"Enter which character from your Remove area?","Level 4 or less, entering asleep.",cands.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}),best(cands).uid);
+  var cv=await pick(p.i,"Enter which character from your Remove area?","Level 4 or less, entering asleep.",cands.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}).concat([{l:"Do not enter",v:null}]),best(cands).uid);
+  if(cv===null)return;
   var b=cands.find(function(c){return c.uid===cv})||cands[0];
   p.rem=p.rem.filter(function(c){return c.uid!==b.uid});
   var e=await enterChar(p,b,{sleep:true});
@@ -595,17 +604,18 @@ async function megure(p,src){
 }
 async function kazuhaTrig(p,ch){
   var ks=p.scene.filter(function(k){return k.kazuha&&!k.trig&&(k===ch||ch.n==="Heiji Hattori")});
-  if(!ks.length)return;
-  var k=ks[0];k.trig=true;
+  for(var i=0;i<ks.length;i++){
+  ks[i].trig=true;
   var t=await pickChar(p.i,"Kazuha: sleep a character?","Once per turn, when she or Heiji Hattori enters your Scene. Up to 1 character, either side.",function(x){return x.state==="active"},"sleep");
   if(t){t.c.state="sleep";log(t.c.n+" falls asleep (Kazuha).")}
+  }
 }
 async function stunGain(p,src){
   if(!p.hand.length)return;
   var yes=await pick(p.i,src.n+": remove a card from hand?","If you do, stun up to 1 character and gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],true);
   if(!yes)return;
   await removeHandCard(p,src.n+": remove 1 card from hand");
-  var t=await pickChar(p.i,src.n+": stun which character?","Up to 1 character, either side. Stunned characters become sleeping instead of active in the Auto phase.",function(x){return x!==src&&x.state!=="stun"},"sleep");
+  var t=await pickChar(p.i,src.n+": stun which character?","Up to 1 character, either side. Stunned characters become sleeping instead of active in the Auto phase.",function(x){return x.state!=="stun"},"sleep");
   if(t){t.c.state="stun";log(t.c.n+" is stunned.")}
   p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 evidence.");
 }
@@ -799,7 +809,8 @@ async function useDecl(p,c){
     p.scene=p.scene.filter(function(x){return x!==c});p.deck=[c.base].concat(p.deck);
     log(nm(p.i)+" put"+(p.i?"s":"")+" Vermouth on the bottom of the deck.");
     var hs=p.hand.filter(function(x){return x.t==="c"&&x.lv<=5});
-    var hv=await pick(p.i,"Vermouth: enter a character","Level 5 or less. It gets Assault this turn.",hs.map(function(x){return {l:x.n+" (Lv "+x.lv+")",v:x.uid}}),best(hs).uid);
+    var hv=await pick(p.i,"Vermouth: enter a character","Level 5 or less. It gets Assault this turn.",hs.map(function(x){return {l:x.n+" (Lv "+x.lv+")",v:x.uid}}).concat([{l:"Do not enter",v:null}]),best(hs).uid);
+    if(hv===null)return;
     var b=hs.find(function(x){return x.uid===hv})||hs[0];
     await enterChar(p,b,{assault:true});
   }
@@ -886,7 +897,6 @@ async function doActionInner(pi,atk,tgt){
       if(mm.mary&&!mm.trig&&p.hand.length){
         var my=await pick(p.i,mm.n+": remove a card from hand?","If you do, gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],p.hand.length>2);
         if(my){mm.trig=true;await removeHandCard(p,mm.n+": remove 1 card from hand");p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 more evidence ("+mm.n+").")}
-        break;
       }
     }
   }
@@ -912,8 +922,8 @@ async function aiPlays(p){
     return false;
   }
   var played=await tryPlay();
-  if(!played&&p.file.length>=2&&p.scene.length<3){
-    p.hand.push(p.file.pop());p.usedHint=true;log("Opponent uses Next Hint.");
+  if(!played&&p.file.length>=2&&p.scene.length<3&&p.hand.some(function(c){return c.t==="c"&&c.lv<=cap(p)-1})){
+    p.hand.push(p.file.pop());p.usedHint=true;log("Opponent uses Next Hint.");log("The top FILE card of the opponent moves to their hand. This is not a free draw: their FILE area is 1 smaller.");
     var c2=p.hand.filter(function(c){return c.t==="c"&&c.lv<=cap(p)}).sort(function(a,b){return cardVal(b)-cardVal(a)})[0];
     if(c2)await playFromHand(p,c2,true);
   }
@@ -988,6 +998,8 @@ async function humanTurn(){
     if(a.t==="end"){await endTurnEffects(p);log("You end your turn.");G.tip="";return}
     if(a.t==="hand"){await humanPlay(p,a.v,false)}
     else if(a.t==="hint"){
+      var sure=await ask("Use Next Hint?","This is not a free draw. The top card of your FILE area moves to your hand, so your FILE area gets 1 smaller. Then you may play one card.",[{l:"Use Next Hint",v:true},{l:"Back",v:null}]);
+      if(!sure)continue;
       p.hand.push(p.file.pop());p.usedHint=true;
       log("You use Next Hint: the top FILE card goes to your hand.");
       G.hintMode=true;tip("Now play one card of level "+cap(p)+" or lower, or skip. The card you just took does not count toward the FILE total, but you may play it.");
@@ -1073,6 +1085,7 @@ async function startGame(keyA,keyB,sim){
         });
       }
       cleanup();
+      if(G.cur===1){G.recap=[];G.recapStart=[G.p[0].ev.length,G.p[1].ev.length]}
       autoPhase(p);
       if(G.sim||G.cur===1)await aiTurn(G.cur);
       else{G.tip="Main phase: play, deduce, take Actions, or end your turn.";await humanTurn()}
@@ -1095,10 +1108,10 @@ function mat(p,isMe){
   var last=p.rem[p.rem.length-1];
   var h='<div class="mat '+(isMe?"mat-me":"mat-op")+'"><div class="mono matlabel">'+(isMe?"You":"Opponent")+' · '+d.name+'</div>';
   h+='<div class="cell c-scene"><div class="mono">Scene</div><div class="slotrow">'+[0,1,2,3,4].map(function(n){return slot(p.scene[n],p)}).join("")+'</div></div>';
-  h+='<div class="cell c-partner"><div class="mono">Partner</div><button type="button" class="imgbtn" data-a="zoomp" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.partnerNo,"pt",d.partner.n)+'</button><b>'+d.partner.n+'</b><span>'+pt+' · LP '+d.partner.lp+'</span></div>';
+  h+='<div class="cell c-partner"><div class="mono">Partner</div><button type="button" class="imgbtn pos-'+p.partner+'" data-a="zoomp" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.partnerNo,"pt",d.partner.n)+'</button><b>'+d.partner.n+'</b><span>'+pt+' · LP '+d.partner.lp+'</span></div>';
   h+='<div class="cell c-case"><div class="mono">Case</div><button type="button" class="imgbtn" data-a="zoomk" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.cardNo,"cs",d.caze.n)+'</button><b>'+d.caze.n+'</b><span class="'+(p.phase==="solution"?"hotx":"")+'">'+(p.phase==="case"?"Case phase":"Solution phase")+'</span></div>';
   h+='<div class="cell c-evidence"><div class="mono">Evidence area</div><div class="big">'+p.ev.length+' / '+p.lv+'</div><div class="pips">'+pips+'</div><span>Needed to solve the case</span></div>';
-  h+='<div class="cell c-file"><div class="mono">FILE area</div><div class="big">'+p.file.length+(p.partner==="file"?" + 1":"")+'</div><span>Level cap '+cap(p)+(p.partner==="file"?" (partner counts)":"")+'</span></div>';
+  h+='<div class="cell c-file"><div class="mono">FILE area</div><div class="big">'+p.file.length+(p.partner==="file"?" + 1":"")+'</div><span>Level cap '+cap(p)+(p.partner==="file"?" (partner counts)":"")+'</span>'+(p.partner==="file"?'<span class="filepartner">'+cimg(d.set,d.partnerNo,"pt",d.partner.n)+'</span>':'')+'</div>';
   h+='<div class="cell c-deck"><div class="mono">Deck</div><div class="big">'+p.deck.length+'</div><span>cards left</span></div>';
   h+='<div class="cell c-remove"><div class="mono">Remove area</div><button type="button" class="chip" data-a="rem" data-v="'+p.i+'">'+p.rem.length+' card'+(p.rem.length===1?"":"s")+' · view list</button>'+(last?'<span class="lastrem">Latest: '+last.n+'</span>':'')+(isMe?'<button type="button" class="chip" data-a="log">Game log · view</button>':'')+'</div>';
   if(isMe)h+='<div class="cell c-hand"><div class="mono">Hand ('+p.hand.length+')</div><div class="hand">'+p.hand.map(function(c){return handCard(c,p)}).join("")+'</div></div><div class="cell c-act"><div class="mono">Your turn actions</div>'+controls(p)+'<div class="action-prompt-slot"></div>'+((G.over||G.act)?'<div><button class="btn ghost" data-a="menu">'+(G.over?"Play again":"Back to deck choice")+'</button></div>':'')+'</div>';
@@ -1151,6 +1164,7 @@ function render0(){
   }
   var me=G.p[0],op=G.p[1],h="";
   if(G.turn>0)h+='<div class="turnbar">Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</div>';
+  if(G.recap&&G.recap.length)h+='<div class="note recap" style="margin:0"><b>'+(G.cur===1?"What the opponent is doing":"What the opponent did last turn")+'</b><ol class="tight" style="margin:6px 0">'+G.recap.map(function(l){return "<li>"+l+"</li>"}).join("")+'</ol><span>'+"Opponent evidence: "+G.recapStart[1]+" → "+op.ev.length+". Your evidence: "+G.recapStart[0]+" → "+me.ev.length+"."+'</span></div>';
   h+=mat(op,false)+mat(me,true);
   h+='<div class="under">';
   h+='<div class="mid">';
