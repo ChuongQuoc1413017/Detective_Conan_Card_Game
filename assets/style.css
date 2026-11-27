@@ -377,3 +377,9 @@ main.wrap{max-width:1080px}
 footer{max-width:1080px;margin-left:auto;margin-right:auto;border-top:0;color:#f6e2c4}
 footer a{color:#ffd9a0}
 .hero{box-shadow:0 0 0 4px var(--brown-line),0 8px 0 4px var(--line)}
+
+/* footer: dark text on a cream card so it reads on the brick wall */
+footer{background:var(--bg);color:var(--fg);margin-top:24px;padding:16px clamp(12px,3vw,32px) 8px;border:4px solid #2e190c;border-radius:20px;box-shadow:0 0 0 3px #a3673c;font-size:.95rem}
+footer p{color:var(--fg)}
+footer a{color:var(--accent);font-weight:700}
+footer{margin-left:auto;margin-right:auto;max-width:1080px}
