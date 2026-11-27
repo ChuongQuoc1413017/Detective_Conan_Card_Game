@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deck builder · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="Deck builder · Conan TCG" data-title-vi="Xếp bộ bài · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" data-vi="🎮 Chơi thử">🎮 Play</a><a href="deck.html" aria-current="page" data-vi="🃏 Bộ bài">🃏 Deck</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap deckpage">
+<div class="pagehead"><h1 data-vi="Xếp bộ bài của bạn 🃏">Build your deck 🃏</h1><p data-vi="Chọn 1 Cộng sự, 1 Vụ án và đúng 40 lá Nhân vật hoặc Sự kiện (tối đa 3 bản cho mỗi lá). Bộ bài được tự động lưu trong trình duyệt này.">Pick 1 Partner, 1 Case and exactly 40 Character or Event cards (at most 3 copies of each). Your deck is saved in this browser.</p></div>
+<div class="builder">
+<section class="browse" aria-label="Cards">
+<div class="filters">
+<label class="wide"><span data-vi="📦 Hộp bài">📦 Box</span><select id="fbox"></select></label>
+<label class="wide"><span data-vi="🔍 Tìm trong hộp">🔍 Search in this box</span><input type="search" id="fq" autocomplete="off"></label>
+<label><span data-vi="Loại">Type</span><select id="ftype"></select></label>
+<label><span data-vi="Màu">Color</span><select id="fcolor"></select></label>
+<label><span data-vi="Cấp">Level</span><select id="flv"></select></label>
+<button type="button" class="btn ghost" id="freset" data-vi="Xóa lọc">Reset</button>
+</div>
+<p class="why"><b id="count" aria-live="polite"></b> · <span id="source"></span></p>
+<div id="results" class="cardgrid"></div>
+<p style="text-align:center"><button type="button" class="btn" id="more" hidden data-vi="Xem thêm">Show more</button></p>
+</section>
+<aside class="panel deckpanel" id="deckpanel">
+<h2 data-vi="Bộ bài của bạn">Your deck</h2>
+<p class="why" id="msg" role="status"></p>
+<div id="deck"></div>
+<div class="pbtns"><button type="button" class="btn" id="copy" data-vi="📋 Sao chép">📋 Copy list</button><button type="button" class="btn ghost" id="clear" data-vi="Xóa hết">Clear</button></div>
+<details class="more" id="iobox"><summary data-vi="Nhập / xuất danh sách">Import / export list</summary><div class="inside"><textarea id="io" rows="8" aria-label="Deck list" placeholder="1 D01001&#10;3 D01002"></textarea><button type="button" class="btn ghost" id="import" data-vi="Nhập (thay bộ hiện tại)">Import (replaces deck)</button></div></details>
+</aside>
+</div>
+<button type="button" class="btn" id="jump"></button>
+<dialog id="view"><div id="viewbody"></div></dialog>
+<div class="pager"><a class="btn ghost" href="practice.html" data-vi="◀ 🎮 Chơi thử">◀ 🎮 Play</a><a class="btn next" href="quiz.html" data-vi="⭐ Đố vui ▶">⭐ Quiz ▶</a></div>
+</main>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+<script src="assets/site.js"></script>
+<script src="assets/cards-data.js"></script>
+<script src="assets/deck.js"></script>
+
+</body>
+</html>

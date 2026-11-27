@@ -57,6 +57,7 @@ python3 -m http.server 8765
 | 4 | `demo.html` | Watch a whole match, one step at a time. |
 | 5 | `practice.html` | Play against the bot. |
 | 6 | `quiz.html` | Test what you remember. |
+| Anytime | `deck.html` | Search cards and build your own deck. |
 | Anytime | `words.html` | Search the English and Japanese glossary (Vietnamese in VI mode). |
 | Anytime | `about.html` | Contact the author. |
 
@@ -78,11 +79,29 @@ The demo is a teaching story: the card order is chosen in advance and some card 
 
 ### 🎮 Practice Game
 
-Play a simplified match against a basic bot.
+Play a simplified match against a bot with three levels.
+
+| Bot level | Difficulty | How it plays |
+|---|---|---|
+| Novice | Easy | Plays at random and often misses chances. |
+| Sleuth | Normal | Plays its strongest cards and mostly gathers evidence. The default. |
+| Master Sleuth | Hard | Attacks your evidence, picks off sleeping characters and guards with care. |
+
+The bot never looks at your hand or either deck, and your chosen level is remembered in your browser.
 
 - Choose one of six starter decks, and pick the bot's deck or leave it random.
 - Unavailable moves are greyed out, with the reason shown.
 - Inspect cards, read the game log and view the Remove area.
+
+### 🃏 Deck Builder
+
+Build a 40-card deck from the full card list.
+
+- Choose a box (booster, starter deck or promo), then search inside it by name, card number, trait or ability word. Filter by type, color and level.
+- The page checks the building rules: 1 Partner, 1 Case, exactly 40 Character or Event cards, and at most 3 copies of the same card ID (a few cards allow more). It also warns about cards that do not match the Case color.
+- The deck is saved in your browser, and can be copied out or imported as a text list.
+
+Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is replaced. Card images load from the official website, so they need an internet connection. Card text is in Japanese. Decks built here cannot yet be used in the practice game.
 
 ### 🧮 Rule Helpers
 
@@ -122,11 +141,13 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 ```text
 .
 ├── index.html, board.html, turn.html, actions.html, demo.html,
-│   practice.html, quiz.html, words.html, about.html
+│   deck.html, practice.html, quiz.html, words.html, about.html
 ├── assets/
 │   ├── style.css      Shared light brown brick theme
 │   ├── site.js        Language switch, guides, helpers, glossary and quiz
-│   └── demo.js        Demo match steps and table
+│   ├── demo.js        Demo match steps and table
+│   ├── deck.js        Deck builder
+│   └── cards-data.js  Saved copy of the card list
 ├── practice.js        Practice game and bot
 ├── Card_List/         Card images, one folder per deck
 └── logo.jpeg          Site logo and browser tab icon
@@ -144,7 +165,7 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 
 This is a learning aid, not an official rules engine or a replacement for the physical game.
 
-- **Simplified bot:** the opponent uses basic logic and is not designed for competitive play.
+- **Simplified bot:** even Master Sleuth follows fixed rules of thumb and does not plan several turns ahead.
 - **Limited card interactions:** not every official mechanic or card effect is implemented.
 - **Practice simplifications:** Disguise is not modelled, and cards put on the bottom of the deck are not kept in exact order.
 - **Paraphrased card text:** check the physical card for exact wording.
