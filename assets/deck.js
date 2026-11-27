@@ -14,19 +14,31 @@ var deck={partner:null,caze:null,list:{}};
 try{var sv=JSON.parse(localStorage.getItem(KEY));if(sv&&typeof sv.list==="object")deck={partner:sv.partner||null,caze:sv.caze||null,list:sv.list||{}}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(deck))}catch(e){}}
 
-function norm(s){return String(s||"").normalize("NFKC").toLowerCase().replace(/ou/g,"o").replace(/uu/g,"u")}
+/* lower case, without Vietnamese accents (Japanese marks are kept) and long-vowel spellings */
+function norm(s){return String(s||"").normalize("NFKC").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").normalize("NFC").replace(/đ/g,"d").replace(/ou/g,"o").replace(/uu/g,"u")}
+var TR=window.ConanTr;
 function prep(raw,names){
   var colors=String(raw.color||"").split("").filter(function(ch){return COLORS.some(function(c){return c[0]===ch})});
   var img=String(raw.image_url||"");
   var c={num:String(raw.card_num),id:String(raw.card_id||raw.card_num),jp:raw.title||"",box:raw.package_code||"",rarity:raw.rarity||"",colors:colors,type:raw.type||"",
     cost:raw.cost,ap:raw.ap,lp:raw.lp,traits:raw.category1||"",text:raw.feature||"",hira:raw.hirameki||"",cut:raw.cut_in||"",
     img:/^https:\/\//.test(img)?img:"",limit:+raw.rcp_limit||3};
-  c.name=names[c.jp]||raw.title_romaji||c.jp;
-  c.find=norm([c.num,c.name,c.jp,raw.title_romaji,c.traits,c.text,c.hira,c.cut].join(" "));
+  var base=names[c.jp]||raw.title_romaji||c.jp, all=[c.num,c.jp,raw.title_romaji,base,c.traits,c.text,c.hira,c.cut];
+  c.tr={};
+  ["en","vi"].forEach(function(l){
+    var t=c.tr[l]={name:(TR&&TR.name(c.jp,l))||base,traits:(TR&&c.traits&&TR.name(c.traits,l))||c.traits};
+    ["text","hira","cut"].forEach(function(k){t[k]=TR&&c[k]?TR.text(c[k],l):c[k]});
+    all.push(t.name,t.traits,t.text,t.hira,t.cut);
+  });
+  c.find=norm(all.join(" "));
+  c.manual=window.ConanFx&&(c.type==="キャラ"||c.type==="イベント"||c.type==="事件")?ConanFx.parse(raw).missing.length:0;
   return c;
 }
+function setNames(){cards.forEach(function(c){c.name=c.tr[LANG].name})}
+function boxName(p){return (TR&&TR.box(p.package_code,LANG))||String(p.package_name||"").replace(p.package_code,"").trim()}
 function use(data){
   cards=data.cards.map(function(r){return prep(r,data.names||{})});
+  setNames();
   byNum={};cards.forEach(function(c){byNum[c.num]=c});
   boxes=data.packages.filter(function(p){return cards.some(function(c){return c.box===p.package_code})});
   savedOn=data.date;
@@ -48,7 +60,7 @@ function filtered(){
 function opt(v,l){return '<option value="'+esc(v)+'">'+esc(l)+'</option>'}
 function fillSelect(sel,html){var el=$(sel),v=el.value;el.innerHTML=html;el.value=v;if(el.selectedIndex<0)el.selectedIndex=0}
 function fillBoxes(){
-  fillSelect("#fbox",opt("",T("All boxes","Tất cả các hộp"))+boxes.map(function(p){return opt(p.package_code,p.package_code+" · "+String(p.package_name||"").replace(p.package_code,"").trim())}).join(""));
+  fillSelect("#fbox",opt("",T("All boxes","Tất cả các hộp"))+boxes.map(function(p){return opt(p.package_code,p.package_code+" · "+boxName(p))}).join(""));
   fillSelect("#ftype",opt("",T("All types","Mọi loại"))+Object.keys(TYPES).map(function(k){return opt(k,T(TYPES[k][0],TYPES[k][1]))}).join(""));
   fillSelect("#fcolor",opt("",T("All colors","Mọi màu"))+COLORS.map(function(c){return opt(c[0],T(c[2],c[3]))}).join(""));
   fillSelect("#flv",opt("",T("All levels","Mọi cấp"))+[1,2,3,4,5,6,7,8,9].map(function(n){return opt(n,T("Level ","Cấp ")+n)}).join(""));
@@ -118,6 +130,10 @@ function renderDeck(){
   if(n>DECK_SIZE)todo.push(T("Remove "+(n-DECK_SIZE)+" cards.","Bớt "+(n-DECK_SIZE)+" lá."));
   var seen={};main.forEach(function(c){if(!seen[c.id]&&copiesById(c.id)>c.limit){seen[c.id]=1;todo.push(T("Too many copies of "+c.name+" (max "+c.limit+").","Quá nhiều bản "+c.name+" (tối đa "+c.limit+")."))}});
   h+=todo.length?'<ul class="tight todo">'+todo.map(function(t){return '<li>'+esc(t)+'</li>'}).join("")+'</ul>':'<p class="note ready">'+T("✅ Your deck follows the building rules.","✅ Bộ bài đúng luật xây dựng.")+'</p>';
+  if(p&&k&&n===DECK_SIZE){
+    var full=main.reduce(function(s,c){return s+(c.manual?0:deck.list[c.num])},0);
+    h+='<p><a class="btn" href="practice.html">'+T("🎮 Play this deck","🎮 Chơi bộ bài này")+'</a></p><p class="why">'+T(full+" of 40 cards are fully automated against the bot.",full+"/40 lá được tự động hóa đầy đủ khi đấu bot.")+'</p>';
+  }
   if(k){
     var off=main.reduce(function(s,c){return s+(c.colors.some(function(x){return k.colors.indexOf(x)>-1})?0:deck.list[c.num])},0);
     if(off)h+='<p class="note">'+esc(T("⚠️ "+off+" card(s) do not share a color with your Case. They are allowed in the deck, but you cannot play them from hand or Next Hint.","⚠️ "+off+" lá không cùng màu với Vụ án. Được phép bỏ vào bộ bài, nhưng không thể chơi từ tay hay bằng Next Hint."))+'</p>';
@@ -141,11 +157,14 @@ function renderAll(){renderResults();renderDeck()}
 
 function view(num){
   var c=byNum[num];if(!c)return;
-  var why=blocked(c),block=function(t,v){return v?'<p><b>'+t+'</b><br>'+esc(v).replace(/\n/g,"<br>")+'</p>':''};
+  var why=blocked(c),t=c.tr[LANG],block=function(h,v){return v?'<p><b>'+h+'</b><br>'+esc(v).replace(/\n/g,"<br>")+'</p>':''};
+  var ja=block("能力",c.text)+block("ヒラメキ",c.hira)+block("カットイン",c.cut);
   $("#viewbody").innerHTML=pic(c,"big2")+'<div><h3>'+dots(c)+esc(c.name)+'</h3><p lang="ja">'+esc(c.jp)+'</p><p>'+esc(c.num)+' · '+esc(c.rarity)+' · '+esc(c.box)+'<br>'+esc(stats(c))+'</p>'+
-    (c.traits?'<p lang="ja">'+esc(c.traits)+'</p>':'')+
-    '<div lang="ja">'+block("能力",c.text)+block("ヒラメキ",c.hira)+block("カットイン",c.cut)+'</div>'+
-    '<small>'+T("Card text is shown in the original Japanese.","Nội dung lá bài hiển thị bằng tiếng Nhật gốc.")+'</small>'+
+    (c.traits?'<p>'+esc(t.traits)+'</p>':'')+
+    block(T("Ability","Năng lực"),t.text)+block(T("Flash of insight","Tia linh cảm"),t.hira)+block("Cut-in",t.cut)+
+    (ja?'<details class="more"><summary>'+T("Original Japanese","Bản gốc tiếng Nhật")+'</summary><div class="inside" lang="ja">'+ja+'</div></details>':'')+
+    (c.manual?'<p class="note">'+T("⚠️ In the practice game, some text on this card is not automated and does nothing.","⚠️ Trong ván chơi thử, một phần chữ trên lá này chưa được tự động hóa và không có tác dụng.")+'</p>':'')+
+    '<small>'+T("Unofficial translation. The Japanese card text is the correct one.","Bản dịch không chính thức. Chữ tiếng Nhật trên lá bài mới là chuẩn.")+'</small>'+
     '<div class="pbtns"><button type="button" class="btn" data-add="'+esc(c.num)+'" data-close'+(why?' disabled':'')+'>'+T("+ Add to deck","+ Thêm vào bộ")+'</button><button type="button" class="btn ghost" data-close>'+T("Close","Đóng")+'</button></div>'+(why?'<p class="why">'+esc(why)+'</p>':'')+'</div>';
   $("#view").showModal();
 }
@@ -199,7 +218,7 @@ $("#clear").addEventListener("click",function(){
   if(!confirm(T("Remove every card from this deck?","Xóa toàn bộ lá trong bộ bài này?")))return;
   deck={partner:null,caze:null,list:{}};save();renderAll();say(T("Deck cleared.","Đã xóa bộ bài."));
 });
-document.addEventListener("conan-lang",function(e){LANG=e.detail&&e.detail.lang==="vi"?"vi":"en";say("");fillBoxes();renderAll()});
+document.addEventListener("conan-lang",function(e){LANG=e.detail&&e.detail.lang==="vi"?"vi":"en";say("");$("#view").close();setNames();fillBoxes();renderAll()});
 
 if(window.CONAN_CARDS)use(window.CONAN_CARDS);else $("#count").textContent=T("The card list file (assets/cards-data.js) is missing.","Thiếu tệp danh sách lá bài (assets/cards-data.js).");
 })();

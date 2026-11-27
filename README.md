@@ -89,7 +89,8 @@ Play a simplified match against a bot with three levels.
 
 The bot never looks at your hand or either deck, and your chosen level is remembered in your browser.
 
-- Choose one of six starter decks, and pick the bot's deck or leave it random.
+- Choose one of six starter decks or your own deck from the Deck page, and pick the bot's deck or leave it random.
+- **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 70% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. MR cards and abilities used from the Partner area are not supported.
 - Unavailable moves are greyed out, with the reason shown.
 - Inspect cards, read the game log and view the Remove area.
 
@@ -101,7 +102,7 @@ Build a 40-card deck from the full card list.
 - The page checks the building rules: 1 Partner, 1 Case, exactly 40 Character or Event cards, and at most 3 copies of the same card ID (a few cards allow more). It also warns about cards that do not match the Case color.
 - The deck is saved in your browser, and can be copied out or imported as a text list.
 
-Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is replaced. Card images load from the official website, so they need an internet connection. Card text is in Japanese. Decks built here cannot yet be used in the practice game.
+Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is replaced. Card images load from the official website, so they need an internet connection. Card names, traits, box names and ability text follow the EN / VI switch, and the Japanese original can be opened on each card. The translations are unofficial; they are stored in `assets/cards-i18n.js`, and any new text without a translation shows in Japanese. A complete deck can be played against the bot (see below).
 
 **Card database credit:** the card data belongs to the database owned by **Phu Thanh** (Phú Thành): [conan-tcg.vercel.app](https://conan-tcg.vercel.app/).
 
@@ -149,7 +150,10 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 │   ├── site.js        Language switch, guides, helpers, glossary and quiz
 │   ├── demo.js        Demo match steps and table
 │   ├── deck.js        Deck builder
-│   └── cards-data.js  Saved copy of the card list
+│   ├── cards-data.js  Saved copy of the card list
+│   ├── cards-i18n.js  English and Vietnamese card text
+│   ├── cards-translate.js  Applies the translations
+│   └── card-effects.js  Reads card text into game effects
 ├── practice.js        Practice game and bot
 ├── Card_List/         Card images, one folder per deck
 └── logo.jpeg          Site logo and browser tab icon
