@@ -2,6 +2,11 @@
 (function(){
 var root=document.getElementById("pgame"); if(!root) return;
 var OVER={over:true}, G=null, UID=0, OPP="random", lastAsk=null, OPP_HAND_REVEALED=false;
+var BOTS={easy:{name:"Novice",tag:"Easy",desc:"Plays at random and often misses chances. Good for your first games."},
+  normal:{name:"Sleuth",tag:"Normal",desc:"Plays its strongest cards and mostly gathers evidence."},
+  hard:{name:"Master Sleuth",tag:"Hard",desc:"Attacks your evidence, picks off sleeping characters and guards with care."}};
+var BOT="normal";
+try{var savedBot=localStorage.getItem("conanBot");if(BOTS[savedBot])BOT=savedBot}catch(e){}
 /* ===== Language (EN / VI) for the practice game ===== */
 var LANG=(function(){try{var s=localStorage.getItem("conanLang");if(s==="vi"||s==="en")return s}catch(e){}return String(navigator.language||"en").toLowerCase().indexOf("vi")===0?"vi":"en"})();
 var SUBJ={"You":"Bạn","Opponent":"Đối thủ","you":"bạn","opponent":"đối thủ"};
@@ -26,6 +31,10 @@ var EX={
  "Revealed by card effect":"Được lật bởi hiệu ứng của lá bài","Finish reveal":"Xong lật bài","Hidden":"Lá bài","card":"ẩn","Hidden until a reveal effect resolves.":"Ẩn cho đến khi một hiệu ứng lật bài được thực hiện.",
  "Case phase":"Giai đoạn vụ án","Solution phase":"Giai đoạn giải đáp","Active":"Hoạt động","Sleeping":"Đang ngủ","Stunned":"Bị choáng","Just arrived":"Vừa vào","In FILE area":"Trong Khu FILE","In hand":"Trên tay",
  "Random":"Ngẫu nhiên","Bot plays":"Bot chơi bộ",
+ "Bot level":"Độ khó","Novice":"Tân binh","Sleuth":"Thám tử","Master Sleuth":"Thám tử bậc thầy","Easy":"Dễ","Normal":"Thường","Hard":"Khó","Bot:":"Bot:",
+ "Plays at random and often misses chances. Good for your first games.":"Chơi ngẫu nhiên và hay bỏ lỡ cơ hội. Hợp cho những ván đầu tiên.",
+ "Plays its strongest cards and mostly gathers evidence.":"Dùng các lá mạnh nhất và chủ yếu lo thu chứng cứ.",
+ "Attacks your evidence, picks off sleeping characters and guards with care.":"Tấn công chứng cứ của bạn, hạ các nhân vật đang ngủ và đỡ đòn cẩn thận.",
  "Card images were not found. To see them, keep this HTML file next to your":"Không tìm thấy ảnh lá bài. Để xem ảnh, hãy để tệp HTML này cạnh thư mục",
  "folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.":"(chứa các thư mục con CT-D01 đến CT-D07) và mở nó từ đó. Trò chơi vẫn chạy được khi không có ảnh.",
  "Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.":"Chọn bộ bài của bạn và bộ bài mà bot dùng. Bạn đi trước hoặc đi sau bằng tung đồng xu, bắt đầu với 5 lá và một lần rút lại, và thắng bằng cách thu đủ chứng cứ rồi phá án ở giai đoạn giải đáp.",
@@ -437,6 +446,9 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j
 function sleep(ms){return (G&&G.sim)?Promise.resolve():new Promise(function(r){setTimeout(r,ms)})}
 function nm(i){return i?"Opponent":"You"}
 function isHuman(pi){return !G.sim&&pi===0}
+/* bot levels: easy = Novice, normal = Sleuth, hard = Master Sleuth. No level looks at hidden cards. */
+function lvlOf(pi){return (G&&G.bot&&G.bot[pi])||"normal"}
+function chance(n){return rnd(100)<n}
 function mkDeck(def){var d=[];def.cards.forEach(function(k){for(var i=0;i<k.x;i++)d.push(Object.assign({t:"c"},k,{uid:++UID}))});return shuffle(d)}
 function mkP(i,def){return {i:i,def:def,deck:mkDeck(def),hand:[],file:[],ev:[],rem:[],scene:[],partner:"active",phase:"case",lv:7,usedHand:false,usedHint:false}}
 function cap(p){return p.file.length+(p.partner==="file"?1:0)}
@@ -502,6 +514,7 @@ async function pickChar(pi,title,note,filter,mode){
     else if(mode==="boost"){pool=own.filter(function(x){return canAct(x.c)||canDeduce(x.c)});if(!pool.length)pool=own}
     pool.sort(function(a,b){return val(b.c,b.o)-val(a.c,a.o)});
     pref=pool.length?pool[0].c.uid:null;
+    if(lvlOf(pi)==="easy"&&pool.length)pref=chance(20)?null:pool[rnd(pool.length)].c.uid;
   }
   var v=await pick(pi,title,note,opts,pref);
   if(v===null||v===undefined)return null;
@@ -738,7 +751,7 @@ async function deduce(p,src){
   if(src!=="partner"&&src.hakdraw&&!src.trig){src.trig=true;draw(p,1);log(nm(p.i)+" draw"+(p.i?"s":"")+" 1 card (Hakuba).")}
   var md=o.scene.filter(function(c){return c.state==="active"&&c.md});
   while(md.length&&lp>0){
-    var v=await pick(o.i,"Misdirect?","Sleep a character with Misdirect to give the deducing card LP -"+md[0].md+" until the deduction ends. Current LP: "+lp+".",md.map(function(c){return {l:c.n+" (Misdirect "+c.md+")",v:c.uid}}).concat([{l:"No",v:null}]),md[0].uid);
+    var v=await pick(o.i,"Misdirect?","Sleep a character with Misdirect to give the deducing card LP -"+md[0].md+" until the deduction ends. Current LP: "+lp+".",md.map(function(c){return {l:c.n+" (Misdirect "+c.md+")",v:c.uid}}).concat([{l:"No",v:null}]),lvlOf(o.i)==="easy"&&chance(60)?null:md[0].uid);
     if(v===null||v===undefined)break;
     var m=md.find(function(c){return c.uid===v});if(!m)break;
     m.state="sleep";lp-=m.md;log(nm(o.i)+" use"+(o.i?"s":"")+" Misdirect with "+m.n+" (LP now "+Math.max(lp,0)+").");
@@ -837,7 +850,7 @@ async function contact(pi,atk,def){
       card=v===null?null:cis.find(function(c){return c.uid===v});
     }else{
       await sleep(500);
-      card=cis.slice().sort(function(x,y){return x.cutin-y.cutin}).find(function(c){return mineA?(my<their&&my+c.cutin>=their):(their>=my&&my+c.cutin>their)})||null;
+      card=lvlOf(pl)==="easy"&&chance(70)?null:cis.slice().sort(function(x,y){return x.cutin-y.cutin}).find(function(c){return mineA?(my<their&&my+c.cutin>=their):(their>=my&&my+c.cutin>their)})||null;
     }
     if(card){
       G.p[pl].hand=G.p[pl].hand.filter(function(c){return c.uid!==card.uid});G.p[pl].rem.push(card);
@@ -864,6 +877,8 @@ async function chooseGuard(dpi,atk,tgt,guards,pi){
     var v=await ask("Opponent's "+atk.n+" (AP "+apOf(atk,p)+") attacks "+what+". Guard?","Guarding puts the guard to sleep and starts a Contact with it. The guard is removed if the attacker's AP is equal or higher. Any active character can guard, even one that just arrived.",opts);
     return v===null?null:guards.find(function(c){return c.uid===v});
   }
+  if(lvlOf(dpi)==="easy")return chance(20)?guards[rnd(guards.length)]:null;
+  if(lvlOf(dpi)==="hard")return hardGuard(p,o,atk,tgt,guards);
   var s=guards.filter(function(c){return apOf(c,o)>apOf(atk,p)}).sort(function(a,b){return apOf(a,o)-apOf(b,o)})[0];
   if(s)return s;
   if(tgt.kind==="case"&&rnd(10)<3)return guards.slice().sort(function(a,b){return val(a,o)-val(b,o)})[0];
@@ -959,7 +974,137 @@ async function endTurnEffects(p){
     if(yes){await removeHandCard(p,c.n+": remove 1 card from hand");activate(c);log(c.n+" is "+(c.state==="active"?"active again.":"now sleeping."))}
   }
 }
+/* ---------- Novice: plays at random and misses chances ---------- */
+async function easyTurn(pi){
+  var p=G.p[pi],o=G.p[1-pi];
+  await sleep(700);
+  await aiSolve(p);
+  var cands=p.hand.filter(function(c){
+    if(c.lv>cap(p))return false;
+    if(c.t==="c")return p.scene.length<5;
+    return c.ev==="snipeEv"?o.scene.some(function(x){return apOf(x,o)<=8000}):p.scene.length<5;
+  });
+  if(cands.length&&!chance(25)){await playFromHand(p,cands[rnd(cands.length)],false);await sleep(600)}
+  var ds=p.scene.filter(function(c){return c.decl==="ran6"});
+  for(var d=0;d<ds.length;d++){if(p.scene.indexOf(ds[d])>-1&&!declReason(p,ds[d])&&chance(35))await useDecl(p,ds[d])}
+  if(p.phase==="case"&&p.partner==="active"&&p.file.length>=6&&chance(55)){assist(p);await sleep(600)}
+  var units=p.scene.filter(function(c){return canAct(c)||canDeduce(c)});
+  for(var i=0;i<units.length;i++){
+    var c=units[i];
+    if(c.state!=="active"||p.scene.indexOf(c)<0||chance(25))continue;
+    var sl=o.scene.filter(isDown);
+    if(canAct(c)&&sl.length&&chance(25))await doAction(pi,c,{kind:"char",c:sl[rnd(sl.length)]});
+    else if(canAct(c)&&o.ev.length>0&&chance(15))await doAction(pi,c,{kind:"case"});
+    else if(canDeduce(c))await deduce(p,c);
+    await sleep(650);
+  }
+  await aiSolve(p);
+  if(p.partner==="active"&&chance(75)){await deduce(p,"partner");await sleep(500)}
+  await endTurnEffects(p);
+  log(nm(pi)+" end"+(pi?"s":"")+" the turn.");
+}
+
+/* ---------- Master Sleuth: values removal, evidence swings and guarding ---------- */
+function hardGuard(p,o,atk,tgt,guards){
+  var a=apOf(atk,p),cheap=guards.slice().sort(function(x,y){return val(x,o)-val(y,o)});
+  var big=cheap.filter(function(c){return apOf(c,o)>a})[0];
+  if(big)return big;
+  var cut=Math.max.apply(null,[0].concat(o.hand.filter(function(c){return c.t==="c"&&c.cutin}).map(function(c){return c.cutin})));
+  if(cut&&G.noCutin!==o.i){
+    var helped=cheap.filter(function(c){return apOf(c,o)+cut>a})[0];
+    if(helped&&(tgt.kind==="case"||val(tgt.c,o)>=val(helped,o)))return helped;
+  }
+  if(tgt.kind==="case")return (p.ev.length>=p.lv-2||o.ev.length>=o.lv-1)?cheap[0]:null;
+  return val(tgt.c,o)>val(cheap[0],o)+2?cheap[0]:null;
+}
+function playValue(p,c){
+  var o=G.p[1-p.i],v=cardVal(c),t=o.scene.filter(function(x){return apOf(x,o)<=8000});
+  if((c.enter==="snipe"&&p.hand.length>1)||c.ev==="snipeEv"){
+    if(t.length)v+=Math.max.apply(null,t.map(function(x){return val(x,o)}))*0.8;
+    else if(c.ev==="snipeEv")v=0;
+  }
+  return v;
+}
+async function hardPlay(p,viaHint){
+  var o=G.p[1-p.i];
+  var cands=p.hand.filter(function(c){
+    if(c.lv>cap(p))return false;
+    if(c.t==="c")return true;
+    if(c.ev==="snipeEv")return o.scene.some(function(x){return apOf(x,o)<=8000});
+    return p.scene.length<5;
+  }).sort(function(a,b){return playValue(p,b)-playValue(p,a)});
+  for(var i=0;i<cands.length;i++){
+    var c=cands[i];
+    if(c.t==="c"&&p.scene.length>=5){
+      var w=p.scene.slice().sort(function(a,b){return val(a,p)-val(b,p)})[0];
+      if(val(w,p)+1>=score(c))continue;
+    }
+    if(await playFromHand(p,c,viaHint))return true;
+  }
+  return false;
+}
+async function hardPlays(p){
+  var played=await hardPlay(p,false);
+  var want=(!played&&p.scene.length<3)||(p.phase==="solution"&&p.scene.length<4);
+  if(want&&p.file.length>=2&&p.hand.some(function(c){return c.t==="c"&&c.lv<=cap(p)-1})){
+    p.hand.push(p.file.pop());p.usedHint=true;log("Opponent uses Next Hint.");log("The top FILE card of the opponent moves to their hand. This is not a free draw: their FILE area is 1 smaller.");
+    await hardPlay(p,true);
+  }
+}
+function hardMove(p,o){
+  var top=null;
+  function offer(v,c,kind,t){if(!top||v>top.v)top={v:v,c:c,kind:kind,t:t}}
+  p.scene.forEach(function(c){
+    if(c.state!=="active")return;
+    var ap=apOf(c,p)+(c.actbonus?1000*downCount(o):0);
+    var blockers=c.bullet?[]:o.scene.filter(function(g){return g.state==="active"});
+    var walled=blockers.some(function(g){return apOf(g,o)>ap});
+    if(canDeduce(c)){
+      var lp=lpOf(c),wins=p.phase==="solution"&&p.partner==="active"&&p.ev.length+lp>=p.lv;
+      if(lp>0)offer(wins?100:lp+0.1,c,"deduce");
+    }
+    if(!canAct(c))return;
+    if(o.ev.length){
+      var v=2;
+      if(o.ev.length>=o.lv)v+=4;else if(o.ev.length>=o.lv-2)v+=1;
+      if(walled)v=v*0.3;
+      else if(blockers.length)v+=0.2;
+      offer(v,c,"case");
+    }
+    o.scene.forEach(function(t){
+      if(!isDown(t)||apOf(t,o)>ap)return;
+      var w=val(t,o)*0.7+(t.stat||t.decl||t.md?0.8:0);
+      if(walled)w=w*0.5;
+      offer(w,c,"char",t);
+    });
+  });
+  return top;
+}
+async function hardTurn(pi){
+  var p=G.p[pi],o=G.p[1-pi];
+  await sleep(700);
+  await aiSolve(p);
+  await hardPlays(p);await sleep(600);
+  await aiDeclares(p);
+  if(p.phase==="case"&&p.partner==="active"&&p.file.length>=6){assist(p);await sleep(600)}
+  for(var n=0;n<12;n++){
+    await aiSolve(p);
+    var m=hardMove(p,o);
+    if(!m)break;
+    if(m.kind==="deduce")await deduce(p,m.c);
+    else await doAction(pi,m.c,m.kind==="case"?{kind:"case"}:{kind:"char",c:m.t});
+    await sleep(650);
+  }
+  await aiSolve(p);
+  if(p.partner==="active"){await deduce(p,"partner");await sleep(500)}
+  await endTurnEffects(p);
+  log(nm(pi)+" end"+(pi?"s":"")+" the turn.");
+}
+
+/* ---------- Sleuth ---------- */
 async function aiTurn(pi){
+  if(lvlOf(pi)==="easy")return easyTurn(pi);
+  if(lvlOf(pi)==="hard")return hardTurn(pi);
   var p=G.p[pi],o=G.p[1-pi];
   await sleep(700);
   await aiSolve(p);
@@ -1044,8 +1189,8 @@ async function humanTurn(){
 }
 
 /* ---------- game setup ---------- */
-async function startGame(keyA,keyB,sim){
-  G={p:[mkP(0,DECKS[keyA]),mkP(1,DECKS[keyB])],turn:0,cur:0,over:null,log:[],tip:"",act:null,ask:null,mull:null,hintMode:false,info:null,sim:!!sim};
+async function startGame(keyA,keyB,sim,bots){
+  G={p:[mkP(0,DECKS[keyA]),mkP(1,DECKS[keyB])],turn:0,cur:0,over:null,log:[],tip:"",act:null,ask:null,mull:null,hintMode:false,info:null,sim:!!sim,bot:bots||["normal",BOT]};
   var first=rnd(2);
   G.p[first].lv=G.p[first].def.caze.lv[0];
   G.p[1-first].lv=G.p[1-first].def.caze.lv[1];
@@ -1067,6 +1212,7 @@ async function startGame(keyA,keyB,sim){
     }
     var mullers=G.sim?[0,1]:[1];
     mullers.forEach(function(i){
+      if(lvlOf(i)==="easy")return;
       var ai=G.p[i],ab=ai.hand.filter(function(c){return c.t==="c"&&c.lv>=6});
       if(ab.length){
         ai.hand=ai.hand.filter(function(c){return !(c.t==="c"&&c.lv>=6)});ai.deck=shuffle(ai.deck.concat(ab));
@@ -1158,12 +1304,12 @@ function render(){if(G&&G.sim)return;render0();xlate(root)}
 function render0(){
   if(G&&G.sim)return;
   if(!G){
-    root.innerHTML='<div class="panel">'+(baseOK===-2?'<div class="note" style="margin:0 0 12px">Card images were not found. To see them, keep this HTML file next to your <b>Card_List</b> folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.</div>':'')+'<p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
+    root.innerHTML='<div class="panel">'+(baseOK===-2?'<div class="note" style="margin:0 0 12px">Card images were not found. To see them, keep this HTML file next to your <b>Card_List</b> folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.</div>':'')+'<p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns botpick" style="margin-bottom:4px"><span class="mono" style="align-self:center">Bot level</span>'+Object.keys(BOTS).map(function(k){var b=BOTS[k];return '<button class="btn '+(BOT===k?'':'ghost')+'" data-a="botlv" data-v="'+k+'" aria-pressed="'+(BOT===k)+'"><span>'+b.name+'</span> · <small>'+b.tag+'</small></button>'}).join('')+'</div><p class="why" style="margin:0 0 14px">'+BOTS[BOT].desc+'</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
       Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype dk dk-'+d.color+'"><h3 class="dkh">'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div></div>';
     return;
   }
   var me=G.p[0],op=G.p[1],h="";
-  if(G.turn>0)h+='<div class="turnbar">Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</div>';
+  if(G.turn>0)h+='<div class="turnbar"><span>Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</span> <small>(<span>Bot:</span> <span>'+BOTS[lvlOf(1)].name+'</span>)</small></div>';
   if(G.recap&&G.recap.length)h+='<div class="note recap" style="margin:0"><b>'+(G.cur===1?"What the opponent is doing":"What the opponent did last turn")+'</b><ol class="tight" style="margin:6px 0">'+G.recap.map(function(l){return "<li>"+l+"</li>"}).join("")+'</ol><span>'+"Opponent evidence: "+G.recapStart[1]+" → "+op.ev.length+". Your evidence: "+G.recapStart[0]+" → "+me.ev.length+"."+'</span></div>';
   h+=mat(op,false)+mat(me,true);
   h+='<div class="under">';
@@ -1209,6 +1355,7 @@ root.addEventListener("click",function(e){
   var a=b.dataset.a,v=b.dataset.v,nv=(v!==undefined&&v!==""&&!isNaN(v))?+v:v;
   if(a==="finishReveal"){OPP_HAND_REVEALED=false;render();return}
   if(a==="opp"){OPP=v;render();return}
+  if(a==="botlv"&&BOTS[v]){BOT=v;try{localStorage.setItem("conanBot",v)}catch(x){}render();return}
   if(a==="start"){var ks=Object.keys(DECKS),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
   if(a==="menu"){G=null;render();return}
   if(a==="rem"&&G){G.remView=(G.remView===nv?null:nv);render();return}
