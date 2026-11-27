@@ -487,7 +487,7 @@ function refresh(p){
   var o=G.p[1-p.i];o.ev.push(takeTop(o));
 }
 function draw(p,n){for(var i=0;i<n;i++)p.hand.push(takeTop(p))}
-function cleanup(){G.noCutin=null;G.p.forEach(function(p){p.noCut=false;p.noHint=false;if(p.caseSrc){p.caseSrc.used=null;p.caseSrc.botUsed=false}p.scene.forEach(function(c){c.mod=0;c.lpm=0;c.lvm=0;c.battle=0;c.tmpKw=null;c.used=null;c.botUsed=false;c.granted=null;c.tmpTrait=null;c.gale=false;c.tmpAssault=false;c.trig=false})})}
+function cleanup(){G.noCutin=null;G.p.forEach(function(p){p.noCut=false;p.noDisguise=false;p.noHint=false;if(p.caseSrc){p.caseSrc.used=null;p.caseSrc.botUsed=false}p.scene.forEach(function(c){c.mod=0;c.lpm=0;c.lvm=0;c.battle=0;c.tmpKw=null;c.used=null;c.botUsed=false;c.granted=null;c.tmpTrait=null;c.gale=false;c.tmpAssault=false;c.trig=false})})}
 function autoPhase(p){
   p.partner="active";
   p.scene.forEach(function(c){if(!has(c,"noWake"))activate(c);c.fresh=false;c.usedTurn=false});
@@ -538,11 +538,15 @@ async function removeChar(o,c,why){
   if(!leaveScene(o,c))return false;
   o.rem.push(c.base);
   log(c.n+" is removed from "+(o.i?"the opponent's":"your")+" Scene"+(why?" ("+why+")":"")+".");
-  await onLeave(o,c);
+  await onLeave(o,c,why);
+  await allyTriggers(o,c,"allyRemoved",c);
+  var foe=G.p[1-o.i],fs=foe.scene.slice();
+  for(var fi=0;fi<fs.length;fi++)if(foe.scene.indexOf(fs[fi])>-1)await trigger(foe,fs[fi],why==="lost the Contact"?"oppKO":"oppRemoved",{});
+  if(why==="lost the Contact")for(fi=0;fi<fs.length;fi++)if(foe.scene.indexOf(fs[fi])>-1)await trigger(foe,fs[fi],"oppRemoved",{});
   return true;
 }
-async function onLeave(o,c){
-  if(c.custom){await trigger(o,c,"leave",{});return}
+async function onLeave(o,c,why){
+  if(c.custom){await trigger(o,c,"leave",{byContact:why==="lost the Contact"});return}
   if(G.cur===o.i)return;
   if(c.leave==="jiro"){draw(o,1);log(nm(o.i)+" draw"+(o.i?"s":"")+" 1 card (Jirokichi).")}
   else if(c.leave==="jodie"){
@@ -573,6 +577,7 @@ async function enterChar(p,b,opts){
   p.hand=p.hand.filter(function(x){return x.uid!==b.uid});
   var ch=mkChar(b);
   p.entered=(p.entered||0)+1;ch.gale=p.entered===1;
+  if(G.curSrc&&!opts.fromHand)ch.byEffect=Math.max(1,G.curSrc.lv||1);
   if(opts.sleep||(ch.fx||[]).some(function(a){return a.trig==="static"&&a.give.some(function(g){return g.kw==="entersSleep"})}))ch.state="sleep";
   if(opts.assault)ch.tmpAssault=true;
   p.scene.push(ch);
@@ -873,6 +878,7 @@ function match(c,o,f,p,src){
   if(f.has==="hira"&&!c.hira)return false;
   if(f.has==="leave"&&!hasTrig(c,"leave"))return false;
   if(f.has==="disguise"&&!c.disguise)return false;
+  if(f.hasKw==="md"&&!(c.state?mdOf(c):c.md))return false;
   if(f.notOnly&&!(c.col||[]).some(function(x){return x!==f.notOnly}))return false;
   var st=scene?statics(c):null,names=(c.jnames||[]).concat(st?st.name:[]);
   if(f.notName&&names.indexOf(f.notName)>-1)return false;
@@ -897,6 +903,13 @@ function holds(k,p,src,ctx){
     var seen={};allChars(function(c,o){return match(c,o,k.f,p,src)}).forEach(function(x){seen[x.c.n]=1});return Object.keys(seen).length>=k.min;
   }
   if(k.c==="any")return k.list.some(function(x){return holds(x,p,src,ctx)});
+  if(k.c==="all")return k.list.every(function(x){return holds(x,p,src,ctx)});
+  if(k.c==="evLE")return p.ev.length<=opp.ev.length;
+  if(k.c==="bothScene")return p.scene.length+opp.scene.length>=k.n;
+  if(k.c==="byContact")return !!(ctx&&ctx.byContact);
+  if(k.c==="byEffect")return !!src.byEffect&&src.byEffect>=k.lv;
+  if(k.c==="entered")return !!(ctx&&ctx.that&&match(ctx.that.c,ctx.that.o,k.f,p,src));
+  if(k.c==="under")return (src.under||[]).length>=k.n;
   if(k.c==="not")return !holds(k.x,p,src,ctx);
   if(k.c==="paCount")return p.pa.filter(function(x){return match(x,p,Object.assign({},k.f,{side:"any"}),p,src)}).length>=k.min;
   if(k.c==="selfAp")return apOf(src,p)>=k.n;
@@ -939,21 +952,28 @@ async function runAbility(p,src,a,ctx){
   if(a.once&&usedCount(src,a)>=a.once)return;
   if((G.depth||0)>10)return;
   G.depth=(G.depth||0)+1;
+  var prevSrc=G.curSrc;G.curSrc=src;
   try{
     var did=await runSteps(p,src,a.steps||[],ctx||{});
     if(did&&a.once)markUsed(src,a);
-  }finally{G.depth--}
+  }finally{G.depth--;G.curSrc=prevSrc}
 }
 async function trigger(p,src,when,ctx){
   var list=abilitiesOf(src).filter(function(a){return a.trig===when||(when==="disguised"&&a.alsoDisguise)});
   for(var i=0;i<list.length;i++)await runAbility(p,src,list[i],Object.assign({},ctx));
 }
 /* abilities that watch your other characters */
-async function allyTriggers(p,actor,when){
+async function allyTriggers(p,actor,when,extra){
   var list=p.scene.slice();
+  if(extra&&list.indexOf(extra)<0)list.push(extra);
   for(var i=0;i<list.length;i++){
     var s=list[i],abs=abilitiesOf(s).filter(function(a){return a.trig===when});
-    for(var j=0;j<abs.length;j++)if(p.scene.indexOf(s)>-1&&match(actor,p,abs[j].who,p,s))await runAbility(p,s,abs[j],{});
+    for(var j=0;j<abs.length;j++){
+      var gone=p.scene.indexOf(s)<0;
+      if(gone&&!(s===extra&&abs[j].withSelf))continue;
+      if(s===actor&&!abs[j].withSelf)continue;
+      if(match(actor,p,abs[j].who,p,s)||(s===actor&&abs[j].withSelf))await runAbility(p,s,abs[j],{});
+    }
   }
 }
 async function runSteps(p,src,list,ctx){
@@ -971,7 +991,7 @@ async function yesNo(p,src,question,pref){
   return await pick(p.i,src.n,question,[{l:TT("Yes","Có"),v:true},{l:TT("No","Không"),v:false}],pref);
 }
 function harmful(list){return list.some(function(v){return ["remove","bottom","bounce","stun","sleep"].indexOf(v.v)>-1||((v.v==="ap"||v.v==="lp"||v.v==="lv")&&v.n<0)})}
-var VERBS={top:["put on top of the deck","đặt lên đầu bộ bài"],toPA:["move to the Partner area","chuyển vào khu Cộng sự"],toSet:["set under this character","gắn vào nhân vật này"],setTop:["set a card on it","gắn 1 lá vào nó"],grant:["give an ability","trao năng lực"],trait:["give a trait","trao đặc điểm"],name:["give a name","trao tên"],battle:["AP","AP"],remove:["remove","loại bỏ"],sleep:["put to sleep","cho ngủ"],stun:["stun","làm choáng"],activate:["make active","cho hoạt động"],bottom:["put on the bottom of the deck","đặt xuống đáy bộ bài"],bounce:["return to hand","đưa về tay"],toHand:["add to hand","đưa lên tay"],enter:["enter into Scene","cho vào Hiện trường"],kw:["give an ability","trao năng lực"]};
+var VERBS={topOrBottom:["put on top or bottom of the deck","đặt lên đầu hoặc đáy bộ bài"],top:["put on top of the deck","đặt lên đầu bộ bài"],toPA:["move to the Partner area","chuyển vào khu Cộng sự"],toSet:["set under this character","gắn vào nhân vật này"],setTop:["set a card on it","gắn 1 lá vào nó"],grant:["give an ability","trao năng lực"],trait:["give a trait","trao đặc điểm"],name:["give a name","trao tên"],battle:["AP","AP"],remove:["remove","loại bỏ"],sleep:["put to sleep","cho ngủ"],stun:["stun","làm choáng"],activate:["make active","cho hoạt động"],bottom:["put on the bottom of the deck","đặt xuống đáy bộ bài"],bounce:["return to hand","đưa về tay"],toHand:["add to hand","đưa lên tay"],enter:["enter into Scene","cho vào Hiện trường"],kw:["give an ability","trao năng lực"]};
 var KWN={md:["Misdirect","Đánh lạc hướng"],noDeduce:["cannot deduce","không thể suy luận"],sleepGuard:["can guard while asleep","đỡ đòn được khi ngủ"],mustGuard:["must guard","bắt buộc đỡ đòn"],noWake:["does not wake up","không tỉnh lại"],noContactKO:["not removed by Contact","không bị loại bởi Tiếp xúc"],swift:["Swift","Nhanh nhẹn"],assault:["Assault","Đột kích"],assaultChar:["Assault (characters)","Đột kích (nhân vật)"],assaultCase:["Assault (case)","Đột kích (vụ án)"],bullet:["Bullet","Đạn"],hitActive:["can attack active characters","đánh được nhân vật đang hoạt động"]};
 function verbLabel(v){
   if(v.v==="ap"||v.v==="lp"||v.v==="lv")return (v.v==="lv"?TT("level","cấp"):v.v.toUpperCase())+" "+(v.n>0?"+":"")+v.n;
@@ -988,6 +1008,7 @@ async function applyVerbs(p,src,t,list){
       await applyVerbs(p,src,t,yes?v.a:v.b);
     }
     else if(v.v==="remove")await removeChar(o,c,src.n);
+    else if(v.v==="topOrBottom"){var under2=await pick(p.i,src.n,c.n+TT(": top or bottom of the deck?",": đặt lên đầu hay xuống đáy bộ bài?"),[{l:TT("Bottom","Xuống đáy"),v:true},{l:TT("Top","Lên đầu"),v:false}],true);leaveScene(o,c);if(under2)o.deck.unshift(c.base);else o.deck.push(c.base);log(c.n+TT(" leaves the Scene for the deck."," rời Hiện trường về bộ bài."))}
     else if(v.v==="top"){leaveScene(o,c);o.deck.push(c.base);log(c.n+TT(" is put on top of the deck."," bị đặt lên đầu bộ bài."))}
     else if(v.v==="setTop"){if(o.deck.length){putSet(c,takeTop(o),false);log(TT("A card is set on "+c.n+".","1 lá được gắn vào "+c.n+"."))}}
     else if(v.v==="grant"){(c.granted=c.granted||[]).push(v.ab);log(c.n+TT(" gains an ability this turn."," nhận một năng lực trong lượt này."))}
@@ -1123,6 +1144,7 @@ async function runOp(p,src,op,ctx){
   case "flag":
     if(op.f==="noEvidence")G.noEvidence=true;
     else if(op.f==="noHint")p.noHint=true;
+    else if(op.f==="noCutDis"){o.noCut=true;o.noDisguise=true}
     else if(ctx.inAction)G.noCutin=o.i;
     else o.noCut=true;
     return true;
@@ -1234,6 +1256,26 @@ async function runOp(p,src,op,ctx){
     var pickN=await pick(p.i,src.n,TT("Choose one.","Chọn một."),opts,0);
     return await runSteps(p,src,op.list[pickN]||op.list[0],ctx);
   case "nothing":return true;
+  case "remToDeck":
+    if(!p.rem.length)return false;
+    p.deck=shuffle(p.rem.splice(0).concat(p.deck));log(nm(p.i)+TT(" shuffle"+(p.i?"s":"")+" the Remove area into the deck."," xáo Khu loại bỏ vào bộ bài."));return true;
+  case "all":
+    var everyone=allChars(function(x,q){return !untargetable(x,q,p)&&match(x,q,op.f,p,src)});
+    for(i=0;i<everyone.length;i++)await applyVerbs(p,src,everyone[i],op.list);
+    return everyone.length>0;
+  case "evTake":
+    if(p.ev.length<op.n)return false;
+    if(op.opt&&!await yesNo(p,src,op.rem?TT("Remove your top evidence?","Loại bỏ chứng cứ trên cùng?"):TT("Take "+op.n+" evidence into your hand?","Đưa "+op.n+" chứng cứ lên tay?"),p.ev.length>=p.lv))return false;
+    for(i=0;i<op.n;i++){c=p.ev.pop();delete c.up;if(op.rem)p.rem.push(c);else p.hand.push(c)}
+    log(nm(p.i)+TT(op.rem?" remove"+(p.i?"s ":" ")+op.n+" evidence.":" take"+(p.i?"s ":" ")+op.n+" evidence into hand.",op.rem?" loại bỏ "+op.n+" chứng cứ.":" đưa "+op.n+" chứng cứ lên tay."));
+    return true;
+  case "oppReveal":
+    if(!o.deck.length)return false;
+    ctx.revealed=o.deck[o.deck.length-1];log(TT("Opponent reveals ","Đối thủ lật ")+ctx.revealed.n+".");return true;
+  case "oppTopBottom":
+    if(!ctx.revealed||o.deck[o.deck.length-1]!==ctx.revealed)return false;
+    var down=await pick(p.i,src.n,ctx.revealed.n+TT(": top or bottom of their deck?",": đặt lên đầu hay xuống đáy bộ bài?"),[{l:TT("Bottom","Xuống đáy"),v:true},{l:TT("Top","Lên đầu"),v:false}],ctx.revealed.lv>=5);
+    if(down)o.deck.unshift(o.deck.pop());return true;
   }
   return false;
 }
@@ -1264,8 +1306,8 @@ async function runTarget(p,src,op,ctx){
     if(!cands.length)break;
     var opts=cands.map(function(x){return {l:(x.o===p?TT("Your ","Của bạn: "):TT("Their ","Đối thủ: "))+x.c.n+" (AP "+apOf(x.c,x.o)+")",v:x.c.uid}});
     opts.push({l:TT("No target","Không chọn"),v:null});
-    var pool=cands.filter(function(x){return harmful(op.list)?x.o!==p:x.o===p});
-    pool.sort(function(a,b){return val(b.c,b.o)-val(a.c,a.o)});
+    var pool=cands.filter(function(x){return op.own?x.o===p:harmful(op.list)?x.o!==p:x.o===p});
+    pool.sort(function(a,b){return op.own?val(a.c,a.o)-val(b.c,b.o):val(b.c,b.o)-val(a.c,a.o)});
     var pref=pool.length?pool[0].c.uid:null;
     if(lvlOf(p.i)==="easy"&&pool.length)pref=chance(20)?null:pool[rnd(pool.length)].c.uid;
     var uid=await pick(p.i,src.n,TT("Choose a character: ","Chọn nhân vật: ")+op.list.map(verbLabel).join(", "),opts,pref);
@@ -1384,7 +1426,7 @@ function mayHit(atk,kind){
   return has(atk,kind==="case"?"assaultCase":"assaultChar");
 }
 function targetsOf(atk,o){
-  return o.scene.filter(function(c){return mayHit(atk,"char")&&canBeTargeted(c)&&(isDown(c)||has(atk,"hitActive"))});
+  return o.scene.filter(function(c){return mayHit(atk,"char")&&canBeTargeted(c)&&(isDown(c)||has(atk,"hitActive")||(has(atk,"hitActiveSet")&&(c.under||[]).length))});
 }
 function caseOpen(atk,o){return o.ev.length>0&&mayHit(atk,"case")}
 function guardsOf(o){return o.scene.filter(function(c){return mayAct(c)&&(c.state==="active"||(c.state==="sleep"&&has(c,"sleepGuard")))})}
@@ -1397,8 +1439,8 @@ function botPlayable(p,c){
   if(c.ev==="fx")return !eventReason(p,c);
   return p.scene.length<5;
 }
-function colorReason(p,c){
-  if((c.fx||[]).some(function(a){return a.trig==="static"&&a.give.some(function(g){return g.kw==="anyColor"})}))return "";
+function colorReason(p,c,viaHint){
+  if((c.fx||[]).some(function(a){return a.trig==="static"&&a.give.some(function(g){return g.kw==="anyColor"||(viaHint&&g.kw==="anyColorHint")})}))return "";
   if(!p.def.caseColors||!p.def.caseColors.length||!(c.col||[]).length)return "";
   if(c.col.some(function(x){return p.def.caseColors.indexOf(x)>-1}))return "";
   return TT(c.n+" does not share a color with your Case.",c.n+" không cùng màu với Vụ án của bạn.");
@@ -1416,20 +1458,25 @@ function canPlay(p,c,viaHint){
     if(p.usedHand)return "You already played from hand this turn. It is limited to once per turn.";
   }
   if(c.lv>cap(p))return "Level "+c.lv+" needs "+c.lv+" cards in the FILE area. You have "+cap(p)+".";
-  var col=colorReason(p,c);if(col)return col;
+  var col=colorReason(p,c,viaHint);if(col)return col;
   if(c.ev==="fx"){var er=eventReason(p,c);if(er)return er}
   return "";
 }
 async function playFromHand(p,c,viaHint){
+  var keepSrc=G.curSrc;G.curSrc=null;
   if(c.t==="c"){
-    var e=await enterChar(p,c,{});
+    var e=await enterChar(p,c,{fromHand:true});
+    G.curSrc=keepSrc;
     if(!e)return false;
   }else{
+    G.curSrc=keepSrc;
     p.hand=p.hand.filter(function(x){return x.uid!==c.uid});
     log(nm(p.i)+" play"+(p.i?"s":"")+" the event "+c.n+".");
     if(!await resolveEvent(p,c))p.rem.push(c);
+    await allyTriggers(p,c,"allyEvent");
   }
   if(!viaHint)p.usedHand=true;
+  else{var hs=p.scene.slice();for(var hi=0;hi<hs.length;hi++)if(p.scene.indexOf(hs[hi])>-1)await trigger(p,hs[hi],"hintUse",{})}
   return true;
 }
 async function deduce(p,src){
@@ -1439,7 +1486,8 @@ async function deduce(p,src){
   log(nm(p.i)+" deduce"+(p.i?"s":"")+" with "+who+" (LP "+lp+").");
   if(src!=="partner"&&src.hakdraw&&!src.trig){src.trig=true;draw(p,1);log(nm(p.i)+" draw"+(p.i?"s":"")+" 1 card (Hakuba).")}
   if(src!=="partner"){
-    await trigger(p,src,"deduce",{});await trigger(p,src,"actded",{});await allyTriggers(p,src,"allyDeduce");
+    await trigger(p,src,"deduce",{});await trigger(p,src,"actded",{});await allyTriggers(p,src,"allyDeduce");await allyTriggers(p,src,"allyActded");
+    var ow=o.scene.slice();for(var oi=0;oi<ow.length;oi++)if(o.scene.indexOf(ow[oi])>-1){await trigger(o,ow[oi],"oppDeduce",{});await trigger(o,ow[oi],"oppActded",{})}
     lp=p.scene.indexOf(src)>-1?lpOf(src):lp;
   }
   var md=o.scene.filter(function(c){return c.state==="active"&&mdOf(c)});
@@ -1529,6 +1577,7 @@ async function contact(pi,atk,def){
   var dpi=1-pi,p=G.p[pi],o=G.p[dpi];
   var pair=[{c:atk,o:p},{c:def,o:o}];
   await trigger(p,atk,"contact",{contact:pair});await trigger(o,def,"contact",{contact:pair});
+  await allyTriggers(p,atk,"allyContact");await allyTriggers(o,def,"allyContact");
   if(p.scene.indexOf(atk)<0||o.scene.indexOf(def)<0)return;
   if(atk.contact==="gin4"&&G.cur===pi&&def.lv<=6){
     log("Gin's ability triggers: "+def.n+" (level "+def.lv+") is removed on contact.");
@@ -1545,9 +1594,9 @@ async function contact(pi,atk,def){
       pair[side?0:1].c=nc;
     }
     var mineA=(pl===pi),mine=mineA?atk:def,me=G.p[pl];
-    var blocked=G.noCutin===pl||me.noCut;
+    var blocked=G.noCutin===pl||me.noCut||G.p[1-pl].scene.some(function(x){return has(x,"jamCut")});
     var cis=blocked?[]:me.hand.filter(function(c){return cutUsable(c,me,mine)});
-    var dis=me.scene.indexOf(mine)>-1?me.hand.filter(function(c){return canDisguise(c,me)}):[];
+    var dis=me.scene.indexOf(mine)>-1&&!me.noDisguise?me.hand.filter(function(c){return canDisguise(c,me)}):[];
     if(!cis.length&&!dis.length){if(blocked)log(nm(pl)+" cannot use Cut-in during this Action.");return null}
     var a1=apOf(atk,p),d1=apOf(def,o),my=mineA?a1+ba:d1+bd,their=mineA?d1+bd:a1+ba,card=null;
     var CV=function(c){return cutValue(c,me,mine)};
@@ -1611,7 +1660,9 @@ async function doAction(pi,atk,tgt){
   try{
     var kind=tgt.kind==="case"?"actionCase":"actionChar",ac={inAction:true};
     G.noEvidence=false;G.attacker={c:atk,o:p};
-    await trigger(p,atk,"action",ac);await trigger(p,atk,"actded",ac);await trigger(p,atk,kind,ac);await allyTriggers(p,atk,"allyAction");
+    await trigger(p,atk,"action",ac);await trigger(p,atk,"actded",ac);await trigger(p,atk,kind,ac);await allyTriggers(p,atk,"allyAction");await allyTriggers(p,atk,"allyActded");
+    var ow=o.scene.slice();for(var oi=0;oi<ow.length;oi++)if(o.scene.indexOf(ow[oi])>-1){await trigger(o,ow[oi],"oppAction",{});await trigger(o,ow[oi],"oppActded",{})}
+    if(tgt.kind==="char"&&o.scene.indexOf(tgt.c)>-1)await trigger(o,tgt.c,"targeted",{contact:[{c:atk,o:p},{c:tgt.c,o:o}]});
     if(p.scene.indexOf(atk)<0||(tgt.kind==="char"&&o.scene.indexOf(tgt.c)<0))return;
     await doActionInner(pi,atk,tgt);
     if(p.scene.indexOf(atk)>-1)await trigger(p,atk,"actEnd",{});
@@ -1628,6 +1679,7 @@ async function doActionInner(pi,atk,tgt){
   if(tgt.kind==="char"){await contact(pi,atk,tgt.c);return}
   if(o.ev.length){
     var c=o.ev.pop();delete c.up;
+    var ps=p.scene.slice();for(var pi2=0;pi2<ps.length;pi2++)if(p.scene.indexOf(ps[pi2])>-1)await trigger(p,ps[pi2],"oppEvRemoved",{});
     log("Not guarded: the top evidence card of the opposing case is removed, and "+nm(pi).toLowerCase()+" gain"+(pi?"s":"")+" 1 evidence.");
     var claimed=await hirameki(o,c);
     if(!claimed)o.rem.push(c);

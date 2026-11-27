@@ -90,7 +90,7 @@ Play a simplified match against a bot with three levels.
 The bot never looks at your hand or either deck, and your chosen level is remembered in your browser.
 
 - Choose one of six starter decks or your own deck from the Deck page, and pick the bot's deck or leave it random.
-- **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 70% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. MR cards and abilities used from the Partner area are not supported.
+- **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 75% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. MR cards and abilities used from the Partner area are not supported.
 - Unavailable moves are greyed out, with the reason shown.
 - Inspect cards, read the game log and view the Remove area.
 
