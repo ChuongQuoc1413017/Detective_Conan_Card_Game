@@ -103,6 +103,8 @@ Build a 40-card deck from the full card list.
 
 Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is replaced. Card images load from the official website, so they need an internet connection. Card text is in Japanese. Decks built here cannot yet be used in the practice game.
 
+**Card database credit:** the card data belongs to the database owned by **Phu Thanh** (Phú Thành): [conan-tcg.vercel.app](https://conan-tcg.vercel.app/).
+
 ### 🧮 Rule Helpers
 
 | Helper | Page | Question it answers |
@@ -190,11 +192,15 @@ Feedback is very welcome, especially from new players. You can:
 
 Open an [Issue](https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game/issues) and include the relevant rule or card reference when possible. To contribute code or content, fork the repository, create a branch, test your changes and submit a Pull Request.
 
+## 🙏 Credits
+
+- **Card database:** owned by **Phu Thanh** (Phú Thành), at [conan-tcg.vercel.app](https://conan-tcg.vercel.app/).
+
 ## 📄 License
 
 This repository is distributed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE) for the full text.
 
-The license covers the original materials in this repository only. It does not grant rights to third-party intellectual property, including Detective Conan characters, trademarks, logos or card artwork.
+The license covers the original materials in this repository only. It does not grant rights to the card database or to third-party intellectual property, including Detective Conan characters, trademarks, logos or card artwork.
 
 ## ⚖️ Disclaimer
 
