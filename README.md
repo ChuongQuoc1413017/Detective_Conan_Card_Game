@@ -23,7 +23,7 @@ Learn the rules one small step at a time, watch a demo match, then play a simpli
 
 The **Detective Conan Trading Card Game (Conan TCG)** is a two-player card game. Players work with their Partner and characters to gather evidence and solve their case before their opponent does.
 
-This primer is made for **children and first-time players**. Instead of one long page, it is split into short pages with a clear order, large buttons, a cute brick theme, and extra detail folded away until you want it.
+This primer is made for **children and first-time players**. Instead of one long page, it is split into short pages with a clear order, large buttons, a cute light brown brick theme, and extra detail folded away until you want it.
 
 ## 🚀 Getting Started
 
@@ -124,7 +124,7 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 ├── index.html, board.html, turn.html, actions.html, demo.html,
 │   practice.html, quiz.html, words.html, about.html
 ├── assets/
-│   ├── style.css      Shared brick theme (light and dark)
+│   ├── style.css      Shared light brown brick theme
 │   ├── site.js        Language switch, guides, helpers, glossary and quiz
 │   └── demo.js        Demo match steps and table
 ├── practice.js        Practice game and bot
