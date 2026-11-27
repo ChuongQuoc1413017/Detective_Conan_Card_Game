@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moves · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="Moves · Conan TCG" data-title-vi="Hành động · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" aria-current="page" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" data-vi="🎮 Chơi thử">🎮 Play</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap">
+<div class="pagehead"><h1 data-vi="Ra chiêu ⚡">Make your moves ⚡</h1><p data-vi="Chạm vào một chiêu để đọc. Không cần học hết một lúc.">Tap a move to read about it. No need to learn them all at once.</p></div><section id="actions">
+  <span class="mono">Manual FILE.2 · Main phase</span>
+  <h2>What you can do in the Main phase</h2>
+  <p>Do these in any order and as often as you like, with one exception: playing from hand is limited to once per turn. You cannot interrupt one action with another.</p>
+  <div class="tabs" role="tablist" id="actTabs"></div>
+  <div class="panel" id="actPanel" role="tabpanel" aria-live="polite"></div>
+
+  <details class="more"><summary data-vi="🏆 Trợ giúp: lượt này mình thắng được không?">🏆 Helper: can I win this turn?</summary><div class="inside"><div class="tool panel">
+    <h3>Can I win this turn? Case checker</h3>
+    <div class="row">
+      <div class="field"><label for="caseLevel">Case level</label><input type="number" id="caseLevel" min="1" max="20" value="7"></div>
+      <div class="field"><label for="evCount">Evidence you hold</label><input type="number" id="evCount" min="0" max="30" value="7"></div>
+      <div class="field"><label for="fileW">Cards in FILE area (partner not included)</label><input type="number" id="fileW" min="0" max="12" value="5"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="casePhase">Your case is in</label><select id="casePhase"><option value="case">Case phase</option><option value="solution">Solution phase</option></select></div>
+      <div class="field"><label for="partnerState">Your partner is</label><select id="partnerState"><option value="active">Active</option><option value="sleep">Sleeping</option></select></div>
+    </div>
+    <div id="winOut"></div>
+  </div></div></details>
+</section><section id="contact">
+  <span class="mono">Manual FILE.2 · Contact</span>
+  <h2>Contact: comparing AP</h2>
+  <p>A Contact happens when an Action targets a character that was not guarded, or when a guard is declared. The attacker's AP is compared with the other character's AP. The lower-AP player gets to act first. The attacker is never removed.</p>
+  <details class="more"><summary data-vi="⚔️ Thử máy tính AP">⚔️ Try the AP calculator</summary><div class="inside"><div class="panel">
+    <div class="vs">
+      <div class="field"><label for="apA">Attacker's AP (your turn)</label><input type="number" id="apA" step="1000" value="3000">
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="cutA"> Cut-in AP +2000</label></div>
+      <span class="mono">vs</span>
+      <div class="field"><label for="apD">Defender's AP</label><input type="number" id="apD" step="1000" value="4000">
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="cutD"> Cut-in AP +2000</label></div>
+    </div>
+    <div id="contactOut"></div>
+    <div class="note">Cut-in with AP +2000 is the manual's own example. Real cards differ, so read the card. Each player may act once per Contact, with a Cut-in or a Disguise, or pass.</div>
+  </div></div></details>
+</section><div class="pager"><a class="btn ghost" href="turn.html" data-vi="◀ ⏰ Lượt chơi">◀ ⏰ A turn</a><a class="btn next" href="demo.html" data-vi="🎬 Ván mẫu ▶">🎬 Demo ▶</a></div>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+</main>
+<script src="assets/site.js"></script>
+
+</body>
+</html>
