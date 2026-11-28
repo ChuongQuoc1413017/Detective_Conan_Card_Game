@@ -92,7 +92,7 @@ Play a simplified match against a bot with three levels.
 The bot never looks at your hand or either deck, and your chosen level is remembered in your browser.
 
 - Choose one of six starter decks or your own deck from the Deck page, and pick the bot's deck or leave it random.
-- **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 75% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. MR cards and abilities used from the Partner area are not supported.
+- **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 81% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. **MR cards** follow their rules from the Official Rule Manual (page 26): an MR that leaves the Scene during the opponent's turn moves to the Partner area, a new MR entering removes any MR already in your Scene or Partner area, and abilities marked as working in the Partner area can be used from there (it cannot deduce or take Actions there).
 - Unavailable moves are greyed out, with the reason shown.
 - Press **💡 Hint** during your turn to see what the Master Sleuth bot would do in your place, and why.
 - Inspect cards, read the game log and view the Remove area.
@@ -174,7 +174,8 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 ├── .github/workflows/site.yml   Runs the tests and publishes with GitHub Pages
 ├── tests/             Automated checks (run with Node.js, see below)
 ├── tools/
-│   └── update-cards.js  Refreshes the card list from the database
+│   ├── update-cards.js  Refreshes the card list from the database
+│   └── why-unsupported.js  Explains why an ability is not supported yet
 ├── old/               Backups of earlier versions
 ├── Card_List/         Card images, one folder per deck
 └── logo.jpeg          Site logo and browser tab icon
@@ -203,8 +204,9 @@ This takes under a minute; add `--full` for longer runs. It checks:
 | Random own-deck games | `tests/games.js` | Bot games with random legal decks finish without errors. |
 | Bot levels | `tests/levels.js` | Each bot level still beats the level below it with the starter decks. |
 | Puzzles | `tests/puzzles.js` | Each puzzle can be solved, a wrong line fails, and the hint points the right way. |
+| MR card rules | `tests/mr.js` | The three MR rules, Partner-area abilities, and many games with MR-heavy decks. |
 
-After adding support for more abilities, run `node tests/coverage.js --save` to raise the baseline, and `node tests/coverage.js --top 30` to see the most common unsupported lines.
+After adding support for more abilities, run `node tests/coverage.js --save` to raise the baseline, and `node tests/coverage.js --top 30` to see the most common unsupported lines. `node tools/why-unsupported.js` goes further: for each unsupported line it names the exact part (a trigger, condition, cost or effect sentence) the card reader does not understand yet, and `node tools/why-unsupported.js 0 B04018` explains a single card.
 
 ### Automatic checks and publishing
 

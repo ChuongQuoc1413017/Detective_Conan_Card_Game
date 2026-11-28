@@ -63,6 +63,59 @@ const shape=(trig,op,more)=>find((r,c)=>r.abs.some(a=>a.trig===trig&&a.conds.len
   if(raw){G=board();[p,o]=G.p;ch=put(p,card(raw.card_num));await ctx.__t2.removeChar(p,ch,'test');check('draw when this is removed',p.hand.length>=1,raw.card_num)}
   raw=find((r,c)=>c.type==='イベント'&&r.abs.some(a=>a.trig==='event'&&a.conds.some(k=>k.c==='evLE')));
   if(raw){G=board();[p,o]=G.p;p.def=Object.assign({},def,{partner:{n:'P',lp:1,col:['青','緑','白','赤','黄','黒']}});const ev=card(raw.card_num);p.ev=[plain(1,1,1),plain(1,1,1)];o.ev=[];check('event blocked by its condition',ctx.__t2.eventReason(p,ev)!=='',raw.card_num);o.ev=[plain(1,1,1),plain(1,1,1)];check('event allowed when condition met',ctx.__t2.eventReason(p,ev)==='',raw.card_num)}
+  // round 4: abilities that look back at what they did, react to your own effects, or watch a kind of Action
+  const ALL=['青','緑','白','赤','黄','黒'],allDef=Object.assign({},def,{partner:{n:'P',lp:1,col:ALL},caseColors:ALL});
+  const fxOf=n=>JSON.parse(JSON.stringify(F.parse(D.find(c=>c.card_num===n)).abs));
+  // B05068: remove the top 3 of your deck; if that removed an Akai-family character, gain Assault
+  G=board();[p]=G.p;p.def=allDef;ch=put(p,card('B05068'));
+  let ab=fxOf('B05068').find(a=>a.trig==='enter');ab.steps[0].opt=false;
+  p.deck.push(plain(3,1000,1,{jt:['赤井家']}));await T.runAbility(p,ch,ab,{});
+  check('"if this removed an Akai-family character" sees the removed card',T.has(ch,'assault'));
+  G=board();[p]=G.p;p.def=allDef;ch=put(p,card('B05068'));ab=fxOf('B05068').find(a=>a.trig==='enter');ab.steps[0].opt=false;
+  await T.runAbility(p,ch,ab,{});check('...and stays off when none was removed',!T.has(ch,'assault'));
+  // B03116: removed by your own effect on your turn -> may enter again asleep, then draw 1
+  G=board();[p]=G.p;p.def=allDef;G.cur=0;ch=put(p,card('B03116'));G.curOwner=0;
+  await ctx.__t2.removeChar(p,ch,'test');G.curOwner=undefined;
+  check('removed by your own effect: enters again asleep and draws',p.scene.some(x=>x.k==='B03116'&&x.state==='sleep')&&p.hand.length===1,JSON.stringify(G.log.slice(0,3)));
+  G=board();[p,o]=G.p;p.def=allDef;G.cur=0;ch=put(p,card('B03116'));
+  await ctx.__t2.removeChar(p,ch,'lost the Contact');
+  check('...but not when it loses a Contact',!p.scene.length);
+  // B01036: when your green character takes an Action against a character, sleep up to 1 character
+  G=board();[p,o]=G.p;p.def=allDef;put(p,card('B01036'));const grn=put(p,plain(5,5000,1,{col:['緑']}));
+  const foe=put(o,plain(2,1000,1),'sleep'),awake=put(o,plain(6,9000,1));
+  await T.doAction(0,grn,{kind:'char',c:foe});
+  check('"when your green character takes an Action [character]" fires',awake.state==='sleep');
+  // B10010: cannot be removed by the opponent's events (while Ran Mori is in Scene)
+  G=board();[p,o]=G.p;o.def=allDef;const shin=put(o,card('B10010'));put(o,plain(1,1000,1,{jnames:[F.nfkc('毛利蘭')]}));
+  await T.runAbility(p,{t:'e',n:'Test event',uid:++uid},{trig:'event',conds:[],steps:[{op:'target',f:{side:'opp',zone:'scene',kind:'c',lvMin:4},n:1,list:[{v:'remove'}]}]},{});
+  check('protected from removal by opposing events',o.scene.includes(shin));
+  // B03059: Declare cost puts a white character from the Remove area on the bottom of the deck
+  G=board();[p,o]=G.p;p.def=allDef;ch=put(p,card('B03059'));const white=plain(3,2000,1,{col:['白']});p.rem=[white];
+  await T.useDecl(p,ch);
+  check('cost: Remove area card to the bottom of the deck',!p.rem.length&&p.deck[0]===white);
+  // B10025: in the solution phase, when you gain evidence on your turn, sleep up to 1 character
+  G=board();[p,o]=G.p;p.def=allDef;G.cur=0;p.phase='solution';put(p,card('B10025'));const ded=put(p,plain(3,2000,1));const wake=put(o,plain(6,6000,1));
+  await T.deduce(p,ded);
+  check('"when you gain evidence" fires',wake.state==='sleep');
+  // B11021: Action against a character with AP 4000+ lower -> remove up to 1 level 7 or lower character
+  G=board();[p,o]=G.p;p.def=allDef;const big=put(p,card('B11021'));const low=put(o,plain(2,2000,1),'sleep'),extra=put(o,plain(6,5000,1),'sleep');
+  await T.doAction(0,big,{kind:'char',c:low});
+  check('"against a character with AP 4000 or more lower" fires',!o.scene.includes(extra));
+  G=board();[p,o]=G.p;p.def=allDef;const big2=put(p,card('B11021'));const near=put(o,plain(2,6000,1),'sleep'),extra2=put(o,plain(6,5000,1),'sleep');
+  await T.doAction(0,big2,{kind:'char',c:near});
+  check('...and not against a stronger one',o.scene.includes(extra2));
+
+  // B05041: an event set on a character protects it from the opponent's remove / sleep / stun effects
+  G=board();[p,o]=G.p;p.def=allDef;const host=put(p,plain(5,5000,1,{col:['緑']}));
+  await T.resolveEvent(p,card('B05041'));
+  await T.runAbility(o,{t:'c',n:'Foe',uid:++uid},{trig:'event',conds:[],steps:[{op:'target',f:{side:'opp',zone:'scene',kind:'c'},n:1,list:[{v:'sleep'}]}]},{});
+  check('set event protects its character from opposing sleep',(host.under||[]).length===1&&host.state==='active');
+  // B06064: when the set event goes to the Remove area on the opponent's turn, enter a YAIBA character asleep
+  G=board();[p,o]=G.p;p.def=allDef;const yaiba=put(p,plain(8,7000,1,{jt:['YAIBA']}));const back=plain(3,2000,1,{jt:['YAIBA']});
+  await T.resolveEvent(p,card('B06064'));p.rem=[back];G.cur=1;
+  await ctx.__t2.removeChar(p,yaiba,'test');
+  check('"when this set event is put into the Remove area" fires',p.scene.some(x=>x.uid===back.uid&&x.state==='sleep'),JSON.stringify(G.log.slice(0,4)));
+
   // every playable ability on every card runs without throwing
   let runs=0,errs={};
   for(const raw of D){if(raw.type!=='キャラ'&&raw.type!=='イベント')continue;for(let idx=0;idx<F.parse(raw).abs.length;idx++){

@@ -37,6 +37,10 @@ function filter(src){
     if(eat(/^【(カットイン|現場リムーブ時|ヒラメキ|変装)】を持つ/,function(m){f.has={"カットイン":"cut","現場リムーブ時":"leave","ヒラメキ":"hira","変装":"disguise"}[m[1]]}))continue;
     if(eat(/^【([青緑白赤黄黒])】以外の色を持つ/,function(m){f.notOnly=m[1]}))continue;
     if(eat(/^〚カード名\[([^\]]+)\]〛以外の/,function(m){f.notName=m[1]}))continue;
+    if(eat(/^それぞれカード名の異なる/,function(){f.distinct=true}))continue;
+    if(eat(/^【疾風】を持つ/,function(){f.has="gale"}))continue;
+    if(eat(/^【カットイン】と【ヒラメキ】以外の元の能力を持たない/,function(){f.vanilla=true}))continue;
+    if(eat(/^〚(突撃|迅速)〛を持つ/,function(m){f.hasKw=m[1]==="突撃"?"assault":"swift"}))continue;
     break;
   }
   if(eat(/(イベント)$/,function(){f.kind="e"}));
@@ -46,7 +50,8 @@ function filter(src){
   if(s){
     var parts=s.split("か"),i,last=null,color=null;
     for(i=0;i<parts.length;i++){
-      var p=parts[i].replace(/の$/,""),m,a=null;
+      var p=parts[i].replace(/の$/,""),m,a=null,lvA=null;
+      if((m=/^レベル(\d+)(以下|以上)?の(.+)$/.exec(p))){lvA=m;p=m[3]}
       if((m=/^【([青緑白赤黄黒])】$/.exec(p)))a={color:m[1]};
       else if((m=/^〚特徴\[([^\]]+)\]〛$/.exec(p))){a={trait:m[1]};last="trait"}
       else if((m=/^〚カード名\[([^\]]+)\]〛$/.exec(p))){a={name:m[1]};last="name"}
@@ -57,6 +62,7 @@ function filter(src){
       else if(last&&(m=/^\[([^\]]+)\]$/.exec(p))){a={};a[last]=m[1]}
       else if((m=/^〚ミスリード〛を持つ$/.exec(p))){a={kw:"md"}}
       if(!a)return null;
+      if(lvA){if(lvA[2]==="以下")a.lvMax=+lvA[1];else if(lvA[2]==="以上")a.lvMin=+lvA[1];else{a.lvMin=+lvA[1];a.lvMax=+lvA[1]}}
       alts.push(a);
     }
     f.alts=alts;
@@ -64,10 +70,11 @@ function filter(src){
   /* a bare name means a character of that name */
   if(!f.kind&&alts.length&&alts.every(function(x){return x.name}))f.kind="c";
   if(alts.length===1&&alts[0].kw){f.hasKw=alts[0].kw;delete f.alts;f.kind="c"}
+  if(!f.kind&&(f.has==="gale"||f.vanilla||f.hasKw))f.kind="c";
   if(f.zone==="scene"){if(!f.kind&&!alts.length&&!f.has)return null;f.kind="c"}
   return f;
 }
-function handFilter(x){return x==="カード"?{side:"own",zone:"hand"}:filter("手札から"+x.replace(/のカード$/,""))}
+function handFilter(x){x=x.replace(/^、/,"");return x==="カード"?{side:"own",zone:"hand"}:filter("手札から"+x.replace(/のカード$/,""))}
 
 /* ---------- keywords ---------- */
 function keyword(t){
@@ -139,9 +146,30 @@ function verbs(text){
 }
 
 /* ---------- conditions ("…場合") ---------- */
+/* "…が(N枚以上)リムーブされた" and similar: what this ability or its cost just did */
+function hitFilter(x){
+  x=x.replace(/^カード$/,"").replace(/のカード$/,"");
+  if(!x)return {side:"any",zone:"any"};
+  var f=filter("手札から"+x);
+  if(!f)return null;
+  f.side="any";f.zone="any";return f;
+}
+function lookBack(c){
+  var m,f,cost=false;
+  if((m=/^(この【宣言】能力のコストによって|この効果によって|これによって)(.+)$/.exec(c))){cost=/コスト/.test(m[1]);c=m[2]}
+  if((m=/^(.+?)が(?:(\d+)枚以上)?リムーブされた$/.exec(c))&&(f=hitFilter(m[1])))return {c:"hit",cost:cost,f:f,min:+(m[2]||1),verb:"remove"};
+  if((m=/^(.+?)を(?:(\d+)枚)?リムーブした$/.exec(c))&&(f=hitFilter(m[1])))return {c:"hit",cost:cost,f:f,min:+(m[2]||1),verb:"remove"};
+  if((m=/^(.+?)をスリープさせた$/.exec(c))&&(f=hitFilter(m[1])))return {c:"hit",cost:cost,f:f,min:1,verb:"sleep"};
+  if((m=/^リムーブしたカードが(.+)$/.exec(c))&&(f=hitFilter(m[1])))return {c:"hit",cost:cost,f:f,min:1,verb:"remove"};
+  if((m=/^(.+?)のそうした$/.exec(c))&&(f=hitFilter(m[1])))return {c:"hit",cost:cost,f:f,min:1,verb:"toHand"};
+  if((m=/^キャラが(\d+)枚登場した$/.exec(c)))return {c:"hit",cost:cost,f:{side:"any",zone:"any",kind:"c"},min:+m[1],verb:"enter"};
+  return null;
+}
 function condition(c){
   var m,f,g;
   c=c.replace(/の$/,"");
+  var lb=lookBack(c);if(lb)return lb;
+  if((m=/^自分の現場にいるすべてのキャラが(.+)$/.exec(c))&&(f=filter("自分の現場にいる"+m[1].replace(/のキャラ$/,"")+(/キャラ$/.test(m[1])?"":"のキャラ"))))return {c:"allOwn",f:f};
   if((m=/^(.+?)で、(.+)$/.exec(c))){f=condition(m[1]);g=condition(m[2]);if(f&&g)return {c:"all",list:[f,g]}}
   if(c==="自分の証拠の数が相手の証拠の数以下")return {c:"evLE"};
   if((m=/^お互いの現場にキャラが合わせて(\d+)枚以上いる$/.exec(c)))return {c:"bothScene",n:+m[1]};
@@ -186,7 +214,10 @@ function condition(c){
 function effect(s){
   var m,f,v,op,V;
   s=s.replace(/^自分は(?=手札|カード|証拠)/,"");
+  if(s==="相手はガードできる場合、必ずガードする")return {op:"flag",f:"forceGuard"};
   if((m=/^そうした場合、(.+)$/.exec(s))){op=effect(m[1]);if(!op||op.ifDid)return null;op.ifDid=true;return op}
+  /* "リムーブした場合、…" = "if you did" */
+  if((m=/^(?:リムーブし|重ね|セットし|登場させ|スリープさせ|スタンさせ|移し)た場合、(.+)$/.exec(s))){op=effect(m[1]);if(!op||op.ifDid||op.cond)return null;op.ifDid=true;return op}
   if((m=/^(.+?)場合、(.+)$/.exec(s))){
     var c=condition(m[1]);op=c&&effect(m[2]);
     if(!op||op.cond)return null;op.cond=c;return op;
@@ -195,6 +226,10 @@ function effect(s){
   /* cards and hands */
   if((m=/^カードを(\d+)枚引き、手札を(\d+)枚リムーブする$/.exec(s)))return {op:"seq",list:[{op:"draw",n:+m[1]},{op:"discard",n:+m[2]}]};
   if((m=/^カードを(\d+)枚引(く|いてもよい)$/.exec(s)))return {op:"draw",n:+m[1]};
+  if((m=/^(?:自分の)?手札が(\d+)枚になるまでカードを引く$/.exec(s)))return {op:"drawTo",n:+m[1]};
+  if((m=/^相手のFILEエリアにあるカードを上から(\d+)枚表向きにする$/.exec(s)))return {op:"oppFileUp",n:+m[1]};
+  if(/^このキャラをリムーブエリアからスリープ状態で登場させ(る|てもよい)$/.test(s))return {op:"reenterSelf"};
+  if((m=/^(?:そのコンタクト中|このコンタクト中)、そのキャラをAP([+-]\d+)する$/.exec(s)))return {op:"that",list:[{v:"battle",n:+m[1]}]};
   if((m=/^手札を(\d+)枚リムーブ(する|してもよい)$/.exec(s)))return {op:"discard",n:+m[1],opt:m[2]==="してもよい"};
   if((m=/^手札から(.+?)を(\d+)枚リムーブ(する|してもよい)$/.exec(s))&&(f=handFilter(m[1])))return {op:"discardF",f:f,n:+m[2],opt:m[3]!=="する"};
   if((m=/^手札から(.+?)を(\d+)枚公開してもよい$/.exec(s))&&(f=handFilter(m[1])))return {op:"showF",f:f,n:+m[2]};
@@ -329,12 +364,17 @@ function revealTop(text){
 var JOIN={"し":"する","き":"く","え":"える","せ":"せる"};
 function steps(text){
   var rv=revealTop(text);if(rv)return rv;
-  var pick=/^([\s\S]*?)以下から1つ選んで行う。\s*\n([・•][\s\S]+)$/.exec(text);
+  var both=null,pm=/^([\s\S]*?)以下から([123])つ(?:まで)?選んで行う。([^\n]*?)\s*\n([・•][\s\S]+)$/.exec(text),pick=null;
+  if(pm){
+    var extra=pm[3].trim(),bm;
+    if(extra){if((bm=/^(.+?)場合、代わりに[23]つとも行う。?$/.exec(extra))&&(both=condition(bm[1])));else pm=null}
+    if(pm)pick=[pm[0],pm[1],pm[4],+pm[2]];
+  }
   if(pick){
     var before=pick[1].trim()?steps(pick[1].trim()):[];
     var options=pick[2].split("\n").map(function(b){return steps(b.replace(/^[・•]/,""))});
     if(!before||options.indexOf(null)>-1)return null;
-    return before.concat([{op:"oneOf",list:options,text:pick[2].split("\n")}]);
+    return before.concat([{op:"oneOf",list:options,text:pick[2].split("\n"),k:pick[3],both:both}]);
   }
   if(/\n/.test(text))return null;
   var out=[],parts=text.split(/。/).map(function(x){return x.trim()}).filter(Boolean),i,j;
@@ -384,6 +424,9 @@ function costs(head){
     for(i=0;i<t.length;i++){if(t[i]==="〚")depth++;else if(t[i]==="〛"&&!--depth){end=i;break}}
     if(end<0)return null;
     var x=t.slice(1,end);t=t.slice(end+1);
+    /* "Aし、B" inside one bracket: two costs */
+    var two=/^(.+?)(にし|リムーブし|させ)、(.+)$/.exec(x);
+    if(two&&!/^(.+?)を1枚スリープさせ/.test(x)){var c1=costs("〚"+two[1]+({"にし":"にする","リムーブし":"リムーブする","させ":"させる"})[two[2]]+"〛"),c2=costs("〚"+two[3]+"〛");if(!c1||!c2)return null;out=out.concat(c1,c2);continue}
     if((m=/^手札を(\d+)枚リムーブする$/.exec(x)))out.push({c:"discard",n:+m[1]});
     else if(x==="デッキの下に移す")out.push({c:"bottomSelf"});
     else if(x==="リムーブエリアに移す")out.push({c:"removeSelf"});
@@ -392,6 +435,10 @@ function costs(head){
     else if((m=/^裏向きの証拠を(\d+)つ(以上)?表向きにする$/.exec(x)))out.push({c:"flip",n:+m[1]});
     else if(/^このキャラに(裏向きで)?セットされているカードを1枚リムーブする$/.test(x))out.push({c:"unsetSelf"});
     else if(/^現場にいるキャラに(裏向きで)?セットされているカードを1枚リムーブする$/.test(x))out.push({c:"unsetAny",n:1});
+    else if((m=/^現場にいるキャラに(裏向きで)?セットされているカードを合わせて(\d+)枚リムーブする$/.exec(x)))out.push({c:"unsetAny",n:+m[2]});
+    else if((m=/^リムーブエリアにある(.+?)を(\d+)枚(?:好きな順番で)?デッキの下に移す$/.exec(x))&&(f=filter("自分のリムーブエリアにある"+m[1])))out.push({c:"remBottom",f:f,n:+m[2]});
+    else if((m=/^現場にいる(.+?)を(\d+)枚デッキの下に移す$/.exec(x))&&(f=filter("自分の現場にいる"+m[1])))out.push({c:"bottomOther",f:f,n:+m[2]});
+    else if((m=/^このキャラか、(.+?)を1枚スリープさせる$/.exec(x))&&(f=filter("自分の現場にいる"+m[1])))out.push({c:"sleepOther",f:f,self:true});
     else if((m=/^手札から(.+?)を(\d+)枚リムーブする$/.exec(x))&&(f=handFilter(m[1])))out.push({c:"discardF",f:f,n:+m[2]});
     else if((m=/^手札から(.+?)を(\d+)枚公開する$/.exec(x))&&(f=handFilter(m[1])))out.push({c:"showF",f:f,n:+m[2]});
     else if((m=/^(?:現場にいる)?(.+?)を1枚スリープさせる$/.exec(x))&&(f=x==="このキャラ以外のキャラを1枚スリープさせる"?{side:"own",zone:"scene",kind:"c",other:true}:filter("自分の現場にいる"+m[1])))out.push({c:"sleepOther",f:f});
@@ -443,7 +490,14 @@ var WHEN=[
   [/^ターン終了時、/,"end"],
   [/^自分がネクストヒントで手札を使用したとき、/,"hintUse"],
   [/^相手の証拠がリムーブされたとき、/,"oppEvRemoved"],
-  [/^このキャラのコンタクト中に自分が【カットイン】を使用したとき、/,"cutinUsed"]
+  [/^このキャラのコンタクト中に自分が【カットイン】を使用したとき、/,"cutinUsed"],
+  [/^自分の現場にいるこのキャラが自分の能力や効果によってリムーブされたとき、/,"leaveOwnFx"],
+  [/^キャラにセットされていたこのイベントがリムーブエリアに置かれたとき、/,"setGone"],
+  [/^自分の能力や効果によって相手の現場にいるキャラをリムーブしたとき、/,"oppRemovedMine"],
+  [/^自分が証拠を得たとき、/,"evGain"],
+  [/^相手の現場にいるキャラがアクション\[キャラ\]したとき、/,"oppActionChar"],
+  [/^相手の現場にいるキャラがアクション\[事件\]したとき、/,"oppActionCase"],
+  [/^このキャラが、このキャラよりAPが(\d+)以上低いキャラを指定してアクションしたとき、/,"actionGap"]
 ];
 function allyTrigger(t){
   var m,f,list=[
@@ -453,13 +507,19 @@ function allyTrigger(t){
     [/^自分の現場にいる(.+?)が推理かアクションしたとき、/,"allyActded"],
     [/^(.+?)が自分の現場に登場したとき、/,"allyEnter"],
     [/^自分が(.+?)を使用したとき、/,"allyEvent"],
+    [/^このキャラか(.+?)が自分の現場に登場したとき、/,"allyEnterSelf"],
+    [/^自分の現場にいる(.+?)が【宣言】能力を使用したとき、/,"allyDecl"],
+    [/^自分の現場にいる(.+?)がアクション\[キャラ\]したとき、/,"allyActionChar"],
+    [/^自分の現場にいる(.+?)がアクション\[事件\]したとき、/,"allyActionCase"],
+    [/^自分の現場にいる(.+?)のアクション\[事件\]によって証拠を得たとき、/,"allyCaseGain"],
+    [/^自分の現場にいる(.+?)のコンタクト中に自分が【カットイン】を使用したとき、/,"allyCutin"],
     [/^自分の現場にいる(.+?)がアクションしたとき、/,"allyAction"],
     [/^自分の現場にいる(.+?)が推理したとき、/,"allyDeduce"],
     [/^自分の現場に(.+?)が登場したとき、/,"allyEnter"]
   ],i;
   for(i=0;i<list.length;i++)if((m=list[i][0].exec(t))&&(f=list[i][1]==="allyEvent"?filter("手札から"+m[1]):filter("自分の現場にいる"+m[1].replace(/^自分の現場にいる/,"")))){
-    var tg=list[i][1]==="allyRemovedSelf"?"allyRemoved":list[i][1];
-    return {trig:tg,who:f,len:m[0].length,self:list[i][1]==="allyRemovedSelf"};
+    var tg=list[i][1]==="allyRemovedSelf"?"allyRemoved":list[i][1]==="allyEnterSelf"?"allyEnter":list[i][1];
+    return {trig:tg,who:f,len:m[0].length,self:list[i][1]==="allyRemovedSelf"||list[i][1]==="allyEnterSelf"};
   }
   return null;
 }
@@ -502,8 +562,10 @@ function line(raw,isEvent){
     var dc=condition(m[1]);if(!dc||trig!=="decl")return null;
     ab.conds.push(dc);t=t.slice(0,m.index).trim();
   }
-  if(!trig&&!isEvent){
-    for(i=0;i<WHEN.length;i++){if(WHEN[i][0].test(t)){trig=WHEN[i][1];t=t.replace(WHEN[i][0],"");break}}
+  if(!trig&&(!isEvent||/^キャラにセットされていたこのイベント/.test(t))){
+    for(i=0;i<WHEN.length;i++){var wm=WHEN[i][0].exec(t);if(wm){trig=WHEN[i][1];t=t.replace(WHEN[i][0],"");if(trig==="actionGap"){trig="actionChar";ab.conds.push({c:"gap",n:+wm[1]})}break}}
+    if(trig==="leaveOwnFx"){trig="leave";ab.conds.push({c:"byOwnFx"})}
+    if(trig==="oppRemovedMine"){trig="oppRemoved";ab.conds.push({c:"byMyFx"})}
     if(!trig){
       var al=allyTrigger(t);
       if(al){trig=al.trig;ab.who=al.who;ab.withSelf=al.self;t=t.slice(al.len)}
@@ -531,9 +593,12 @@ function staticAbility(t,ab){
     "相手は【カットイン】を使用できない":"jamCut",
     "このキャラは相手の現場にいるカードがセットされているアクティブ状態のキャラを指定してアクションできる":"hitActiveSet",
     "ネクストヒントで手札から使用する場合、このキャラは事件カードの色を無視できる":"anyColorHint",
+    "このキャラは相手のイベントの効果によってリムーブされない":"noEventRemove",
+    "このキャラは相手の能力や効果によってリムーブされない":"noFxRemove",
     "このキャラの下に重なっているカードの数につき、以下の能力を持つ":"none"};
   if(fixed[s])return self(fixed[s]==="none"?[]:[{v:"kw",kw:fixed[s]}]);
   if(/^犯人\[[^\]]+\]はデッキに何枚でも入れることができる$/.test(s))return self([]);
+  if((m=/^自分は(.+?)以外のキャラを手札から使用できない$/.exec(s))&&(f=filter("手札から"+m[1]))){ab.self=true;ab.give=[{v:"kw",kw:"onlyPlay"}];ab.only=f;return ab}
   if((m=/^(AP|LP)\+(\d+)$/.exec(s)))return self([{v:m[1].toLowerCase(),n:+m[2]}]);
   var km=new RegExp("^"+KW+"$").exec(s);
   if(km)return self([kwVerb(km[1])]);
@@ -547,6 +612,12 @@ function staticAbility(t,ab){
     if(!v)return null;
     ab.trig="whenSet";ab.give=v;return ab;
   }
+  if((m=/^このイベントがセットされている(.+?)のキャラは(.+)を持つ$/.exec(s))&&(f=filter("自分の現場にいる"+m[1]))){
+    v=verbs("ターン終了時まで"+m[2]+"を持つ");
+    if(!v)return null;
+    ab.trig="whenSet";ab.give=v;ab.host=f;return ab;
+  }
+  if(s==="このイベントがセットされているキャラは、相手の能力や効果によってリムーブされず、スリープされず、スタンされない"){ab.trig="whenSet";ab.give=[{v:"kw",kw:"noFxRemove"},{v:"kw",kw:"noFxSleep"}];return ab}
   if((m=/^(.+?)場合、(.+)$/.exec(s))){var c=condition(m[1]);if(!c)return null;ab.conds.push(c);s=m[2]}
   if((m=/^このキャラを(AP|LP|レベル)([+-]\d+)(し、(AP|LP)([+-]\d+))?する$/.exec(s))){
     var list=[{v:{AP:"ap",LP:"lp","レベル":"lv"}[m[1]],n:+m[2]}];if(m[4])list.push({v:m[4].toLowerCase(),n:+m[5]});return self(list);
@@ -610,8 +681,10 @@ function parse(card){
   QUOTES=[];
   function add(l,fn){var ab=null;try{ab=fn(l)}catch(e){ab=null}if(ab)out.abs.push(ab);else out.missing.push(l)}
   var lines=split(card.feature),i;
+  /* MR cards: abilities that also work from the Partner area */
+  out.mr=/^MR/.test(card.rarity||"");
   if(type==="キャラ"){
-    lines.forEach(function(l){add(l,function(x){return line(x,false)})});
+    lines.forEach(function(l){add(l,function(x){var a=line(x,false);if(a&&/この能力はパートナーエリアでも(宣言できる|発動する|有効になる)/.test(x))a.inPA=true;return a})});
   }else if(isEvent){
     /* an event is one piece: if a line that runs when played is unknown, none of it runs */
     var failed=false,useConds=[];

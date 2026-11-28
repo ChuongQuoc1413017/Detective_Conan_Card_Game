@@ -8,7 +8,8 @@ const TESTS = [
   ["Card ability checks", "cards.js", []],
   ["Random own-deck games", "games.js", [full ? "10000" : "2000"]],
   ["Bot levels", "levels.js", [full ? "7200" : "720"]],
-  ["Puzzles", "puzzles.js", []]
+  ["Puzzles", "puzzles.js", []],
+  ["MR card rules", "mr.js", [full ? "3000" : "600"]]
 ];
 
 let failed = [];
