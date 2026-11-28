@@ -1714,28 +1714,45 @@ async function contact(pi,atk,def){
     log("Gin's ability triggers: "+def.n+" (level "+def.lv+") is removed on contact.");
     await removeChar(o,def,"Gin");return;
   }
-  var ba=0,bd=0,a0=apOf(atk,p),d0=apOf(def,o);
+  var a0=apOf(atk,p),d0=apOf(def,o);
   var first=a0<d0?pi:dpi;
   log("Contact: "+atk.n+" (AP "+a0+") vs "+def.n+" (AP "+d0+"). "+nm(first)+" can act first"+(a0===d0?" because equal AP puts the non-turn player first.":" because the lower AP goes first."));
+  /* the Contact's progress is kept in G, so the look-ahead bot can imagine it from any point */
+  var keep=G.cc;
+  G.cc={pi:pi,atk:atk,def:def,ba:0,bd:0,pair:pair,first:first,step:0,r1:null,r2:null};
+  try{await contactRun()}finally{G.cc=keep}
+}
+async function contactRun(){
+  var s=G.cc,pi=s.pi,dpi=1-pi,p=G.p[pi],o=G.p[dpi];
   async function turnOf(pl){
     async function swap(card){
-      var side=pl===pi,old=side?atk:def,nc=await disguiseSwap(G.p[pl],old,card);
+      var side=pl===pi,old=side?s.atk:s.def,nc=await disguiseSwap(G.p[pl],old,card);
       if(!nc)return;
-      if(side){atk=nc;ba=0}else{def=nc;bd=0}
-      pair[side?0:1].c=nc;
+      if(side){s.atk=nc;s.ba=0}else{s.def=nc;s.bd=0}
+      s.pair[side?0:1].c=nc;
     }
-    var mineA=(pl===pi),mine=mineA?atk:def,me=G.p[pl];
+    var mineA=(pl===pi),mine=mineA?s.atk:s.def,me=G.p[pl];
     var blocked=G.noCutin===pl||me.noCut||G.p[1-pl].scene.some(function(x){return has(x,"jamCut")});
     var cis=blocked?[]:me.hand.filter(function(c){return cutUsable(c,me,mine)});
     var dis=me.scene.indexOf(mine)>-1&&!me.noDisguise?me.hand.filter(function(c){return canDisguise(c,me)}):[];
     if(!cis.length&&!dis.length){if(blocked)log(nm(pl)+" cannot use Cut-in during this Action.");return null}
-    var a1=apOf(atk,p),d1=apOf(def,o),my=mineA?a1+ba:d1+bd,their=mineA?d1+bd:a1+ba,card=null;
+    var a1=apOf(s.atk,p),d1=apOf(s.def,o),my=mineA?a1+s.ba:d1+s.bd,their=mineA?d1+s.bd:a1+s.ba,card=null;
     var CV=function(c){return cutValue(c,me,mine)};
-    if(isHuman(pl)){
+    var forced=G.force&&G.force.kind==="cut"&&G.force.pl===pl?G.force:null;
+    if(forced)G.force=null;
+    if(forced){
+      if(typeof forced.v==="string"){var dc=dis.find(function(c){return "d"+c.uid===forced.v});if(dc){await swap(dc);return true}}
+      card=forced.v===null?null:cis.find(function(c){return c.uid===forced.v})||null;
+    }else if(isHuman(pl)){
       var opts=cis.map(function(c){return {l:c.n+" (Cut-in +"+CV(c)+")",v:c.uid}});dis.forEach(function(c){opts.push({l:c.n+TT(" (Disguise, AP "+c.ap+")"," (Cải trang, AP "+c.ap+")"),v:"d"+c.uid})});opts.push({l:"Pass",v:null});
-      var v=await ask("Contact: your "+(mineA?atk:def).n+" has AP "+my+" against "+their,"Play one Cut-in from hand or pass. Each player acts at most once per Contact.",opts);
+      var v=await ask("Contact: your "+(mineA?s.atk:s.def).n+" has AP "+my+" against "+their,"Play one Cut-in from hand or pass. Each player acts at most once per Contact.",opts);
       if(typeof v==="string"&&v.charAt(0)==="d"){await swap(dis.find(function(c){return "d"+c.uid===v}));return true}
       card=v===null?null:cis.find(function(c){return c.uid===v});
+    }else if(lvlOf(pl)==="expert"&&!G.imagined&&LOOK.cut){
+      await sleep(500);
+      var choice=await expertCutin(pl,cis,dis,my,their,mineA);
+      if(typeof choice==="string"){var dc2=dis.find(function(c){return "d"+c.uid===choice});if(dc2){await swap(dc2);return true}}
+      card=choice===null?null:cis.find(function(c){return c.uid===choice})||null;
     }else{
       await sleep(500);
       var need=mineA?their:their+1;
@@ -1745,19 +1762,20 @@ async function contact(pi,atk,def){
     if(card){
       G.p[pl].hand=G.p[pl].hand.filter(function(c){return c.uid!==card.uid});G.p[pl].rem.push(card);
       var gain=CV(card);
-      if(mineA)ba+=gain;else bd+=gain;
+      if(mineA)s.ba+=gain;else s.bd+=gain;
       log(nm(pl)+" play"+(pl?"s":"")+" the Cut-in "+card.n+" (AP +"+gain+").");
-      if(card.cut&&card.cut.steps&&(!card.cut.stepsIf||match(mine,me,Object.assign({},card.cut.stepsIf,{side:"any"}),me,card)))await runSteps(me,card,card.cut.steps,{contact:pair,inAction:true});
-      await trigger(me,mine,"cutinUsed",{contact:pair});
-      await allyCutin(me,mine,pair);
+      if(card.cut&&card.cut.steps&&(!card.cut.stepsIf||match(mine,me,Object.assign({},card.cut.stepsIf,{side:"any"}),me,card)))await runSteps(me,card,card.cut.steps,{contact:s.pair,inAction:true});
+      await trigger(me,mine,"cutinUsed",{contact:s.pair});
+      await allyCutin(me,mine,s.pair);
     }else if(isHuman(pl)){log("You pass.")}
     return card;
   }
-  var r1=await turnOf(first);
-  var r2=await turnOf(1-first);
-  if(!r1&&r2)await turnOf(first);
+  if(s.step===0){s.r1=await turnOf(s.first);s.step=1}
+  if(s.step===1){s.r2=await turnOf(1-s.first);s.step=2}
+  if(s.step===2){if(!s.r1&&s.r2)await turnOf(s.first);s.step=3}
+  var atk=s.atk,def=s.def;
   if(p.scene.indexOf(atk)<0||o.scene.indexOf(def)<0){log(TT("The Contact ends: a character left the Scene.","Tiếp xúc kết thúc: một nhân vật đã rời Hiện trường."));return}
-  var fa=apOf(atk,p)+ba,fd=apOf(def,o)+bd;
+  var fa=apOf(atk,p)+s.ba,fd=apOf(def,o)+s.bd;
   if(fa>=fd&&has(def,"noContactKO"))log(def.n+TT(" is not removed by this Contact."," không bị loại bỏ bởi lần Tiếp xúc này."));
   else if(fa>=fd){
     log("Result: attacker AP "+fa+" vs "+fd+". "+def.n+" is removed.");
@@ -1775,7 +1793,9 @@ async function chooseGuard(dpi,atk,tgt,guards,pi){
     var v=await ask("Opponent's "+atk.n+" (AP "+apOf(atk,p)+") attacks "+what+". Guard?","Guarding puts the guard to sleep and starts a Contact with it. The guard is removed if the attacker's AP is equal or higher. Any active character can guard, even one that just arrived.",opts);
     return v===null?null:guards.find(function(c){return c.uid===v});
   }
+  if(G.force&&G.force.kind==="guard"){var fv=G.force.v;G.force=null;return fv===null?null:guards.find(function(c){return c.uid===fv})||null}
   if(lvlOf(dpi)==="easy")return chance(20)?guards[rnd(guards.length)]:null;
+  if(lvlOf(dpi)==="expert"&&!G.imagined&&LOOK.guard)return await expertGuard(dpi,atk,tgt,guards,pi);
   if(lvlOf(dpi)==="hard"||lvlOf(dpi)==="expert")return hardGuard(p,o,atk,tgt,guards);
   var s=guards.filter(function(c){return apOf(c,o)>apOf(atk,p)}).sort(function(a,b){return apOf(a,o)-apOf(b,o)})[0];
   if(s)return s;
@@ -2016,7 +2036,7 @@ async function hardTurn(pi){
    and keeps the move whose futures turn out best on average.
    It does not peek: before each imagined game it reshuffles what it cannot see
    (your hand together with your deck, and its own deck). */
-var LOOK={tries:12,turns:40,margin:0.04};
+var LOOK={tries:24,turns:40,margin:0.06,guard:true,cut:true};
 /* a repeatable random source, so every move is tried against the same imagined draws */
 function seeded(seed){var s=seed>>>0||1;return function(){s=(s+0x6D2B79F5)>>>0;var z=s;z=Math.imul(z^(z>>>15),z|1);z^=z+Math.imul(z^(z>>>7),z|61);return ((z^(z>>>14))>>>0)/4294967296}}
 function cloneState(x,memo){
@@ -2134,6 +2154,7 @@ async function weigh(pi,m,seed){
     G=g;
     try{
       if(m.t==="end")await endTurnEffects(G.p[pi]);
+      else if(m.t==="react")await m.run();
       else{await doMove(G.p[pi],m);await finishTurnHard(G.p[pi])}
       for(var k=0;k<LOOK.turns&&!G.over;k++)await imagineTurn();
     }catch(e){if(e!==OVER){G=real;total+=-500;continue}}
@@ -2143,19 +2164,86 @@ async function weigh(pi,m,seed){
   }finally{Math.random=keepRandom;G=real}
   return total/LOOK.tries;
 }
-/* what Master Sleuth would do now: the move to beat */
+/* what Master Sleuth would do now, in its usual order: the move to beat */
 function hardDefault(p,moves){
-  var o=G.p[1-p.i];
+  var o=G.p[1-p.i],m;
+  function find(f){return moves.find(f)}
   if(!p.usedHand&&!p.usedHint){
-    var c=p.hand.filter(function(x){return botPlayable(p,x)&&!canPlay(p,x,false)}).sort(function(a,b){return playValue(p,b)-playValue(p,a)})[0];
-    if(c){var m0=moves.find(function(m){return m.t==="play"&&m.uid===c.uid})||moves.find(function(m){return m.t==="play"&&findIn(p.hand,m.uid).k===c.k});if(m0)return m0}
+    var cands=p.hand.filter(function(x){return botPlayable(p,x)&&!canPlay(p,x,false)}).sort(function(a,b){return playValue(p,b)-playValue(p,a)});
+    for(var i=0;i<cands.length;i++){
+      var c=cands[i];
+      if(c.t==="c"&&p.scene.length>=5){var w=p.scene.slice().sort(function(a,b){return val(a,p)-val(b,p)})[0];if(val(w,p)+1>=score(c))continue}
+      m=find(function(x){return x.t==="play"&&x.uid===c.uid})||find(function(x){var h=x.t==="play"&&findIn(p.hand,x.uid);return h&&h.k===c.k&&h.n===c.n});
+      if(m)return m;
+    }
+    var want=p.scene.length<3||(p.phase==="solution"&&p.scene.length<4);
+    if(want&&!p.noHint&&p.file.length>=2&&p.hand.some(function(x){return x.t==="c"&&x.lv<=cap(p)-1})){m=find(function(x){return x.t==="hint"});if(m)return m}
   }
+  m=find(function(x){
+    if(x.t!=="decl")return false;
+    var c=findIn(declarers(p),x.uid);if(!c)return false;
+    if(c.decl==="fx"||!c.decl){var ab=declAbilities(p,c)[0];return !!ab&&!ab.cost.some(function(k){return k.c==="bottomSelf"||k.c==="removeSelf"})}
+    if(c.decl==="ran6")return true;
+    if(c.decl==="conan4")return p.scene.some(function(y){return y!==c&&y.state==="active"&&!canAct(y)&&!canDeduce(y)});
+    return false;
+  });
+  if(m)return m;
+  if(p.phase==="case"&&p.partner==="active"&&p.file.length>=6){m=find(function(x){return x.t==="assist"});if(m)return m}
   var h=hardMove(p,o);
-  if(h){var m1=moves.find(function(m){return h.kind==="deduce"?(m.t==="ded"&&m.uid===h.c.uid):(m.t==="act"&&m.uid===h.c.uid&&(h.kind==="case"?m.to==="case":m.to===h.t.uid))});if(m1)return m1}
-  return moves.find(function(m){return m.t==="end"});
+  if(h){m=find(function(x){return h.kind==="deduce"?(x.t==="ded"&&x.uid===h.c.uid):(x.t==="act"&&x.uid===h.c.uid&&(h.kind==="case"?x.to==="case":x.to===h.t.uid))});if(m)return m}
+  return find(function(x){return x.t==="end"});
+}
+/* reactions on the opponent's turn (and its own): guard, Cut-in or Disguise, each imagined to the end of the game */
+async function afterAction(){
+  var a=G.attacker;if(!a)return;
+  if(a.o.scene.indexOf(a.c)>-1)await trigger(a.o,a.c,"actEnd",{});
+  a.c.actBonus=0;a.c.battle=0;G.noCutin=null;G.attacker=null;G.noEvidence=false;G.forceGuard=false;
+}
+async function pickReaction(pi,options,def){
+  var seed=(Math.random()*1e9)|0,best=def,bestV=await weigh(pi,{t:"react",run:options[def]},seed);
+  for(var k in options){
+    if(k===def)continue;
+    var v=await weigh(pi,{t:"react",run:options[k]},seed);
+    if(v>bestV+LOOK.margin){bestV=v;best=k}
+  }
+  return best;
+}
+async function expertGuard(dpi,atk,tgt,guards,pi){
+  var o=G.p[dpi],p=G.p[pi],options={},h=hardGuard(p,o,atk,tgt,guards);
+  function plan(v){return async function(){
+    G.force={kind:"guard",v:v};
+    var a=findIn(G.p[pi].scene,atk.uid);if(!a)return;
+    var t2=tgt.kind==="case"?{kind:"case"}:{kind:"char",c:findIn(G.p[dpi].scene,tgt.c.uid)};
+    if(t2.kind==="char"&&!t2.c)return;
+    await doActionInner(pi,a,t2);await afterAction();
+    await finishTurnHard(G.p[G.cur]);
+  }}
+  options.none=plan(null);guards.forEach(function(g){options["g"+g.uid]=plan(g.uid)});
+  var pickK=await pickReaction(dpi,options,h?"g"+h.uid:"none");
+  return pickK==="none"?null:guards.find(function(g){return "g"+g.uid===pickK})||null;
+}
+async function expertCutin(pl,cis,dis,my,their,mineA){
+  var me=G.p[pl],mine=mineA?G.cc.atk:G.cc.def,CV=function(c){return cutValue(c,me,mine)},options={},seen={};
+  /* the Master Sleuth choice is the one to beat */
+  var need=mineA?their:their+1,def="pass";
+  var better=my<need?dis.find(function(c){return c.ap>=need}):null;
+  if(better)def="d"+better.uid;
+  else{var hc=cis.slice().sort(function(x,y){return CV(x)-CV(y)}).find(function(c){return mineA?(my<their&&my+CV(c)>=their):(their>=my&&my+CV(c)>their)});if(hc)def="c"+hc.uid}
+  function plan(v){return async function(){
+    G.force={kind:"cut",pl:pl,v:v};
+    await contactRun();await afterAction();
+    await finishTurnHard(G.p[G.cur]);
+  }}
+  options.pass=plan(null);
+  cis.forEach(function(c){var key=c.k+"|"+CV(c);if(seen[key]&&"c"+c.uid!==def)return;seen[key]=1;options["c"+c.uid]=plan(c.uid)});
+  dis.forEach(function(c){options["d"+c.uid]=plan("d"+c.uid)});
+  if(!options[def])def="pass";
+  var k=await pickReaction(pl,options,def);
+  return k==="pass"?null:k.charAt(0)==="d"?k:+k.slice(1);
 }
 async function expertTurn(pi){
   var p=G.p[pi];
+  if(!G.sim)log(TT("The opponent thinks a few turns ahead…","Đối thủ đang tính trước vài lượt…"));
   await sleep(700);
   for(var n=0;n<16;n++){
     await aiSolve(p);

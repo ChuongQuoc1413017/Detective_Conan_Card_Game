@@ -1,4 +1,4 @@
-/* Runs every test. node tests/run.js         (under a minute)
+/* Runs every test. node tests/run.js         (about 3 minutes; most of it is the look-ahead bot)
                      node tests/run.js --full  (more games, several minutes) */
 "use strict";
 const { spawnSync } = require("child_process"), path = require("path");
