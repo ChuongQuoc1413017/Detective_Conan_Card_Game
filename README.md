@@ -88,7 +88,7 @@ Play a simplified match against a bot with four levels.
 | Novice | Easy | Plays at random and often misses chances. |
 | Sleuth | Normal | Plays its strongest cards and mostly gathers evidence. The default. |
 | Master Sleuth | Hard | Attacks your evidence, picks off sleeping characters and guards with care. |
-| Detective vs Sleuth (Thám tử đối đầu) | Expert | Thinks ahead. For each move it could make, it plays the rest of the game out in its head many times and picks the move that wins most often. |
+| Detective vs Sleuth (Thám tử đối đầu) | Expert | Thinks ahead. For each move it could make, and for each way to guard your Actions, it plays the rest of the game out in its head many times and picks the choice that wins most often. |
 
 The bot never looks at your hand or either deck, and your chosen level is remembered in your browser. Detective vs Sleuth stays fair the same way: before each imagined game it reshuffles everything it cannot see (your hand together with your deck, and its own deck).
 
@@ -229,7 +229,7 @@ This downloads the card list from the database and reports new and changed cards
 
 This is a learning aid, not an official rules engine or a replacement for the physical game.
 
-- **Simplified bot:** Novice, Sleuth and Master Sleuth follow fixed rules of thumb. Detective vs Sleuth looks ahead only on its own turn; when guarding or using Cut-ins on your turn it reacts like Master Sleuth.
+- **Simplified bot:** Novice, Sleuth and Master Sleuth follow fixed rules of thumb. Detective vs Sleuth looks ahead for its own moves and its guards, but uses Master Sleuth's rule for Cut-ins and Disguise: imagining those choices made it slightly weaker in testing, so it is switched off (`LOOK.cut` in `practice.js`).
 - **Limited card interactions:** not every official mechanic or card effect is implemented.
 - **Practice simplifications:** about a quarter of printed abilities are not run in own-deck games (those cards are marked ⚠️), and cards put on the bottom of the deck are not kept in exact order.
 - **Paraphrased card text:** check the physical card for exact wording.

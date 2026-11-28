@@ -2036,7 +2036,13 @@ async function hardTurn(pi){
    and keeps the move whose futures turn out best on average.
    It does not peek: before each imagined game it reshuffles what it cannot see
    (your hand together with your deck, and its own deck). */
-var LOOK={tries:24,turns:40,margin:0.06,guard:true,cut:true};
+/* guard: imagine each guard choice on the opponent's turn (on).
+   cut: imagine each Cut-in / Disguise choice in a Contact. Off: in 240 paired games it lost slightly more
+   often than Master Sleuth's own Cut-in rule (20 games worse, 16 better even with a strict margin). */
+var LOOK={tries:24,turns:40,margin:0.06,cutMargin:0.2,guard:true,cut:false};
+/* the look-ahead uses its own dice and never touches the game's, so the game plays out the same whatever it imagines */
+var lookCount=0;
+function lookSeed(){lookCount++;return (lookCount*2654435761+(G?G.turn*40503:0))>>>0}
 /* a repeatable random source, so every move is tried against the same imagined draws */
 function seeded(seed){var s=seed>>>0||1;return function(){s=(s+0x6D2B79F5)>>>0;var z=s;z=Math.imul(z^(z>>>15),z|1);z^=z+Math.imul(z^(z>>>7),z|61);return ((z^(z>>>14))>>>0)/4294967296}}
 function cloneState(x,memo){
@@ -2199,12 +2205,13 @@ async function afterAction(){
   if(a.o.scene.indexOf(a.c)>-1)await trigger(a.o,a.c,"actEnd",{});
   a.c.actBonus=0;a.c.battle=0;G.noCutin=null;G.attacker=null;G.noEvidence=false;G.forceGuard=false;
 }
-async function pickReaction(pi,options,def){
-  var seed=(Math.random()*1e9)|0,best=def,bestV=await weigh(pi,{t:"react",run:options[def]},seed);
+async function pickReaction(pi,options,def,margin){
+  margin=margin===undefined?LOOK.margin:margin;
+  var seed=lookSeed(),best=def,bestV=await weigh(pi,{t:"react",run:options[def]},seed);
   for(var k in options){
     if(k===def)continue;
     var v=await weigh(pi,{t:"react",run:options[k]},seed);
-    if(v>bestV+LOOK.margin){bestV=v;best=k}
+    if(v>bestV+margin){bestV=v;best=k}
   }
   return best;
 }
@@ -2238,7 +2245,7 @@ async function expertCutin(pl,cis,dis,my,their,mineA){
   cis.forEach(function(c){var key=c.k+"|"+CV(c);if(seen[key]&&"c"+c.uid!==def)return;seen[key]=1;options["c"+c.uid]=plan(c.uid)});
   dis.forEach(function(c){options["d"+c.uid]=plan("d"+c.uid)});
   if(!options[def])def="pass";
-  var k=await pickReaction(pl,options,def);
+  var k=await pickReaction(pl,options,def,LOOK.cutMargin);
   return k==="pass"?null:k.charAt(0)==="d"?k:+k.slice(1);
 }
 async function expertTurn(pi){
@@ -2250,7 +2257,7 @@ async function expertTurn(pi){
     var moves=expertMoves(p);
     if(moves.length===1&&moves[0].t==="end")break;
     if(moves[0].t==="solve"){await doMove(p,moves[0]);break}
-    var seed=(Math.random()*1e9)|0,def=hardDefault(p,moves),best=def,bestV=await weigh(pi,def,seed);
+    var seed=lookSeed(),def=hardDefault(p,moves),best=def,bestV=await weigh(pi,def,seed);
     for(var i=0;i<moves.length;i++){
       if(moves[i]===def)continue;
       var v=await weigh(pi,moves[i],seed);
