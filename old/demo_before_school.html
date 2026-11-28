@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo match · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#8f5a36">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="Demo match · Conan TCG" data-title-vi="Ván mẫu · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" aria-current="page" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" data-vi="🎮 Chơi thử">🎮 Play</a><a href="deck.html" data-vi="🃏 Bộ bài">🃏 Deck</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap">
+<div class="pagehead"><h1 data-vi="Xem ván mẫu 🎬">Watch a demo match 🎬</h1><p data-vi="Theo dõi trọn một ván từ lá đầu tiên đến “Phá án!”. Bấm Tiếp. Ô phát sáng là chỗ vừa thay đổi.">Follow one whole game from the first card to “Case Solved!”. Press Next. The glowing box shows what changed.</p></div><div class="demogrid"><div class="demoside"><div class="demobar" aria-hidden="true"><i id="dBar"></i></div><div class="panel say" id="dSay" aria-live="polite"></div><div class="democtl"><button class="btn ghost" id="dPrev" type="button">Back</button><button class="btn" id="dNext" type="button">Next</button><button class="btn ghost" id="dAuto" type="button">Auto play</button></div></div><div id="dTable"></div></div><p class="why"><span data-vi="Câu chuyện dạy chơi đã đơn giản hóa: thứ tự bài được sắp trước và một số hiệu ứng được bỏ qua.">A simplified teaching story: the card order is chosen in advance and some card effects are skipped.</span></p><div class="pager"><a class="btn ghost" href="actions.html" data-vi="◀ ⚡ Hành động">◀ ⚡ Moves</a><a class="btn next" href="practice.html" data-vi="🎮 Chơi thử ▶">🎮 Play ▶</a></div>
+</main>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+<script src="assets/site.js"></script>
+<script src="assets/demo.js"></script>
+
+</body>
+</html>

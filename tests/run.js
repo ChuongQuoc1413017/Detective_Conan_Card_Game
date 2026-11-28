@@ -9,7 +9,8 @@ const TESTS = [
   ["Random own-deck games", "games.js", [full ? "10000" : "2000"]],
   ["Bot levels", "levels.js", [full ? "7200" : "720"]],
   ["Puzzles", "puzzles.js", []],
-  ["MR card rules", "mr.js", [full ? "3000" : "600"]]
+  ["MR card rules", "mr.js", [full ? "3000" : "600"]],
+  ["Daily case, two players, guided game", "features.js", [full ? "30" : "6"]]
 ];
 
 let failed = [];

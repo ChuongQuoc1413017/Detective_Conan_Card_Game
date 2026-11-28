@@ -2,12 +2,12 @@
    Pages and scripts: use the network when online (so updates show), fall back to the saved copy offline.
    Card images: saved the first time they are shown, then loaded from the saved copy.
    Change VERSION when the list of files below changes. */
-const VERSION = "conan-v1";
+const VERSION = "conan-v7";
 const CORE = [
   "./", "index.html", "board.html", "turn.html", "actions.html", "demo.html", "practice.html",
-  "deck.html", "quiz.html", "words.html", "about.html",
+  "deck.html", "quiz.html", "words.html", "about.html", "detective.html",
   "assets/style.css", "assets/site.js", "assets/demo.js", "assets/deck.js",
-  "assets/cards-data.js", "assets/cards-i18n.js", "assets/cards-translate.js", "assets/card-effects.js",
+  "assets/cards-data.js", "assets/cards-i18n.js", "assets/cards-translate.js", "assets/card-effects.js", "assets/fx.js", "assets/facts.js", "assets/school.js",
   "practice.js", "logo.jpeg", "manifest.webmanifest", "assets/icons/icon-192.png", "assets/icons/icon-512.png"
 ];
 const IMAGES = VERSION + "-images", MAX_IMAGES = 400;

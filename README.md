@@ -83,6 +83,8 @@ The demo is a teaching story: the card order is chosen in advance and some card 
 
 Play a simplified match against a bot with four levels.
 
+At the top of the page, a **🔍 Did you know?** box shows a random fact each time you open or refresh the page: one of 28 detectives, mystery writers, real people and stories that Gosho Aoyama drew names and ideas from (Sherlock Holmes, Edogawa Ranpo, Arsène Lupin, Hercule Poirot, Ellery Queen, Inspector Maigret and more), and which Conan characters they inspired. Each fact comes with a **🔎 Detective tip** based on it, and a link to Detective School. **🔄 Another fact** shows a different one. The facts live in `assets/facts.js`, in English and Vietnamese.
+
 | Bot level | Difficulty | How it plays |
 |---|---|---|
 | Novice | Easy | Plays at random and often misses chances. |
@@ -98,10 +100,22 @@ The bot never looks at your hand or either deck, and your chosen level is rememb
 - Press **💡 Hint** during your turn to see what the Master Sleuth bot would do in your place, and why.
 - Inspect cards, read the game log and view the Remove area.
 - **🧪 Test my deck** plays your own deck against each starter deck 100 times (bot against bot) and shows the win rates. Only supported abilities are used, so treat it as a rough guide.
+- **🎒 Guided first game:** a game against the Novice where a coach bar explains each step and highlights the button or card to press next.
+- **👥 A friend on this device:** two players take turns on one screen. Between turns a cover screen hides both hands until the next player taps to continue, and the player to move is always shown at the bottom. The other player is asked directly when they can guard, use a Cut-in or Misdirect.
+- **🎞️ Replay:** after a game, step through it line by line or turn by turn, or let it play, with a small picture of both sides at each step.
+- **🏅 Record and badges:** wins and losses against each bot level, and 18 badges (beat each level, win with all six starter decks, solve every puzzle, daily streaks, perfect quiz and more). Saved in your browser only.
+
+#### Animations and sound
+
+Cards glide between areas when they are drawn, played, removed or return to hand, and cards from the deck turn face up as they arrive. A Contact gets its own short scene: both cards slide in, AP counts up to the final total including Cut-ins, and the loser shakes and fades. Guards flash a shield, evidence changes float up as +1 🔎 / −1 🔎, and a win ends with a stamp and confetti. While Detective vs Sleuth thinks ahead, a magnifying glass moves in the turn bar so the pause does not look like a freeze.
+
+**⚙️ Settings** (on the Play page and in the turn bar) turns animations on or off, sets their speed (slow, normal, fast) and turns sound on or off. Sounds are made in the browser, so there are no sound files; sound is off by default. If your system asks for reduced motion, animations start switched off. All of this lives in `assets/fx.js`; the game plays the same without it.
 
 ### 🧩 Puzzles
 
 Short challenges on the Play page: the board is set up for you, and you must find the moves that solve the case in one turn. Each puzzle teaches one idea (keep your partner awake, play a Swift character, use Next Hint). Solved puzzles get a ✅ in your browser.
+
+**📅 Daily case:** a new "win in one turn" board every day, the same for everyone on that date. The page builds it from the date, then checks that the Master Sleuth bot, playing your side, can solve it in one turn; if not, it tries the next board. The opponent plays as Master Sleuth. Solving it on consecutive days builds a 🔥 streak, shown on the Play page and the home page.
 
 ### 🃏 Deck Builder
 
@@ -114,6 +128,9 @@ Build a 40-card deck from the full card list.
 - **🎴 Sample opening hand** deals 5 random cards from your deck.
 - **🔗 Share link** copies a link such as `deck.html#deck=D01001,D01016,D01002*3,…`. Opening it loads that deck; no server or account is involved.
 - **🖨️ Print** gives a clean deck list sheet with a space for your name, for events.
+- **🖼️ Deck picture** draws the whole deck as one image to save or share: partner, case, counts, and every card with its copies. The official site does not allow its card pictures to be copied into an image, so booster cards are drawn as tiles (colour, level, name, AP and LP); starter-deck cards use the pictures in `Card_List` when the site is served (not when the file is opened directly).
+- Rare cards (SR, MR, SEC, SP and parallels) tilt toward the pointer and catch a foil shine.
+- A link such as `deck.html#card=B01092` opens that card.
 - In the card view, tap a **[keyword]** to see what it means, or use **🐞 Report a problem with this card** to open a pre-filled GitHub issue.
 - Color dots carry a letter (B, G, W, R, Y, K for black) so colors can be told apart without seeing them.
 
@@ -132,6 +149,38 @@ Card data is read only from the saved copy in `assets/cards-data.js`, taken from
 ### 📖 Glossary and Advanced Rules
 
 Search game terms next to their Japanese names. Refresh, MR cards and multi-character names are explained in a separate fold-out section.
+
+### 🔍 Detective School
+
+`detective.html` is a short course for kids and young adults in five sections, each with its own progress bar and certificate.
+
+**🕵️ Become a detective** (nine lessons):
+
+| # | Lesson | Activity |
+|---|---|---|
+| 1 | The detective mindset | The six questions (who, what, when, where, why, how) for a lost hamster |
+| 2 | Observe, don't just look | Memory game: spot the object that changed |
+| 3 | Listen and ask good questions | Sort open and closed questions |
+| 4 | Finding and keeping clues | Pick the real clues about a missing library book |
+| 5 | Notes and timelines | Put a Saturday morning in time order |
+| 6 | Fact, opinion or guess? | Sort statements |
+| 7 | Reasoning: test every idea | Logic puzzle: who borrowed the red umbrella? |
+| 8 | Codes and patterns | Crack a Caesar cipher, then make your own |
+| 9 | Explaining it, the kind way | What would a good detective do? (kindness, honesty, safety, privacy) |
+
+**🙂 Body language** (four lessons): reading faces, posture and gestures, why body language is a clue and not proof (no "spotting liars"), and your own listening body language. Activities: match faces to feelings, choose what a gesture might mean, true or myth, good listening signals.
+
+**🛡️ Staying safe** (four lessons): real detectives hand risky things to grown-ups and trust their "uh-oh" feeling; tricky people, family code words and safe vs unsafe secrets; what to do when lost, with emergency numbers (Vietnam 113/114/115, Europe 112, US and Canada 911, UK 999, Australia 000); and staying safe online. Activities: "my case or a grown-up's case?", what would you do?, put the lost-in-a-shopping-centre steps in order, share or keep private.
+
+**🦉 Become a polymath** (five lessons): what a polymath is and why knowing many subjects helps a detective; learning a new skill (small steps, daily practice, feedback); remembering more (self-testing, spacing, the memory palace, chunking, sleep); a healthy body (sleep, at least an hour of activity a day, food, water, screen breaks); a healthy, calm mind (box breathing, "not yet" thinking, talking about feelings). Activities: which subject cracks the clue, order the steps for learning a magic trick, build and test your own memory palace, brain fuel or brain drain, what helps here?
+
+**💡 Be creative** (five lessons): everyone can be creative (go wide, then narrow); changing your point of view (flip the problem, SCAMPER, "what if?"); connecting unrelated ideas (random words, nature, mixing hobbies); creative habits (idea notebook, breaks, "Yes, and…"); creative problem solving (understand, imagine, choose, prototype, improve). Activities: a two-minute idea storm for everyday objects, which SCAMPER trick is it, the random-word idea generator, idea booster or blocker, order the steps for inventing a lost-pencil finder.
+
+Every case is a friendly one, with no violence. Progress is saved in the browser. Finishing a section unlocks its printable certificate (**Junior Detective**, **Body Language Reader**, **Safety Star**, **Young Polymath**, **Creative Thinker**) and a matching badge on the Play page. A link such as `detective.html#safe` (or `#detect`, `#body`, `#poly`, `#create`) opens a section directly. The lessons live in `assets/school.js`.
+
+### 🏠 Home Page
+
+Shows your daily streak, badges and wins, and a **card of the day**: a different character or event each day with its picture, translated text and a link to open it in the deck builder. The card list loads only after the page itself, so the home page stays quick.
 
 ### ⭐ Rules Quiz
 
@@ -159,7 +208,7 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 ```text
 .
 ├── index.html, board.html, turn.html, actions.html, demo.html,
-│   deck.html, practice.html, quiz.html, words.html, about.html
+│   deck.html, practice.html, quiz.html, words.html, about.html, detective.html
 ├── assets/
 │   ├── style.css      Shared light brown brick theme
 │   ├── site.js        Language switch, guides, helpers, glossary and quiz
@@ -169,6 +218,9 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 │   ├── cards-i18n.js  English and Vietnamese card text
 │   ├── cards-translate.js  Applies the translations
 │   ├── card-effects.js  Reads card text into game effects
+│   ├── fx.js          Animations, sounds and foil shine (optional)
+│   ├── facts.js       "Did you know?" facts and tips for the Play page
+│   ├── school.js      Detective School lessons and activities
 │   └── icons/         App icons
 ├── practice.js        Practice game, bot, puzzles and deck test
 ├── sw.js, manifest.webmanifest  Offline support and app install
@@ -206,6 +258,7 @@ This takes about 3 minutes, most of it for the look-ahead bot; add `--full` for 
 | Bot levels | `tests/levels.js` | Each bot level still beats the level below it with the starter decks (Detective vs Sleuth is checked against Master Sleuth with fewer games, as it is slower). |
 | Puzzles | `tests/puzzles.js` | Each puzzle can be solved, a wrong line fails, and the hint points the right way. |
 | MR card rules | `tests/mr.js` | The three MR rules, Partner-area abilities, and many games with MR-heavy decks. |
+| Daily case, two players, guided game | `tests/features.js` | Daily boards are the same for a date, differ between dates and can be won; two-player games finish with the mover always at the bottom; the guided game and the record are saved. |
 
 After adding support for more abilities, run `node tests/coverage.js --save` to raise the baseline, and `node tests/coverage.js --top 30` to see the most common unsupported lines. `node tools/why-unsupported.js` goes further: for each unsupported line it names the exact part (a trigger, condition, cost or effect sentence) the card reader does not understand yet, and `node tools/why-unsupported.js 0 B04018` explains a single card.
 

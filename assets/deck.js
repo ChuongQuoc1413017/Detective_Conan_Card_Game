@@ -166,6 +166,61 @@ function printSheet(){
   window.print();
 }
 
+/* ---------- deck picture: one image of the whole deck, to post or send ----------
+   Card pictures from the official site cannot be copied into an image (the site does not allow it),
+   so each card is drawn as a tile; starter-deck cards use the pictures saved in Card_List when the page is served. */
+function localImg(c){var m=/^D0(\d)\d{3}$/.exec(c.num);return m?"Card_List/CT-D0"+m[1]+"/"+c.num+".webp":null}
+function loadImg(src){return new Promise(function(r){if(!src||location.protocol==="file:")return r(null);var im=new Image();im.onload=function(){r(im)};im.onerror=function(){r(null)};im.src=src})}
+var HEX={blue:"#1f5fbf",green:"#1f8a3b",white:"#d9d9d9",red:"#c62828",yellow:"#f2c200",black:"#1b1b20"};
+function colorKeys(c){return c.colors.map(function(ch){var k=COLORS.filter(function(x){return x[0]===ch})[0];return k?k[1]:"black"})}
+async function deckPicture(){
+  var p=byNum[deck.partner],k=byNum[deck.caze];
+  var main=Object.keys(deck.list).map(function(x){return byNum[x]}).filter(Boolean).sort(function(a,b){return (a.type===b.type?0:a.type==="キャラ"?-1:1)||(a.cost-b.cost)||(a.num<b.num?-1:1)});
+  if(!main.length&&!p&&!k){say(T("The deck is empty.","Bộ bài đang trống."));return}
+  say(T("Drawing the picture…","Đang vẽ ảnh…"));
+  var cols=6,tw=180,th=252,gap=14,pad=36,head=150,rows=Math.ceil(main.length/cols)||1;
+  var W=pad*2+cols*tw+(cols-1)*gap,H=head+pad+rows*(th+gap)+60;
+  var imgs=await Promise.all(main.concat([p,k].filter(Boolean)).map(function(c){return loadImg(localImg(c))}));
+  function draw(useImgs){
+    var cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+    var bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#3b2111");bg.addColorStop(1,"#1d1008");g.fillStyle=bg;g.fillRect(0,0,W,H);
+    g.fillStyle="#fbead0";g.font="700 40px 'Baloo 2', Nunito, sans-serif";g.textBaseline="top";
+    g.fillText(T("My deck","Bộ bài của tôi")+" · "+total()+" / "+DECK_SIZE,pad,pad-6);
+    g.font="600 22px Nunito, sans-serif";g.fillStyle="#e8c9a0";
+    g.fillText((p?T("Partner: ","Cộng sự: ")+p.name:"")+(p&&k?"   ·   ":"")+(k?T("Case: ","Vụ án: ")+k.name:""),pad,pad+46);
+    var chars=main.filter(function(c){return c.type==="キャラ"}).reduce(function(n,c){return n+deck.list[c.num]},0);
+    g.fillText(T("Characters ","Nhân vật ")+chars+"  ·  "+T("Events ","Sự kiện ")+(total()-chars),pad,pad+78);
+    main.forEach(function(c,i){
+      var x=pad+(i%cols)*(tw+gap),y=head+Math.floor(i/cols)*(th+gap),ks=colorKeys(c),im=useImgs&&imgs[i];
+      g.save();rr(g,x,y,tw,th,14);g.clip();
+      if(im){g.drawImage(im,x,y,tw,th)}
+      else{
+        var gr=g.createLinearGradient(x,y,x,y+th);gr.addColorStop(0,"#fffaf1");gr.addColorStop(1,"#eddcc2");g.fillStyle=gr;g.fillRect(x,y,tw,th);
+        ks.forEach(function(kk,j){g.fillStyle=HEX[kk];g.fillRect(x+j*tw/ks.length,y,tw/ks.length+1,40)});
+        g.fillStyle="#4a3222";g.font="700 21px Nunito, sans-serif";wrap(g,c.name,x+12,y+54,tw-24,25,4);
+        g.font="600 16px Nunito, sans-serif";g.fillStyle="#765b46";
+        g.fillText(c.type==="キャラ"?"AP "+(c.ap||0)+" · LP "+(c.lp||0):T("Event","Sự kiện"),x+12,y+th-58);
+        g.fillText(c.num,x+12,y+th-34);
+        if(c.cost!=null){g.fillStyle="#fff";g.beginPath();g.arc(x+26,y+20,16,0,7);g.fill();g.fillStyle="#4a3222";g.font="700 20px Nunito, sans-serif";g.textAlign="center";g.fillText(String(c.cost),x+26,y+9);g.textAlign="left"}
+      }
+      g.restore();
+      g.fillStyle="#c4392f";rr(g,x+tw-58,y+th-46,50,38,12);g.fill();
+      g.fillStyle="#fff";g.font="700 24px 'Baloo 2', Nunito, sans-serif";g.textAlign="center";g.fillText("×"+deck.list[c.num],x+tw-33,y+th-42);g.textAlign="left";
+    });
+    g.fillStyle="#b98a5c";g.font="600 16px Nunito, sans-serif";g.fillText(T("Made with the Conan TCG primer · unofficial study aid","Tạo bằng trang học Conan TCG · tài liệu không chính thức"),pad,H-40);
+    return cv;
+  }
+  var cv=draw(true),url;
+  try{url=cv.toDataURL("image/png")}catch(e){cv=draw(false);url=cv.toDataURL("image/png")}
+  $("#picbody").innerHTML='<h3>'+T("Deck picture","Ảnh bộ bài")+'</h3><img src="'+url+'" alt="'+esc(T("Picture of the deck","Ảnh bộ bài"))+'"><div class="pbtns"><a class="btn" download="conan-deck.png" href="'+url+'">'+T("⬇️ Save picture","⬇️ Lưu ảnh")+'</a>'+(navigator.canShare?'<button type="button" class="btn ghost" id="picshare">'+T("📤 Share","📤 Chia sẻ")+'</button>':'')+'<button type="button" class="btn ghost" data-close>'+T("Close","Đóng")+'</button></div>';
+  var sh=$("#picshare");
+  if(sh)sh.addEventListener("click",function(){cv.toBlob(function(b){var file=new File([b],"conan-deck.png",{type:"image/png"});if(navigator.canShare({files:[file]}))navigator.share({files:[file],title:T("My Conan TCG deck","Bộ bài Conan TCG của tôi")}).catch(function(){});else say(T("This browser cannot share pictures. Use Save instead.","Trình duyệt này không chia sẻ được ảnh. Hãy dùng Lưu ảnh."))})});
+  $("#picview").showModal();say("");
+}
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function wrap(g,text,x,y,w,lh,max){var words=String(text).split(/\s+/),line="",n=0;for(var i=0;i<words.length;i++){var t=line?line+" "+words[i]:words[i];if(g.measureText(t).width>w&&line){g.fillText(line,x,y+n*lh);n++;line=words[i];if(n>=max-1)break}else line=t}if(n<max)g.fillText(line,x,y+n*lh)}
+function isRare(c){return /^(SR|MR|SEC|SP)|CP|P$/.test(c.rarity||"")}
+
 /* ---------- rendering ---------- */
 /* the letter inside each color dot helps players who cannot tell the colors apart */
 var LETTER={blue:["B","X"],green:["G","L"],white:["W","T"],red:["R","Đ"],yellow:["Y","V"],black:["K","Đe"]};
@@ -183,7 +238,7 @@ function renderResults(){
   $("#count").textContent=list.length+" "+T("card"+(list.length===1?"":"s"),"lá")+(box?T(" in "+box," trong "+box):"");
   $("#results").innerHTML=list.slice(0,shown).map(function(c){
     var n=inDeck(c),why=blocked(c);
-    return '<div class="cc"><button type="button" class="cc-img" data-view="'+esc(c.num)+'">'+pic(c,"cimg2")+(n?'<span class="qty">×'+n+'</span>':'')+'</button>'+
+    return '<div class="cc"><button type="button" class="cc-img'+(isRare(c)?' rare':'')+'" data-view="'+esc(c.num)+'">'+(isRare(c)?'<span class="rarity-tag">'+esc(c.rarity)+'</span>':'')+pic(c,"cimg2")+(n?'<span class="qty">×'+n+'</span>':'')+'</button>'+
       '<b>'+dots(c)+esc(c.name)+'</b><small>'+esc(c.num)+' · '+esc(c.rarity)+'</small><small>'+esc(stats(c))+'</small>'+
       '<button type="button" class="btn" data-add="'+esc(c.num)+'"'+(why?' disabled title="'+esc(why)+'"':'')+'>'+(c.type==="パートナー"?T("Set partner","Chọn cộng sự"):c.type==="事件"?T("Set case","Chọn vụ án"):T("+ Add","+ Thêm"))+'</button></div>';
   }).join("")||'<p>'+T("No cards match. Try fewer words or choose “All boxes”.","Không có lá nào phù hợp. Thử ít chữ hơn hoặc chọn “Tất cả các hộp”.")+'</p>';
@@ -309,6 +364,10 @@ $("#share").addEventListener("click",function(){
   var fail=function(){$("#io").select();say(T("Select the link below and copy it.","Hãy chọn và sao chép liên kết bên dưới."))};
   if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){say(T("Share link copied. Anyone who opens it gets this deck.","Đã sao chép liên kết. Ai mở liên kết sẽ nhận được bộ bài này."))},fail);else fail();
 });
+$("#picture").addEventListener("click",function(){deckPicture()});
+$("#picview").addEventListener("click",function(e){if(e.target.closest("[data-close]")||e.target===$("#picview"))$("#picview").close()});
+/* a link like deck.html#card=D01001 opens that card (used by the card of the day on the home page) */
+function openCard(){var m=/[#&]card=([A-Za-z0-9-]+)/.exec(location.hash);if(!m||!byNum[m[1]])return;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}var c=byNum[m[1]];$("#fbox").value="";$("#fq").value=c.name;try{$("#fq").dispatchEvent(new Event("input"))}catch(e){}view(c.num)}
 $("#print").addEventListener("click",function(){if(!total()&&!deck.partner&&!deck.caze){say(T("The deck is empty.","Bộ bài đang trống."));return}printSheet()});
 /* a link like deck.html#deck=D01001,D01016,D01002*3 opens a shared deck */
 function openShared(){
@@ -324,5 +383,5 @@ $("#clear").addEventListener("click",function(){
 });
 document.addEventListener("conan-lang",function(e){LANG=e.detail&&e.detail.lang==="vi"?"vi":"en";say("");$("#view").close();setNames();fillBoxes();renderAll()});
 
-if(window.CONAN_CARDS){use(window.CONAN_CARDS);openShared();window.addEventListener("hashchange",openShared)}else $("#count").textContent=T("The card list file (assets/cards-data.js) is missing.","Thiếu tệp danh sách lá bài (assets/cards-data.js).");
+if(window.CONAN_CARDS){use(window.CONAN_CARDS);openShared();openCard();window.addEventListener("hashchange",function(){openShared();openCard()});if(window.ConanFX){ConanFX.shine($("#results"),".rare")}}else $("#count").textContent=T("The card list file (assets/cards-data.js) is missing.","Thiếu tệp danh sách lá bài (assets/cards-data.js).");
 })();
