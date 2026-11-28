@@ -334,3 +334,7 @@ var mc=$("#mailCopy");if(mc)mc.addEventListener("click",function(){var t=$("#mai
 window.__redraw=function(){showArea();[["#phaseList",function(){renderSteps()}],["#lvlOut",function(){lvl()}],["#actTabs",function(){renderTabs()}],["#winOut",function(){win()}],["#contactOut",function(){contact()}],["#glList",function(){renderGl()}],["#quizBox",function(){renderQ()}]].forEach(function(x){if($(x[0]))x[1]()})};
 applyStatic();if(LANG==="vi")window.__redraw();
 })();
+/* offline support: only when served over http(s); opening the files directly still works without it */
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+}

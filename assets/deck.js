@@ -93,8 +93,83 @@ function remove(num){
 }
 function say(t){$("#msg").textContent=t}
 
+/* ---------- keyword tips (tap a [keyword] in card text) ---------- */
+var KW=[
+ [["Declare","Tuyên bố"],["You choose to use this ability during your Main phase.","Bạn tự chọn dùng năng lực này trong giai đoạn Chính."]],
+ [["Once per turn","lần mỗi lượt"],["Can be used only this many times each turn.","Chỉ dùng được bấy nhiêu lần mỗi lượt."]],
+ [["On enter","Khi vào sân"],["Happens when this character enters your Scene.","Xảy ra khi nhân vật này vào Hiện trường của bạn."]],
+ [["Cut-in"],["During a Contact, remove this card from your hand to give one of the characters in the Contact extra AP.","Trong một lần Tiếp xúc, loại lá này khỏi tay để cho một nhân vật đang Tiếp xúc thêm AP."]],
+ [["Flash of insight","Tia linh cảm"],["Used when this card is turned over from your evidence, for example when an opposing Action hits your case.","Dùng khi lá này được lật ra từ chứng cứ của bạn, ví dụ khi Hành động của đối thủ đánh trúng Vụ án của bạn."]],
+ [["Solution phase","Giai đoạn giải đáp"],["Works only while your case is in its solution phase (reached with Assist when you have 7 or more FILE cards).","Chỉ có tác dụng khi Vụ án của bạn ở giai đoạn giải đáp (đạt được bằng Hỗ trợ khi có từ 7 lá FILE)."]],
+ [["Case phase","Giai đoạn vụ án"],["Works only while your case is still in its case phase.","Chỉ có tác dụng khi Vụ án của bạn còn ở giai đoạn vụ án."]],
+ [["Your turn","Lượt của bạn"],["Works only during your own turn.","Chỉ có tác dụng trong lượt của bạn."]],
+ [["Opponent's turn","Lượt đối thủ"],["Works only during your opponent's turn.","Chỉ có tác dụng trong lượt của đối thủ."]],
+ [["When removed from Scene","Khi bị loại khỏi Hiện trường"],["Happens when this character leaves your Scene, for example after losing a Contact.","Xảy ra khi nhân vật này rời Hiện trường, ví dụ sau khi thua một lần Tiếp xúc."]],
+ [["Assault","Đột kích"],["Can take Actions the turn it enters.","Có thể thực hiện Hành động ngay lượt vào sân."]],
+ [["Swift","Nhanh nhẹn"],["Can deduce or take Actions the turn it enters.","Có thể suy luận hoặc thực hiện Hành động ngay lượt vào sân."]],
+ [["Misdirect","Đánh lạc hướng"],["When your opponent deduces, you may put this character to sleep to lower the deducing card's LP by the number shown.","Khi đối thủ suy luận, bạn có thể cho nhân vật này ngủ để giảm LP của lá đang suy luận theo con số ghi trên lá."]],
+ [["Disguise","Cải trang"],["During a Contact, this card comes from your hand and swaps places with your character in the Contact. The swapped character goes to the bottom of your deck.","Trong một lần Tiếp xúc, lá này từ tay vào thay chỗ nhân vật của bạn đang Tiếp xúc. Nhân vật bị thay xuống đáy bộ bài."]],
+ [["Bond","Gắn kết"],["Works while you have the named character in your Scene.","Có tác dụng khi bạn có nhân vật được nêu tên ở Hiện trường."]],
+ [["Partner","Cộng sự"],["Works only if your Partner matches (its color or name).","Chỉ có tác dụng nếu Cộng sự của bạn phù hợp (màu hoặc tên)."]],
+ [["Case:","Vụ án:"],["Works only if your Case matches (its color or name).","Chỉ có tác dụng nếu Vụ án của bạn phù hợp (màu hoặc tên)."]],
+ [["FILE"],["Needs at least this many cards in your FILE area.","Cần ít nhất bấy nhiêu lá trong khu FILE."]]
+];
+function kwOf(label){var l=label.toLowerCase();for(var i=0;i<KW.length;i++){if(KW[i][0].some(function(w){var x=w.toLowerCase();return l.indexOf(x)===0||(x==="lần mỗi lượt"&&l.indexOf(x)>-1)}))return i}return -1}
+function kwify(html){return html.replace(/\[([^\]<]{1,60})\]/g,function(m,label){var i=kwOf(label);return i<0?m:'<button type="button" class="kw" data-kw="'+i+'" title="'+esc(T(KW[i][1][0],KW[i][1][1]))+'">'+m+'</button>'})}
+
+/* ---------- deck numbers ---------- */
+function mainCards(){var out=[];Object.keys(deck.list).forEach(function(k){var c=byNum[k];if(c)for(var i=0;i<deck.list[k];i++)out.push(c)});return out}
+/* chance that n cards drawn from a 40-card deck include at least one of k wanted cards */
+function atLeastOne(k,n){var miss=1;for(var i=0;i<n;i++)miss*=(DECK_SIZE-k-i)/(DECK_SIZE-i);return k?Math.round(100*(1-Math.max(0,miss))):0}
+function deckStats(){
+  var all=mainCards();if(!all.length)return "";
+  var chars=all.filter(function(c){return c.type==="キャラ"}),evs=all.length-chars.length;
+  var avg=function(l,f){var v=l.filter(function(c){return c[f]!=null});return v.length?v.reduce(function(s,c){return s+ +c[f]},0)/v.length:0};
+  var col={};all.forEach(function(c){c.colors.forEach(function(x){col[x]=(col[x]||0)+1})});
+  var swift=function(c){return /〚迅速〛/.test(c.text)},low=function(c){return c.cost<=3};
+  var groups=[[T("Level 1–3 card","Lá cấp 1–3"),all.filter(low).length],[T("Cut-in card","Lá Cut-in"),all.filter(function(c){return c.cut}).length],[T("Swift character","Nhân vật Nhanh nhẹn"),all.filter(swift).length],[T("Event","Sự kiện"),evs]];
+  var h='<h3>'+T("Deck numbers","Số liệu bộ bài")+'</h3><div class="dstats">'+
+    '<div><b>'+chars.length+'</b><small>'+T("Characters","Nhân vật")+'</small></div><div><b>'+evs+'</b><small>'+T("Events","Sự kiện")+'</small></div>'+
+    '<div><b>'+Math.round(avg(chars,"ap"))+'</b><small>'+T("Average AP","AP trung bình")+'</small></div><div><b>'+avg(chars,"lp").toFixed(1)+'</b><small>'+T("Average LP","LP trung bình")+'</small></div>'+
+    '<div><b>'+all.filter(function(c){return c.cut}).length+'</b><small>Cut-in</small></div><div><b>'+all.filter(function(c){return c.hira}).length+'</b><small>'+T("Flash","Linh cảm")+'</small></div></div>';
+  h+='<p class="why">'+COLORS.filter(function(c){return col[c[0]]}).map(function(c){return '<span class="dot dk-'+c[1]+'" data-l="'+LETTER[c[1]][LANG==="vi"?1:0]+'"></span>'+esc(T(c[2],c[3]))+' '+col[c[0]]}).join(" · ")+'</p>';
+  h+='<table class="odds"><tr><th>'+T("At least one…","Có ít nhất một…")+'</th><th>'+T("Opening hand (5)","Tay đầu (5)")+'</th><th>'+T("By turn 3 (8)","Đến lượt 3 (8)")+'</th></tr>'+
+    groups.filter(function(g){return g[1]}).map(function(g){return '<tr><td>'+esc(g[0])+' <small>('+g[1]+')</small></td><td>'+atLeastOne(g[1],5)+'%</td><td>'+atLeastOne(g[1],8)+'%</td></tr>'}).join("")+'</table>';
+  h+='<p class="why">'+T("Odds of drawing at least one such card, before any redraw. By turn 3 counts your 5 starting cards plus 3 draws.","Xác suất rút được ít nhất một lá như vậy, trước khi đổi bài. Đến lượt 3 tính 5 lá đầu và 3 lần rút.")+'</p>';
+  h+='<p><button type="button" class="btn ghost" id="samplebtn">'+T("🎴 Sample opening hand","🎴 Thử rút tay đầu")+'</button></p><div id="sample" class="samplehand"></div>';
+  return h;
+}
+function sampleHand(){
+  var all=mainCards();if(!all.length)return;
+  for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),x=all[i];all[i]=all[j];all[j]=x}
+  $("#sample").innerHTML=all.slice(0,5).map(function(c){return '<button type="button" class="cc-img" data-view="'+esc(c.num)+'" title="'+esc(c.name)+'">'+pic(c,"cimg2")+'</button>'}).join("");
+  $("#samplebtn").textContent=T("🎴 Draw again","🎴 Rút lại");
+}
+
+/* ---------- share link and print ---------- */
+function shareCode(){
+  var parts=[];
+  if(deck.partner)parts.push(deck.partner);
+  if(deck.caze)parts.push(deck.caze);
+  Object.keys(deck.list).sort().forEach(function(k){parts.push(deck.list[k]>1?k+"*"+deck.list[k]:k)});
+  return parts.join(",");
+}
+function fromShareCode(code){
+  return String(code||"").split(",").map(function(x){var m=/^([A-Za-z0-9-]+)(?:\*(\d+))?$/.exec(x.trim());return m?(m[2]||1)+" "+m[1]:""}).join("\n");
+}
+function printSheet(){
+  var p=byNum[deck.partner],k=byNum[deck.caze],main=Object.keys(deck.list).map(function(x){return byNum[x]}).filter(Boolean).sort(function(a,b){return (a.type===b.type?0:a.type==="キャラ"?-1:1)||(a.cost-b.cost)||(a.num<b.num?-1:1)});
+  var row=function(n,c){return '<tr><td>'+n+'</td><td>'+esc(c.num)+'</td><td>'+esc(c.name)+'<br><small lang="ja">'+esc(c.jp)+'</small></td><td>'+esc(T(TYPES[c.type][0],TYPES[c.type][1]))+'</td><td>'+(c.cost!=null?c.cost:"")+'</td></tr>'};
+  $("#printsheet").innerHTML='<h1>'+T("Deck list","Danh sách bộ bài")+'</h1><p>'+T("Player name","Tên người chơi")+': ________________________ &nbsp; '+T("Date","Ngày")+': ____________</p>'+
+    '<table><tr><th>'+T("Qty","SL")+'</th><th>'+T("Number","Số")+'</th><th>'+T("Card","Lá bài")+'</th><th>'+T("Type","Loại")+'</th><th>'+T("Lv","Cấp")+'</th></tr>'+
+    (p?row(1,p):'')+(k?row(1,k):'')+main.map(function(c){return row(deck.list[c.num],c)}).join("")+'</table><p>'+T("Main deck","Bộ chính")+': '+total()+' / '+DECK_SIZE+'</p>';
+  window.print();
+}
+
 /* ---------- rendering ---------- */
-function dots(c){return c.colors.map(function(ch){var k=COLORS.filter(function(x){return x[0]===ch})[0];return '<span class="dot dk-'+k[1]+'" title="'+esc(T(k[2],k[3]))+'"></span>'}).join("")}
+/* the letter inside each color dot helps players who cannot tell the colors apart */
+var LETTER={blue:["B","X"],green:["G","L"],white:["W","T"],red:["R","Đ"],yellow:["Y","V"],black:["K","Đe"]};
+function dots(c){return c.colors.map(function(ch){var k=COLORS.filter(function(x){return x[0]===ch})[0];return '<span class="dot dk-'+k[1]+'" data-l="'+LETTER[k[1]][LANG==="vi"?1:0]+'" role="img" aria-label="'+esc(T(k[2],k[3]))+'" title="'+esc(T(k[2],k[3]))+'"></span>'}).join("")}
 function pic(c,cls){return c.img?'<img class="'+cls+'" loading="lazy" referrerpolicy="no-referrer" src="'+esc(c.img)+'" alt="'+esc(c.name)+'">':'<span class="'+cls+' noimg">'+esc(c.name)+'</span>'}
 function stats(c){
   var a=[T(TYPES[c.type]?TYPES[c.type][0]:c.type,TYPES[c.type]?TYPES[c.type][1]:c.type)];
@@ -150,21 +225,29 @@ function renderDeck(){
     var max=Math.max.apply(null,Object.keys(lv).map(function(x){return lv[x]}));
     h+='<h3>'+T("Cards per level","Số lá theo cấp")+'</h3><div class="curve">'+Object.keys(lv).sort(function(a,b){return a-b}).map(function(x){return '<div><small>'+lv[x]+'</small><i style="height:'+Math.round(lv[x]/max*60)+'px"></i><small>'+esc(x)+'</small></div>'}).join("")+'</div>';
   }
+  h+=deckStats();
   $("#deck").innerHTML=h;
   $("#jump").textContent=T("My deck","Bộ bài")+" "+n+"/"+DECK_SIZE+" ▼";
 }
 function renderAll(){renderResults();renderDeck()}
 
+var ISSUES="https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game/issues/new";
+function reportUrl(c){
+  var title="Card "+c.num+": ";
+  var body="Card: "+c.num+" ("+c.jp+")\nLanguage: "+LANG.toUpperCase()+"\n\nWhat is wrong (translation, card data, or how it plays against the bot)?\n\n";
+  return ISSUES+"?title="+encodeURIComponent(title)+"&body="+encodeURIComponent(body);
+}
 function view(num){
   var c=byNum[num];if(!c)return;
-  var why=blocked(c),t=c.tr[LANG],block=function(h,v){return v?'<p><b>'+h+'</b><br>'+esc(v).replace(/\n/g,"<br>")+'</p>':''};
+  var why=blocked(c),t=c.tr[LANG],block=function(h,v,tips){return v?'<p><b>'+h+'</b><br>'+(tips?kwify(esc(v)):esc(v)).replace(/\n/g,"<br>")+'</p>':''};
   var ja=block("能力",c.text)+block("ヒラメキ",c.hira)+block("カットイン",c.cut);
   $("#viewbody").innerHTML=pic(c,"big2")+'<div><h3>'+dots(c)+esc(c.name)+'</h3><p lang="ja">'+esc(c.jp)+'</p><p>'+esc(c.num)+' · '+esc(c.rarity)+' · '+esc(c.box)+'<br>'+esc(stats(c))+'</p>'+
     (c.traits?'<p>'+esc(t.traits)+'</p>':'')+
-    block(T("Ability","Năng lực"),t.text)+block(T("Flash of insight","Tia linh cảm"),t.hira)+block("Cut-in",t.cut)+
+    block(T("Ability","Năng lực"),t.text,1)+block(T("Flash of insight","Tia linh cảm"),t.hira,1)+block("Cut-in",t.cut,1)+'<p class="note kwtip" id="kwtip" hidden></p>'+
     (ja?'<details class="more"><summary>'+T("Original Japanese","Bản gốc tiếng Nhật")+'</summary><div class="inside" lang="ja">'+ja+'</div></details>':'')+
     (c.manual?'<p class="note">'+T("⚠️ In the practice game, some text on this card is not automated and does nothing.","⚠️ Trong ván chơi thử, một phần chữ trên lá này chưa được tự động hóa và không có tác dụng.")+'</p>':'')+
-    '<small>'+T("Unofficial translation. The Japanese card text is the correct one.","Bản dịch không chính thức. Chữ tiếng Nhật trên lá bài mới là chuẩn.")+'</small>'+
+    '<small>'+T("Unofficial translation. The Japanese card text is the correct one. Tap a [keyword] to see what it means.","Bản dịch không chính thức. Chữ tiếng Nhật trên lá bài mới là chuẩn. Chạm vào một [từ khóa] để xem nghĩa.")+'</small>'+
+    '<p class="why"><a href="'+esc(reportUrl(c))+'" target="_blank" rel="noopener">'+T("🐞 Report a problem with this card","🐞 Báo lỗi lá bài này")+'</a></p>'+
     '<div class="pbtns"><button type="button" class="btn" data-add="'+esc(c.num)+'" data-close'+(why?' disabled':'')+'>'+T("+ Add to deck","+ Thêm vào bộ")+'</button><button type="button" class="btn ghost" data-close>'+T("Close","Đóng")+'</button></div>'+(why?'<p class="why">'+esc(why)+'</p>':'')+'</div>';
   $("#view").showModal();
 }
@@ -177,6 +260,7 @@ function asText(){
   return out.join("\n");
 }
 function importText(text){
+  if(/[#&]deck=/.test(text))text=fromShareCode(decodeURIComponent(/[#&]deck=([^&\s]*)/.exec(text)[1]));
   var next={partner:null,caze:null,list:{}},bad=0,old=deck;
   deck=next;
   text.split(/\n/).forEach(function(line){
@@ -200,6 +284,9 @@ $("#freset").addEventListener("click",function(){["#fbox","#ftype","#fcolor","#f
 $("#more").addEventListener("click",function(){shown+=PAGE;renderResults()});
 $("#jump").addEventListener("click",function(){$("#deckpanel").scrollIntoView({behavior:"smooth"})});
 document.addEventListener("click",function(e){
+  var kw=e.target.closest(".kw");
+  if(kw){var tipEl=$("#kwtip"),k=KW[+kw.dataset.kw];if(tipEl&&k){tipEl.hidden=false;tipEl.innerHTML='<b>'+esc(kw.textContent)+'</b> '+esc(T(k[1][0],k[1][1]))}return}
+  if(e.target.closest("#samplebtn")){sampleHand();return}
   var b=e.target.closest("[data-add],[data-remove],[data-view],[data-close]");if(!b||b.disabled)return;
   if(b.hasAttribute("data-close"))$("#view").close();
   if(b.dataset.add)add(b.dataset.add);
@@ -214,11 +301,27 @@ $("#copy").addEventListener("click",function(){
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){say(T("Deck list copied.","Đã sao chép danh sách."))},fail);else fail();
 });
 $("#import").addEventListener("click",function(){importText($("#io").value)});
+$("#share").addEventListener("click",function(){
+  var code=shareCode();if(!code){say(T("The deck is empty.","Bộ bài đang trống."));return}
+  var url=location.href.split("#")[0]+"#deck="+code;
+  $("#io").value=url;$("#iobox").open=true;
+  var fail=function(){$("#io").select();say(T("Select the link below and copy it.","Hãy chọn và sao chép liên kết bên dưới."))};
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){say(T("Share link copied. Anyone who opens it gets this deck.","Đã sao chép liên kết. Ai mở liên kết sẽ nhận được bộ bài này."))},fail);else fail();
+});
+$("#print").addEventListener("click",function(){if(!total()&&!deck.partner&&!deck.caze){say(T("The deck is empty.","Bộ bài đang trống."));return}printSheet()});
+/* a link like deck.html#deck=D01001,D01016,D01002*3 opens a shared deck */
+function openShared(){
+  var m=/[#&]deck=([^&]*)/.exec(location.hash);if(!m)return;
+  var text=fromShareCode(decodeURIComponent(m[1]));
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  if((total()||deck.partner||deck.caze)&&!confirm(T("Open the shared deck? It replaces the deck you have now.","Mở bộ bài được chia sẻ? Bộ bài hiện tại sẽ bị thay thế.")))return;
+  importText(text);
+}
 $("#clear").addEventListener("click",function(){
   if(!confirm(T("Remove every card from this deck?","Xóa toàn bộ lá trong bộ bài này?")))return;
   deck={partner:null,caze:null,list:{}};save();renderAll();say(T("Deck cleared.","Đã xóa bộ bài."));
 });
 document.addEventListener("conan-lang",function(e){LANG=e.detail&&e.detail.lang==="vi"?"vi":"en";say("");$("#view").close();setNames();fillBoxes();renderAll()});
 
-if(window.CONAN_CARDS)use(window.CONAN_CARDS);else $("#count").textContent=T("The card list file (assets/cards-data.js) is missing.","Thiếu tệp danh sách lá bài (assets/cards-data.js).");
+if(window.CONAN_CARDS){use(window.CONAN_CARDS);openShared();window.addEventListener("hashchange",openShared)}else $("#count").textContent=T("The card list file (assets/cards-data.js) is missing.","Thiếu tệp danh sách lá bài (assets/cards-data.js).");
 })();

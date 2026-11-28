@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table & cards · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="Table & cards · Conan TCG" data-title-vi="Bàn & lá bài · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" aria-current="page" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" data-vi="🎮 Chơi thử">🎮 Play</a><a href="deck.html" data-vi="🃏 Bộ bài">🃏 Deck</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap">
+<div class="pagehead"><h1 data-vi="Làm quen bàn chơi 🧩">Meet the table 🧩</h1><p data-vi="Chạm vào từng ô để biết ô đó để làm gì.">Tap a box to see what goes there.</p></div><section id="board">
+  <span class="mono">Manual FILE.1 · Getting ready</span>
+  <h2>The eight areas of your side</h2>
+  <p>Each player has the same areas. Cards never move into your opponent's areas. Tap an area to read what it holds.</p>
+  <div class="board" id="boardGrid">
+    <button class="area a-scene" data-area="scene" aria-pressed="false"><b>Scene</b><span class="slots"><i></i><i></i><i></i><i></i><i></i></span></button>
+    <button class="area a-partner" data-area="partner" aria-pressed="false"><b>Partner</b></button>
+    <button class="area a-case" data-area="case" aria-pressed="false"><b>Case</b></button>
+    <button class="area a-evidence" data-area="evidence" aria-pressed="false"><b>Evidence area</b></button>
+    <button class="area a-file" data-area="file" aria-pressed="false"><b>FILE area</b></button>
+    <button class="area a-deck" data-area="deck" aria-pressed="false"><b>Deck</b></button>
+    <button class="area a-remove" data-area="remove" aria-pressed="false"><b>Remove area</b></button>
+    <button class="area a-hand" data-area="hand" aria-pressed="false"><b>Hand</b></button>
+  </div>
+  <div class="panel" id="areaInfo" aria-live="polite">Tap an area above.</div>
+</section><section id="cards">
+  <span class="mono">Manual FILE.1 · Card types</span>
+  <h2>Four kinds of card</h2>
+  <div class="cols">
+    <div class="panel ctype"><h3>Partner</h3><p>Your sidekick. Every partner shares the same two abilities, <b>Assist</b> and <b>Case Solved</b>, and can also deduce. Its LP tells you how much evidence a deduction earns.</p></div>
+    <div class="panel ctype"><h3>Character</h3><p>Enters Scene to deduce and take Actions. Has a level, AP, LP, a color (some have two), a trait and abilities.</p></div>
+    <div class="panel ctype"><h3>Event</h3><p>A one-shot effect. Played from hand, resolved, then placed in the Remove area.</p></div>
+    <div class="panel ctype"><h3>Case</h3><p>The case you must solve. Its level is the evidence you need, and it differs for first and second player. It starts in its case phase and later flips to its solution phase.</p></div>
+  </div>
+
+  <details class="more"><summary data-vi="🔍 Thêm về lá bài (đọc sau)">🔍 More about cards (read later)</summary><div class="inside"><div class="cols" style="margin-top:16px">
+    <div class="panel">
+      <h3>Reading a character card</h3>
+      <dl class="stat" style="margin-top:10px">
+        <dt>Level</dt><dd>How many cards you need in your FILE area to play it from hand.</dd>
+        <dt>AP</dt><dd>Action Point. Compared against the other character in a Contact.</dd>
+        <dt>LP</dt><dd>Logic Point, shown by a keyhole. The amount of evidence you gain when this character deduces.</dd>
+        <dt>Color</dt><dd>Limits when you can play it. A two-color character counts as either color.</dd>
+        <dt>ID</dt><dd>Decides whether two cards are "the same card".</dd>
+      </dl>
+      <div class="note">Level, AP and LP have no lower limit. A character at 0 or below is not removed because of that.</div>
+    </div>
+    <div class="panel">
+      <h3>Same card, different art</h3>
+      <p>Parallel versions and reprints with a matching ID count as the same card.</p>
+      <ul class="tight">
+        <li>All versions together count toward the limit of 3 copies in a deck.</li>
+        <li>If a card is missing some printed information because of its design, it still has the information of the same card.</li>
+        <li>A corrected card text applies to every version.</li>
+      </ul>
+      <h3 style="margin-top:14px">Three card states</h3>
+      <div class="states">
+        <div class="st"><div class="mini">▲</div><span>Active</span></div>
+        <div class="st"><div class="mini sleep">▲</div><span>Sleep</span></div>
+        <div class="st"><div class="mini stun">▲</div><span>Stun</span></div>
+      </div>
+      <p>Deducing, taking Actions, guarding, and abilities that need sleep turn a card sideways. A stunned card is upside down, and when it would be activated it becomes sleeping instead. Sleeping or stunning a card that is already stunned changes nothing.</p>
+    </div>
+  </div></div></details>
+</section><div class="pager"><a class="btn ghost" href="index.html" data-vi="◀ 🏠 Trang chủ">◀ 🏠 Home</a><a class="btn next" href="turn.html" data-vi="⏰ Lượt chơi ▶">⏰ A turn ▶</a></div>
+</main>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

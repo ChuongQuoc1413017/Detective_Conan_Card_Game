@@ -1,0 +1,14 @@
+{
+  "name": "Conan TCG Primer",
+  "short_name": "Conan TCG",
+  "description": "An unofficial, beginner-friendly guide to the Detective Conan Trading Card Game, in English and Vietnamese.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4e9dc",
+  "theme_color": "#8f5a36",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

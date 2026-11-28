@@ -38,6 +38,8 @@ git clone https://github.com/ChuongQuoc1413017/Detective_Conan_Card_Game.git
 
 No installation, account or server is needed. Keep the whole folder together, because the pages share files and card images. An internet connection is only needed for the web fonts and external links.
 
+When the site is served over http or https (for example with the command below, or on GitHub Pages), it also works **offline** and can be **installed** like an app from the browser menu. Pages are saved for offline use, and card images are saved the first time you see them.
+
 If you prefer to use a local web server, run this inside the project folder and visit `http://localhost:8765`:
 
 ```bash
@@ -92,7 +94,13 @@ The bot never looks at your hand or either deck, and your chosen level is rememb
 - Choose one of six starter decks or your own deck from the Deck page, and pick the bot's deck or leave it random.
 - **Own decks:** `assets/card-effects.js` reads each card's Japanese text. An ability runs only when every part of it is understood; otherwise it does nothing and the card is marked ⚠️. About 75% of printed abilities are covered, including Disguise, cards set on characters, face-up evidence, Investigate and many Case abilities. MR cards and abilities used from the Partner area are not supported.
 - Unavailable moves are greyed out, with the reason shown.
+- Press **💡 Hint** during your turn to see what the Master Sleuth bot would do in your place, and why.
 - Inspect cards, read the game log and view the Remove area.
+- **🧪 Test my deck** plays your own deck against each starter deck 100 times (bot against bot) and shows the win rates. Only supported abilities are used, so treat it as a rough guide.
+
+### 🧩 Puzzles
+
+Short challenges on the Play page: the board is set up for you, and you must find the moves that solve the case in one turn. Each puzzle teaches one idea (keep your partner awake, play a Swift character, use Next Hint). Solved puzzles get a ✅ in your browser.
 
 ### 🃏 Deck Builder
 
@@ -101,8 +109,14 @@ Build a 40-card deck from the full card list.
 - Choose a box (booster, starter deck or promo), then search inside it by name, card number, trait or ability word. Filter by type, color and level.
 - The page checks the building rules: 1 Partner, 1 Case, exactly 40 Character or Event cards, and at most 3 copies of the same card ID (a few cards allow more). It also warns about cards that do not match the Case color.
 - The deck is saved in your browser, and can be copied out or imported as a text list.
+- **Deck numbers:** cards per level, character and event counts, average AP and LP, Cut-in and Flash counts, the color split, and the chance of drawing at least one level 1–3, Cut-in, Swift or Event card in your opening hand or by turn 3.
+- **🎴 Sample opening hand** deals 5 random cards from your deck.
+- **🔗 Share link** copies a link such as `deck.html#deck=D01001,D01016,D01002*3,…`. Opening it loads that deck; no server or account is involved.
+- **🖨️ Print** gives a clean deck list sheet with a space for your name, for events.
+- In the card view, tap a **[keyword]** to see what it means, or use **🐞 Report a problem with this card** to open a pre-filled GitHub issue.
+- Color dots carry a letter (B, G, W, R, Y, K for black) so colors can be told apart without seeing them.
 
-Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is replaced. Card images load from the official website, so they need an internet connection. Card names, traits, box names and ability text follow the EN / VI switch, and the Japanese original can be opened on each card. The translations are unofficial; they are stored in `assets/cards-i18n.js`, and any new text without a translation shows in Japanese. A complete deck can be played against the bot (see below).
+Card data is read only from the saved copy in `assets/cards-data.js`, taken from `https://conan-tcg.onrender.com`. The page does not contact that API, so new cards appear only when the file is refreshed (see [Updating the card list](#updating-the-card-list)). Card images load from the official website, so they need an internet connection. Card names, traits, box names and ability text follow the EN / VI switch, and the Japanese original can be opened on each card. The translations are unofficial; they are stored in `assets/cards-i18n.js`, and any new text without a translation shows in Japanese. A complete deck can be played against the bot (see below).
 
 **Card database credit:** the card data belongs to the database owned by **Phu Thanh** (Phú Thành): [conan-tcg.vercel.app](https://conan-tcg.vercel.app/).
 
@@ -153,8 +167,15 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 │   ├── cards-data.js  Saved copy of the card list
 │   ├── cards-i18n.js  English and Vietnamese card text
 │   ├── cards-translate.js  Applies the translations
-│   └── card-effects.js  Reads card text into game effects
-├── practice.js        Practice game and bot
+│   ├── card-effects.js  Reads card text into game effects
+│   └── icons/         App icons
+├── practice.js        Practice game, bot, puzzles and deck test
+├── sw.js, manifest.webmanifest  Offline support and app install
+├── .github/workflows/site.yml   Runs the tests and publishes with GitHub Pages
+├── tests/             Automated checks (run with Node.js, see below)
+├── tools/
+│   └── update-cards.js  Refreshes the card list from the database
+├── old/               Backups of earlier versions
 ├── Card_List/         Card images, one folder per deck
 └── logo.jpeg          Site logo and browser tab icon
 ```
@@ -165,6 +186,40 @@ The project uses plain HTML, CSS and JavaScript, with no build step or framework
 - **Vietnamese text** for newer content sits in a `data-vi` attribute next to the English. Older lesson text is translated in `assets/site.js`, matched by the exact English wording, so update both together.
 - **Demo steps** are the `STEPS` list in `assets/demo.js`. If you change a step, check the evidence, FILE, hand and deck counts that follow it.
 
+### Running the tests
+
+The tests need [Node.js](https://nodejs.org/) 18 or newer and nothing else. Run them after changing `practice.js`, `assets/card-effects.js` or the card data:
+
+```bash
+node tests/run.js
+```
+
+This takes under a minute; add `--full` for longer runs. It checks:
+
+| Test | File | What it checks |
+|---|---|---|
+| Ability coverage | `tests/coverage.js` | How many printed abilities the game can run. Fails if the number drops below `tests/baseline.json`. |
+| Card ability checks | `tests/cards.js` | Scripted checks of single effects, then every supported ability run once on its own without errors or lost cards. |
+| Random own-deck games | `tests/games.js` | Bot games with random legal decks finish without errors. |
+| Bot levels | `tests/levels.js` | Each bot level still beats the level below it with the starter decks. |
+| Puzzles | `tests/puzzles.js` | Each puzzle can be solved, a wrong line fails, and the hint points the right way. |
+
+After adding support for more abilities, run `node tests/coverage.js --save` to raise the baseline, and `node tests/coverage.js --top 30` to see the most common unsupported lines.
+
+### Automatic checks and publishing
+
+`.github/workflows/site.yml` runs `node tests/run.js` on GitHub for every push and pull request. On the `main` branch, when the tests pass, it publishes the site with GitHub Pages. To turn publishing on once: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+When you add or rename a page or script, also add it to the `CORE` list in `sw.js` and change its `VERSION`, so the offline copy stays complete.
+
+### Updating the card list
+
+```bash
+node tools/update-cards.js --dry-run
+```
+
+This downloads the card list from the database and reports new and changed cards, card text that still needs an English or Vietnamese translation, and new abilities the practice game cannot run yet. Nothing is saved. Run it again without `--dry-run` to save the new list; the old file is copied to `old/` first. Then run the tests and add any missing translations to `assets/cards-i18n.js`.
+
 ---
 
 ## ⚠️ Scope and Limitations
@@ -173,7 +228,7 @@ This is a learning aid, not an official rules engine or a replacement for the ph
 
 - **Simplified bot:** even Master Sleuth follows fixed rules of thumb and does not plan several turns ahead.
 - **Limited card interactions:** not every official mechanic or card effect is implemented.
-- **Practice simplifications:** Disguise is not modelled, and cards put on the bottom of the deck are not kept in exact order.
+- **Practice simplifications:** about a quarter of printed abilities are not run in own-deck games (those cards are marked ⚠️), and cards put on the bottom of the deck are not kept in exact order.
 - **Paraphrased card text:** check the physical card for exact wording.
 - **Unofficial translations:** the English and Vietnamese wording is not official.
 

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="Play · Conan TCG" data-title-vi="Chơi thử · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" aria-current="page" data-vi="🎮 Chơi thử">🎮 Play</a><a href="deck.html" data-vi="🃏 Bộ bài">🃏 Deck</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap">
+<div class="pagehead"><h1 data-vi="Đến lượt bạn chơi 🎮">Your turn to play 🎮</h1><p data-vi="Chọn bộ bài và bấm chơi. Lần đầu? Hãy xem <a href=&quot;demo.html&quot;>ván mẫu</a> trước.">Pick a deck and press Play. First time? Watch the <a href="demo.html">demo</a> first.</p></div><section id="practice">
+  <span class="mono">Practice table</span>
+  <h2>Play a practice game</h2>
+  <p data-vi="Chọn một trong sáu bộ khởi đầu, hoặc bộ bài bạn tự xếp ở trang Bộ bài, rồi đấu trọn ván với bot. Chọn độ khó (Tân binh, Thám tử hoặc Thám tử bậc thầy) và bộ bài của bot, hoặc để ngẫu nhiên. Trang sẽ làm mờ những nước không đi được và cho biết lý do. Chạm vào nhân vật ở Hiện trường để đọc năng lực.">Pick one of six starter decks, or the deck you built on the Deck page, and play a full game against a bot. Pick its level (Novice, Sleuth or Master Sleuth) and its deck, or leave the deck random. The page greys out moves you cannot make and tells you why. Tap a character in Scene to read its ability.</p>
+  <p class="note" data-vi="Với bộ bài tự xếp: chỉ những năng lực mà trò chơi hiểu trọn vẹn mới hoạt động. Lá có ⚠️ là lá có phần chữ không tác dụng. Cải trang, bài được gắn vào nhân vật, chứng cứ ngửa, Điều tra và năng lực của Vụ án đã được hỗ trợ một phần. Chưa hỗ trợ lá MR và năng lực dùng từ khu Cộng sự.">With your own deck: only abilities the game fully understands work. A card marked ⚠️ has text that does nothing. Disguise, cards set on characters, face-up evidence, Investigate and Case abilities are partly supported. MR cards and abilities used from the Partner area are not supported yet.</p>
+  
+  <details class="more"><summary data-vi="ℹ️ Về các bộ bài và phần đã đơn giản hóa">ℹ️ About these decks and what is simplified</summary><div class="inside"><div class="note">Decks: CT-D01 Conan (blue), CT-D07 Black Organization (black), CT-D02 Heiji Hattori (green) and CT-D03 Kid the Phantom Thief (white). CT-D04 Akai (red) and CT-D05 Amuro (yellow). Ability text is paraphrased. Simplified: no Disguise (none of these decks use it), cards put on the bottom of the deck are not ordered, and the bot does not plan several turns ahead. Check the official manual for exact wording.</div></div></details><div class="pwide"><div id="pgame"></div></div>
+</section><div class="pager"><a class="btn ghost" href="demo.html" data-vi="◀ 🎬 Ván mẫu">◀ 🎬 Demo</a><a class="btn next" href="quiz.html" data-vi="⭐ Đố vui ▶">⭐ Quiz ▶</a></div>
+</main>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+<script src="assets/site.js"></script>
+<script src="assets/cards-data.js"></script>
+<script src="assets/cards-i18n.js"></script>
+<script src="assets/cards-translate.js"></script>
+<script src="assets/card-effects.js"></script>
+<script src="practice.js"></script>
+
+</body>
+</html>

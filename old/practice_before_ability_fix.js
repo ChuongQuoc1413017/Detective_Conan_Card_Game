@@ -1,0 +1,1229 @@
+
+(function(){
+var root=document.getElementById("pgame"); if(!root) return;
+var OVER={over:true}, G=null, UID=0, OPP="random", lastAsk=null, OPP_HAND_REVEALED=false;
+/* ===== Language (EN / VI) for the practice game ===== */
+var LANG=(function(){try{var s=localStorage.getItem("conanLang");if(s==="vi"||s==="en")return s}catch(e){}return String(navigator.language||"en").toLowerCase().indexOf("vi")===0?"vi":"en"})();
+var SUBJ={"You":"Bạn","Opponent":"Đối thủ","you":"bạn","opponent":"đối thủ"};
+function S(x){return SUBJ[x]||x}
+var COL={blue:"xanh dương",black:"đen",green:"xanh lá",white:"trắng",red:"đỏ",yellow:"vàng"};
+var NAMES=[
+ ["Piano Sonata “Moonlight” Murder Case","Vụ án Sonata “Ánh trăng”"],["Codename: Sherry","Mật danh: Sherry"],["And Then the Mermaid Vanished","Rồi nàng tiên cá biến mất"],["Reunion","Cuộc tái ngộ"],["The Scarlet Return","Sự trở lại của sắc đỏ"],["The Scarlet Suspicion","Nghi vấn sắc đỏ"],
+ ["The Detective Who Shrank","Thám tử bị thu nhỏ"],["Ran's Blow","Cú đấm của Ran"],["“Traitors can't hide their scent...”","“Kẻ phản bội không giấu nổi mùi của mình...”"],["Shadow of Renya Karasuma","Bóng dáng Renya Karasuma"],["Omamori (Charm)","Omamori (Bùa hộ mệnh)"],["Heiji's Insight","Trực giác của Heiji"],["“Ladies and... Gentlemen!!”","“Thưa quý ông... quý bà!!”"],["“April Fool...”","“Cá tháng Tư...”"],["The Mysterious Passenger","Hành khách bí ẩn"],["Akai's Shot","Phát bắn của Akai"],["Private Eye","Thám tử tư"],["Amuro's Strike","Đòn đánh của Amuro"],
+ ["Black Organization","Tổ chức Áo Đen"],["Kid the Phantom Thief","Siêu đạo chích Kid"],["Detective Boys","Thám tử nhí"],["Dr. Agasa","Tiến sĩ Agasa"]
+];
+function nmz(s){if(LANG!=="vi")return s;for(var i=0;i<NAMES.length;i++){if(s.indexOf(NAMES[i][0])>-1)s=s.split(NAMES[i][0]).join(NAMES[i][1])}return s}
+var EX={
+ "The top FILE card of the opponent moves to their hand. This is not a free draw: their FILE area is 1 smaller.":"Lá FILE trên cùng của đối thủ chuyển lên tay họ. Đây không phải rút bài miễn phí: Khu FILE của họ giảm 1 lá.",
+ "Use Next Hint?":"Dùng Gợi ý kế tiếp?",
+ "This is not a free draw. The top card of your FILE area moves to your hand, so your FILE area gets 1 smaller. Then you may play one card.":"Đây không phải rút bài miễn phí. Lá trên cùng Khu FILE chuyển lên tay bạn, nên Khu FILE giảm 1 lá. Sau đó bạn được đánh một lá.",
+ "Use Next Hint":"Dùng Gợi ý kế tiếp",
+ "What the opponent is doing":"Đối thủ đang làm gì",
+ "What the opponent did last turn":"Đối thủ đã làm gì ở lượt trước",
+ /* interface */
+ "Scene":"Hiện trường","Partner":"Cộng sự","Case":"Vụ án","Evidence area":"Khu chứng cứ","FILE area":"Khu FILE","Deck":"Bộ bài","Remove area":"Khu loại bỏ","cards left":"lá còn lại",
+ "Your turn actions":"Hành động trong lượt của bạn","Back to deck choice":"Quay lại chọn bộ bài","Play again":"Chơi lại","Needed to solve the case":"Cần để phá án","Game log · view":"Nhật ký ván · xem",
+ "Revealed by card effect":"Được lật bởi hiệu ứng của lá bài","Finish reveal":"Xong lật bài","Hidden":"Lá bài","card":"ẩn","Hidden until a reveal effect resolves.":"Ẩn cho đến khi một hiệu ứng lật bài được thực hiện.",
+ "Case phase":"Giai đoạn vụ án","Solution phase":"Giai đoạn giải đáp","Active":"Hoạt động","Sleeping":"Đang ngủ","Stunned":"Bị choáng","Just arrived":"Vừa vào","In FILE area":"Trong Khu FILE","In hand":"Trên tay",
+ "Random":"Ngẫu nhiên","Bot plays":"Bot chơi bộ",
+ "Card images were not found. To see them, keep this HTML file next to your":"Không tìm thấy ảnh lá bài. Để xem ảnh, hãy để tệp HTML này cạnh thư mục",
+ "folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.":"(chứa các thư mục con CT-D01 đến CT-D07) và mở nó từ đó. Trò chơi vẫn chạy được khi không có ảnh.",
+ "Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.":"Chọn bộ bài của bạn và bộ bài mà bot dùng. Bạn đi trước hoặc đi sau bằng tung đồng xu, bắt đầu với 5 lá và một lần rút lại, và thắng bằng cách thu đủ chứng cứ rồi phá án ở giai đoạn giải đáp.",
+ "You win.":"Bạn thắng.","You lose.":"Bạn thua.","Opening hand":"Bài khởi đầu","Keep this hand":"Giữ bài này",
+ "Tap the cards in your Hand area that you want to put back and redraw, or keep your hand. You may do this once.":"Chạm vào các lá trong vùng Bài trên tay mà bạn muốn trả lại để rút lại, hoặc giữ nguyên bài. Bạn chỉ được làm một lần.",
+ "Nothing has been removed yet.":"Chưa có lá nào bị loại bỏ.","Close":"Đóng","Game log":"Nhật ký ván","Opponent":"Đối thủ","You":"Bạn","Enlarge":"Phóng to",
+ "Next Hint":"Gợi ý kế tiếp","Assist":"Hỗ trợ","Case Solved":"Phá án","Evidence Destruction":"Tiêu hủy chứng cứ","Deduce":"Suy luận","Action":"Hành động","Ability":"Năng lực","Skip playing":"Bỏ qua việc đánh bài","End turn":"Kết thúc lượt","Greyed out because:":"Bị làm mờ vì:",
+ "Level":"Cấp","Current AP":"AP hiện tại","Status":"Trạng thái","Traits":"Đặc điểm","Event":"Sự kiện","Not applicable":"Không áp dụng","None":"Không có","No additional card text.":"Không có nội dung bài bổ sung.","Standard case":"Vụ án thông thường","Alternative win condition":"Điều kiện thắng khác",
+ "Details":"Chi tiết","Card":"Lá bài",
+ /* traits */
+ "Police":"Cảnh sát","Phantom thief":"Siêu trộm","Magistrate":"Quan tòa","Suzuki family":"Gia đình Suzuki","Detective":"Thám tử","Mouri Detective Agency":"Văn phòng thám tử Mouri","High schooler":"Học sinh cấp ba","Karate":"Karate","Inventor":"Nhà phát minh","Scientist":"Nhà khoa học","FBI":"FBI","Akai family":"Gia đình Akai","CIA":"CIA","Shogi player":"Kỳ thủ shogi","Metropolitan Police":"Cảnh sát Thủ đô","Public Security":"Công an",
+ /* deck text */
+ "Blue. Fast Swift and Assault attackers, many Cut-ins, and big removal effects.":"Xanh dương. Các nhân vật tấn công nhanh với Nhanh nhẹn và Đột kích, nhiều Cut-in và các hiệu ứng loại bỏ mạnh.",
+ "Black. Powerful removal, Rum's team boost, and Evidence Destruction to win.":"Đen. Loại bỏ mạnh, tăng sức mạnh cho cả đội của Rum, và Tiêu hủy chứng cứ để thắng.",
+ "Green. Heiji and Kazuha put opposing characters to sleep, Heizo blocks Cut-ins, and Shizuka hands out Assault.":"Xanh lá. Heiji và Kazuha cho nhân vật đối phương đi ngủ, Heizo chặn Cut-in, và Shizuka trao Đột kích.",
+ "White. Stun effects keep opposing characters down longer, plus Makoto's tough comeback and Hakuba's card draw.":"Trắng. Hiệu ứng làm choáng giữ nhân vật đối phương gục lâu hơn, cùng khả năng lội ngược dòng bền bỉ của Makoto và việc rút bài của Hakuba.",
+ "Red (CT-D04). FBI attackers with unguardable Actions, case-hitting bonuses and hand disruption.":"Đỏ (CT-D04). Các nhân vật FBI tấn công bằng Hành động không thể đỡ, thưởng khi đánh vào vụ án và phá bài trên tay đối thủ.",
+ "Yellow (CT-D05). Public Security and Metropolitan Police: team AP boosts and bringing characters back from the Remove area.":"Vàng (CT-D05). Công an và Cảnh sát Thủ đô: tăng AP cho cả đội và đưa nhân vật quay lại từ Khu loại bỏ.",
+ /* card texts */
+ "Evidence needed: 7 if you go first, 6 if you go second.":"Cần có chứng cứ: 7 nếu bạn đi trước, 6 nếu bạn đi sau.",
+ "Evidence needed: 7 if you go first, 6 if you go second. Your partner's Case Solved becomes Evidence Destruction: in the solution phase, sleep the partner and remove evidence equal to the case level. The opponent then loses.":"Cần có chứng cứ: 7 nếu bạn đi trước, 6 nếu bạn đi sau. Phá án của cộng sự trở thành Tiêu hủy chứng cứ: ở giai đoạn giải đáp, cho cộng sự ngủ và loại bỏ số chứng cứ bằng cấp của vụ án. Sau đó đối thủ thua.",
+ "Swift: can deduce or take Actions the turn it enters.":"Nhanh nhẹn: có thể suy luận hoặc dùng Hành động ngay trong lượt nó vào.",
+ "Assault: can take Actions the turn it enters.":"Đột kích: có thể dùng Hành động ngay trong lượt nó vào.",
+ "Declare, once per turn: sleep another of your characters to draw 1, remove 1 card from hand, and give this +1 LP this turn. Flash: draw 1.":"Tuyên bố, một lần mỗi lượt: cho một nhân vật khác của bạn ngủ để rút 1 lá, loại bỏ 1 lá từ tay, và cho lá này +1 LP trong lượt này. Linh cảm: rút 1 lá.",
+ "On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less.":"Khi vào: bạn có thể loại bỏ 1 lá từ tay. Nếu làm vậy, loại bỏ tối đa 1 nhân vật có AP từ 8000 trở xuống.",
+ "Declare, once per turn, and on entry: up to 1 character gets +1000 AP this turn. Flash: draw 1.":"Tuyên bố, một lần mỗi lượt, và khi vào: tối đa 1 nhân vật được +1000 AP trong lượt này. Linh cảm: rút 1 lá.",
+ "Cut-in: during a Contact, remove from hand to give +2000 AP.":"Cut-in: trong một Tiếp xúc, loại bỏ từ tay để cộng +2000 AP.",
+ "On entry: you may enter a Detective Boys character of level 4 or less from hand, asleep. If you do not, up to 1 character gets +1000 AP this turn.":"Khi vào: bạn có thể cho một nhân vật Thám tử nhí cấp 4 trở xuống từ tay vào Hiện trường, ở trạng thái ngủ. Nếu không, tối đa 1 nhân vật được +1000 AP trong lượt này.",
+ "Cut-in: +1000 AP.":"Cut-in: +1000 AP.","Cut-in: +2000 AP.":"Cut-in: +2000 AP.","Misdirect 1. Cut-in: +1000 AP.":"Đánh lạc hướng 1. Cut-in: +1000 AP.",
+ "Remove up to 1 character with AP 8000 or less.":"Loại bỏ tối đa 1 nhân vật có AP từ 8000 trở xuống.",
+ "Declare: sleep this character and put it on the bottom of your deck. Enter a character of level 5 or less from hand and give it Assault this turn. Flash: sleep up to 1 character.":"Tuyên bố: cho nhân vật này ngủ và đặt nó xuống đáy bộ bài. Cho một nhân vật cấp 5 trở xuống từ tay vào Hiện trường và trao nó Đột kích trong lượt này. Linh cảm: cho tối đa 1 nhân vật ngủ.",
+ "When removed from Scene during the opponent's turn: remove up to 1 opposing character of level 4 or less. If you do, the opponent draws 1.":"Khi bị loại bỏ khỏi Hiện trường trong lượt của đối thủ: loại bỏ tối đa 1 nhân vật đối phương cấp 4 trở xuống. Nếu làm vậy, đối thủ rút 1 lá.",
+ "During your turn: when this contacts a character of level 6 or less, remove that character. Flash: draw 1.":"Trong lượt của bạn: khi lá này Tiếp xúc với một nhân vật cấp 6 trở xuống, loại bỏ nhân vật đó. Linh cảm: rút 1 lá.",
+ "When this takes an Action: it gets +1000 AP until the Action ends for each sleeping or stunned character in the opponent's Scene. Flash: draw 1.":"Khi lá này dùng Hành động: nó được +1000 AP cho đến hết Hành động với mỗi nhân vật đang ngủ hoặc bị choáng ở Hiện trường của đối thủ. Linh cảm: rút 1 lá.",
+ "Once per turn: when this or a card named Heiji Hattori enters your Scene, sleep up to 1 character. Flash: sleep up to 1 character.":"Một lần mỗi lượt: khi lá này hoặc một lá tên Heiji Hattori vào Hiện trường của bạn, cho tối đa 1 nhân vật ngủ. Linh cảm: cho tối đa 1 nhân vật ngủ.",
+ "When this takes an Action: the opponent cannot use Cut-in until the Action ends. When an opposing character is removed by a Contact with this, draw 1. Flash: draw 1.":"Khi lá này dùng Hành động: đối thủ không thể dùng Cut-in cho đến hết Hành động. Khi một nhân vật đối phương bị loại bỏ bởi Tiếp xúc với lá này, rút 1 lá. Linh cảm: rút 1 lá.",
+ "Declare, once per turn, remove 1 card from hand: give another of your characters of level 6 or less Assault until end of turn. Can only be declared while the opponent has 2 or more sleeping or stunned characters in total.":"Tuyên bố, một lần mỗi lượt, loại bỏ 1 lá từ tay: trao Đột kích đến hết lượt cho một nhân vật khác của bạn cấp 6 trở xuống. Chỉ tuyên bố được khi đối thủ có tổng cộng 2 nhân vật trở lên đang ngủ hoặc bị choáng.",
+ "On entry: you may remove 1 card from hand. If you do, stun up to 1 character and gain 1 evidence. (Activating a stunned character puts it to sleep instead.)":"Khi vào: bạn có thể loại bỏ 1 lá từ tay. Nếu làm vậy, làm choáng tối đa 1 nhân vật và nhận 1 chứng cứ. (Kích hoạt một nhân vật bị choáng sẽ khiến nó chuyển sang ngủ.)",
+ "When removed from Scene during the opponent's turn: stun up to 1 sleeping character of level 5 or less. Flash: draw 1.":"Khi bị loại bỏ khỏi Hiện trường trong lượt của đối thủ: làm choáng tối đa 1 nhân vật đang ngủ cấp 5 trở xuống. Linh cảm: rút 1 lá.",
+ "Once per turn: when this deduces or takes an Action, draw 1.":"Một lần mỗi lượt: khi lá này suy luận hoặc dùng Hành động, rút 1 lá.",
+ "At the end of your turn: you may remove 1 card from hand. If you do, make this character active. Flash: draw 1.":"Cuối lượt của bạn: bạn có thể loại bỏ 1 lá từ tay. Nếu làm vậy, cho nhân vật này hoạt động. Linh cảm: rút 1 lá.",
+ "When removed from Scene during the opponent's turn: draw 1. Flash: sleep up to 1 character.":"Khi bị loại bỏ khỏi Hiện trường trong lượt của đối thủ: rút 1 lá. Linh cảm: cho tối đa 1 nhân vật ngủ.",
+ "Bullet: this character's Actions cannot be guarded. Flash: draw 1.":"Đạn: Hành động của nhân vật này không thể bị đỡ. Linh cảm: rút 1 lá.",
+ "When a character in your Scene takes an Action against a case: this character gains Assault until end of turn. Flash: draw 1.":"Khi một nhân vật ở Hiện trường của bạn dùng Hành động lên một vụ án: nhân vật này có Đột kích đến hết lượt. Linh cảm: rút 1 lá.",
+ "Misdirect 1. Once per turn, when an Action by a character in your Scene against a case gains you evidence: you may remove 1 card from hand. If you do, gain 1 evidence.":"Đánh lạc hướng 1. Một lần mỗi lượt, khi một Hành động của nhân vật ở Hiện trường của bạn lên một vụ án giúp bạn nhận chứng cứ: bạn có thể loại bỏ 1 lá từ tay. Nếu làm vậy, nhận 1 chứng cứ.",
+ "When removed from Scene during the opponent's turn: the opponent removes 1 card from hand. Flash: sleep up to 1 character.":"Khi bị loại bỏ khỏi Hiện trường trong lượt của đối thủ: đối thủ loại bỏ 1 lá từ tay. Linh cảm: cho tối đa 1 nhân vật ngủ.",
+ "On entry: the opponent reveals their hand (then returns it). Flash: draw 1.":"Khi vào: đối thủ lật bài trên tay của họ (rồi cầm lại). Linh cảm: rút 1 lá.",
+ /* prompts */
+ "Choose a card from your hand to remove.":"Chọn một lá từ tay để loại bỏ.","Cancel":"Hủy","Do not use":"Không dùng","Do not enter":"Không cho vào","Do not guard":"Không đỡ","Back":"Quay lại","Pass":"Bỏ qua","No":"Không","Remove a card":"Loại bỏ một lá","Activate":"Kích hoạt","Skip":"Bỏ qua","Add nothing":"Không lấy lá nào","Enter nothing":"Không cho lá nào vào",
+ "You pass.":"Bạn bỏ qua.","Your Scene is full":"Hiện trường của bạn đã đầy",
+ "Kid: stun a sleeping character?":"Kid: làm choáng một nhân vật đang ngủ?","Up to 1 sleeping character of level 5 or less.":"Tối đa 1 nhân vật đang ngủ cấp 5 trở xuống.",
+ "Rye: remove an opposing character?":"Rye: loại bỏ một nhân vật đối phương?","Level 4 or less. If you remove one, the opponent draws 1.":"Cấp 4 trở xuống. Nếu bạn loại bỏ một nhân vật, đối thủ rút 1 lá.",
+ "If you do, enter a character of level 4 or less from your Remove area, asleep.":"Nếu làm vậy, cho một nhân vật cấp 4 trở xuống từ Khu loại bỏ của bạn vào Hiện trường, ở trạng thái ngủ.",
+ "Enter which character from your Remove area?":"Cho nhân vật nào từ Khu loại bỏ vào Hiện trường?","Level 4 or less, entering asleep.":"Cấp 4 trở xuống, vào ở trạng thái ngủ.",
+ "Kazuha: sleep a character?":"Kazuha: cho một nhân vật ngủ?","Once per turn, when she or Heiji Hattori enters your Scene. Up to 1 character, either side.":"Một lần mỗi lượt, khi cô ấy hoặc Heiji Hattori vào Hiện trường của bạn. Tối đa 1 nhân vật, bên nào cũng được.",
+ "If you do, stun up to 1 character and gain 1 evidence.":"Nếu làm vậy, làm choáng tối đa 1 nhân vật và nhận 1 chứng cứ.",
+ "Up to 1 character, either side. Stunned characters become sleeping instead of active in the Auto phase.":"Tối đa 1 nhân vật, bên nào cũng được. Nhân vật bị choáng sẽ chuyển sang ngủ thay vì hoạt động trong giai đoạn Tự động.",
+ "If you do, you may then remove one character with AP 8000 or less, from either side.":"Nếu làm vậy, bạn có thể loại bỏ một nhân vật có AP từ 8000 trở xuống, của bên nào cũng được.",
+ "Remove which character?":"Loại bỏ nhân vật nào?","AP 8000 or less, either side.":"AP từ 8000 trở xuống, bên nào cũng được.",
+ "Up to 1 character, either side, until end of turn.":"Tối đa 1 nhân vật, bên nào cũng được, đến hết lượt.",
+ "Dr. Agasa: enter a Detective Boys character?":"Dr. Agasa: cho một nhân vật Thám tử nhí vào Hiện trường?","You may enter one of level 4 or less from your hand, asleep.":"Bạn có thể cho một nhân vật cấp 4 trở xuống từ tay vào Hiện trường, ở trạng thái ngủ.","Do not enter":"Không cho vào",
+ "Add up to 1 of them to your hand. The rest go to the bottom of your deck.":"Thêm tối đa 1 lá trong số đó vào tay bạn. Các lá còn lại xuống đáy bộ bài.",
+ "Enter up to 1 character of level 4 or less, asleep. The rest go to the bottom of your deck.":"Cho tối đa 1 nhân vật cấp 4 trở xuống vào Hiện trường, ở trạng thái ngủ. Các lá còn lại xuống đáy bộ bài.",
+ "This card was removed from your evidence by an Action. Activate it?":"Lá này bị loại bỏ khỏi chứng cứ của bạn bởi một Hành động. Kích hoạt nó?","Flash: sleep which character?":"Linh cảm: cho nhân vật nào ngủ?","Up to 1 character, either side.":"Tối đa 1 nhân vật, bên nào cũng được.",
+ "You used Next Hint this turn, so you cannot play from hand.":"Bạn đã dùng Gợi ý kế tiếp trong lượt này, nên không thể đánh bài từ tay.",
+ "You already played from hand this turn. It is limited to once per turn.":"Bạn đã đánh bài từ tay trong lượt này. Chỉ được một lần mỗi lượt.",
+ "Misdirect?":"Đánh lạc hướng?",
+ "Case Solved needs your case in its solution phase. Get there with an Assist while holding 7 or more FILE cards.":"Phá án cần vụ án của bạn ở giai đoạn giải đáp. Hãy đạt được điều đó bằng một lần Hỗ trợ khi giữ 7 lá FILE trở lên.",
+ "Case Solved needs an active partner.":"Phá án cần một cộng sự đang hoạt động.",
+ "Conan's ability needs another active character to sleep.":"Năng lực của Conan cần một nhân vật khác đang hoạt động để cho ngủ.",
+ "Shizuka's ability needs a card in hand to remove.":"Năng lực của Shizuka cần một lá trên tay để loại bỏ.",
+ "Shizuka's ability needs 2 or more sleeping or stunned characters in the opponent's Scene.":"Năng lực của Shizuka cần 2 nhân vật trở lên đang ngủ hoặc bị choáng ở Hiện trường của đối thủ.",
+ "Shizuka needs another character of level 6 or less in your Scene.":"Shizuka cần một nhân vật khác cấp 6 trở xuống ở Hiện trường của bạn.",
+ "Vermouth must be active to use her ability.":"Vermouth phải đang hoạt động để dùng năng lực của mình.",
+ "Vermouth's ability needs a level 5 or lower character in your hand.":"Năng lực của Vermouth cần một nhân vật cấp 5 trở xuống trên tay bạn.",
+ "Cost: put another of your active characters to sleep.":"Chi phí: cho một nhân vật đang hoạt động khác của bạn ngủ.",
+ "Level 6 or less. First remove 1 card from your hand as the cost.":"Cấp 6 trở xuống. Trước tiên hãy loại bỏ 1 lá từ tay bạn làm chi phí.",
+ "Level 5 or less. It gets Assault this turn.":"Cấp 5 trở xuống. Nó có Đột kích trong lượt này.",
+ "Conan gets +1 LP this turn.":"Conan được +1 LP trong lượt này.",
+ "Play one Cut-in from hand or pass. Each player acts at most once per Contact.":"Đánh một lá Cut-in từ tay hoặc bỏ qua. Mỗi người chơi hành động tối đa một lần trong mỗi Tiếp xúc.",
+ "Guarding puts the guard to sleep and starts a Contact with it. The guard is removed if the attacker's AP is equal or higher. Any active character can guard, even one that just arrived.":"Đỡ đòn khiến nhân vật đỡ đi ngủ và bắt đầu một Tiếp xúc với nó. Nhân vật đỡ bị loại bỏ nếu AP của bên tấn công bằng hoặc cao hơn. Mọi nhân vật đang hoạt động đều đỡ được, kể cả nhân vật vừa vào.",
+ "If you do, gain 1 evidence.":"Nếu làm vậy, nhận 1 chứng cứ.",
+ "Opponent uses Next Hint.":"Đối thủ dùng Gợi ý kế tiếp.",
+ "You use Next Hint: the top FILE card goes to your hand.":"Bạn dùng Gợi ý kế tiếp: lá FILE trên cùng được đưa vào tay bạn.","You skip the play.":"Bạn bỏ qua việc đánh bài.",
+ "Assist: the partner sleeps in the FILE area and counts as a FILE card. With 7 or more FILE cards your case moves to the solution phase.":"Hỗ trợ: cộng sự ngủ trong Khu FILE và được tính là một lá FILE. Khi có 7 lá FILE trở lên, vụ án của bạn chuyển sang giai đoạn giải đáp.",
+ "Use which ability?":"Dùng năng lực nào?","Declare abilities can be used once per turn, even the turn the character enters.":"Năng lực Tuyên bố dùng được một lần mỗi lượt, kể cả trong lượt nhân vật vào.",
+ "Deduce with which card?":"Suy luận bằng lá nào?","It goes to sleep and you gain evidence equal to its LP, taken from the top of your deck. The opponent may use Misdirect.":"Nó đi ngủ và bạn nhận chứng cứ bằng LP của nó, lấy từ trên cùng bộ bài của bạn. Đối thủ có thể dùng Đánh lạc hướng.",
+ "Evidence cards come face down from your deck. Watch your deck size: running out means a refresh.":"Chứng cứ là các lá úp lấy từ bộ bài của bạn. Hãy để ý số lá còn lại: hết bài nghĩa là phải làm mới.",
+ "Take an Action with which character?":"Dùng Hành động với nhân vật nào?","The character goes to sleep. The opponent may guard before anything else happens.":"Nhân vật đi ngủ. Đối thủ có thể đỡ đòn trước khi có gì khác xảy ra.",
+ "You can only target the opposing case if it has evidence, or an opposing character that is sleeping.":"Bạn chỉ có thể nhắm vào vụ án đối phương nếu nó có chứng cứ, hoặc một nhân vật đối phương đang ngủ.",
+ "Main phase: play, deduce, take Actions, or end your turn.":"Giai đoạn Chính: đánh bài, suy luận, dùng Hành động, hoặc kết thúc lượt.",
+ "Needs":"Cần",
+ "Next Hint needs at least 1 card in your FILE area.":"Gợi ý kế tiếp cần ít nhất 1 lá trong Khu FILE của bạn.","Assist needs an active partner.":"Hỗ trợ cần một cộng sự đang hoạt động.",
+ "Deduce needs an active partner, or an active character that did not just arrive unless it has Swift.":"Suy luận cần một cộng sự đang hoạt động, hoặc một nhân vật đang hoạt động không phải vừa vào, trừ khi nó có Nhanh nhẹn.",
+ "Action needs an active character that did not just arrive unless it has Swift or Assault.":"Hành động cần một nhân vật đang hoạt động không phải vừa vào, trừ khi nó có Nhanh nhẹn hoặc Đột kích.",
+ "There is no target: the opposing case has no evidence and no opposing character is sleeping.":"Không có mục tiêu: vụ án đối phương không có chứng cứ và không có nhân vật đối phương nào đang ngủ.",
+ "None of your characters in Scene has a Declare ability.":"Không nhân vật nào của bạn ở Hiện trường có năng lực Tuyên bố."
+};
+var RULES=[];
+function RU(re,fn){RULES.push([re,fn])}
+var CW="(blue|black|green|white|red|yellow)";
+RU(/^On entry: look at your top 4, add up to 1 (\w+) card to hand, put the rest on the bottom, then remove 1 card from hand if you added one\. Flash: draw 1\.$/,function(m){return "Khi vào: xem 4 lá trên cùng bộ bài, thêm tối đa 1 lá màu "+(COL[m[1]]||m[1])+" vào tay, đặt phần còn lại xuống đáy, rồi loại bỏ 1 lá từ tay nếu bạn đã thêm một lá. Linh cảm: rút 1 lá."});
+RU(/^Look at your top 3, add up to 1 (\w+) character to hand, put the rest on the bottom\. Then enter a (\w+) character from hand whose level is at most your FILE count\.$/,function(m){return "Xem 3 lá trên cùng bộ bài, thêm tối đa 1 nhân vật màu "+(COL[m[1]]||m[1])+" vào tay, đặt phần còn lại xuống đáy. Sau đó cho một nhân vật màu "+(COL[m[2]]||m[2])+" từ tay có cấp không cao hơn số lá FILE của bạn vào Hiện trường."});
+RU(/^When removed from Scene during the opponent's turn: look at your top 3, enter up to 1 (\w+) character of level 4 or less asleep, put the rest on the bottom\. Flash: sleep up to 1 character\.$/,function(m){return "Khi bị loại bỏ khỏi Hiện trường trong lượt của đối thủ: xem 3 lá trên cùng bộ bài, cho tối đa 1 nhân vật màu "+(COL[m[1]]||m[1])+" cấp 4 trở xuống vào Hiện trường ở trạng thái ngủ, đặt phần còn lại xuống đáy. Linh cảm: cho tối đa 1 nhân vật ngủ."});
+RU(/^During your turn: your other (\w+) characters get \+1000 AP\. Flash: draw 1\.$/,function(m){return "Trong lượt của bạn: các nhân vật màu "+(COL[m[1]]||m[1])+" khác của bạn được +1000 AP. Linh cảm: rút 1 lá."});
+RU(/^On entry: you may remove 1 card from hand\. If you do, enter a (\w+) character of level 4 or less from your Remove area, asleep\.$/,function(m){return "Khi vào: bạn có thể loại bỏ 1 lá từ tay. Nếu làm vậy, cho một nhân vật màu "+(COL[m[1]]||m[1])+" cấp 4 trở xuống từ Khu loại bỏ của bạn vào Hiện trường, ở trạng thái ngủ."});
+/* interface with numbers */
+RU(/^(You|Opponent) · (.+)$/,function(m){return S(m[1])+" · "+m[2]});
+RU(/^Turn (\d+) · (Your turn|Opponent's turn)$/,function(m){return "Lượt "+m[1]+" · "+(m[2]==="Your turn"?"Lượt của bạn":"Lượt của đối thủ")});
+RU(/^Hand \((\d+)\)$/,function(m){return "Bài trên tay ("+m[1]+")"});
+RU(/^Opponent hand \((\d+)\)$/,function(m){return "Bài trên tay đối thủ ("+m[1]+")"});
+RU(/^(Active|Sleeping|In FILE area) · LP (-?\d+)$/,function(m){return EX[m[1]]+" · LP "+m[2]});
+RU(/^Level cap (\d+)( \(partner counts\))?$/,function(m){return "Giới hạn cấp "+m[1]+(m[2]?" (tính cả cộng sự)":"")});
+RU(/^(\d+) cards? · view list$/,function(m){return m[1]+" lá · xem danh sách"});
+RU(/^Latest: (.+)$/,function(m){return "Mới nhất: "+m[1]});
+RU(/^Level (\d+) · AP (-?\d+) · LP (-?\d+)$/,function(m){return "Cấp "+m[1]+" · AP "+m[2]+" · LP "+m[3]});
+RU(/^Event · Level (\d+)$/,function(m){return "Sự kiện · Cấp "+m[1]});
+RU(/^Partner: (.+)\. Case: (.+)\.$/,function(m){return "Cộng sự: "+m[1]+". Vụ án: "+m[2]+"."});
+RU(/^Play (.+)$/,function(m){return "Chơi bộ "+m[1]});
+RU(/^Redraw (\d+) cards?$/,function(m){return "Rút lại "+m[1]+" lá"});
+RU(/^(Opponent|Your) Remove area$/,function(m){return "Khu loại bỏ của "+(m[1]==="Your"?"bạn":"đối thủ")});
+RU(/^· (\d+) cards?, newest first\. The number shows the order they were removed \(1 is the oldest\)\.$/,function(m){return "· "+m[1]+" lá, mới nhất trước. Con số cho biết thứ tự bị loại bỏ (1 là cũ nhất)."});
+RU(/^· newest first\.$/,function(){return "· mới nhất trước."});
+RU(/^· Level (\d+) · (.*)$/,function(m){return "· Cấp "+m[1]+" · "+m[2]});
+RU(/^· Level (\d+)$/,function(m){return "· Cấp "+m[1]});
+RU(/^Partner: (.+)$/,function(m){return "Cộng sự: "+m[1]});
+RU(/^Case: (.+)$/,function(m){return "Vụ án: "+m[1]});
+RU(/^Partner \(LP (\d+)\)\. While active it can deduce, use Assist \(moves to the FILE area\) and declare Case Solved\.$/,function(m){return "Cộng sự (LP "+m[1]+"). Khi đang hoạt động nó có thể suy luận, dùng Hỗ trợ (chuyển vào Khu FILE) và tuyên bố Phá án."});
+RU(/^Deduce for LP (\d+)\. Assist moves this card to the FILE area\. Case Solved is available in the solution phase when the evidence requirement is met\.$/,function(m){return "Suy luận với LP "+m[1]+". Hỗ trợ chuyển lá này vào Khu FILE. Phá án dùng được ở giai đoạn giải đáp khi đã đủ chứng cứ."});
+RU(/^(Your|Opponent) Remove area$/,function(m){return "Khu loại bỏ của "+(m[1]==="Your"?"bạn":"đối thủ")});
+/* messages */
+RU(/^(You|Opponent) had to refresh with an empty Remove area\.$/,function(m){return S(m[1])+" phải làm mới khi Khu loại bỏ trống."});
+RU(/^(You|Opponent) refresh: the Remove area becomes the new deck, and (the opponent gains|you gain) 1 evidence\.$/,function(m){return S(m[1])+" làm mới: Khu loại bỏ trở thành bộ bài mới, và "+(m[2]==="you gain"?"bạn nhận":"đối thủ nhận")+" 1 chứng cứ."});
+RU(/^Auto phase for (you|opponent): activate everything, draw 1, put (\d+) cards? in the FILE area\.$/,function(m){return "Giai đoạn Tự động của "+S(m[1])+": kích hoạt mọi thứ, rút 1 lá, đặt "+m[2]+" lá vào Khu FILE."});
+RU(/^(.+) \(Lv (\d+)\)$/,function(m){return m[1]+" (Cấp "+m[2]+")"});
+RU(/^(.+) \(event\)$/,function(m){return m[1]+" (sự kiện)"});
+RU(/^(.+): remove 1 card from hand$/,function(m){return m[1]+": loại bỏ 1 lá từ tay"});
+RU(/^(.+): you must remove 1 card from hand$/,function(m){return m[1]+": bạn phải loại bỏ 1 lá từ tay"});
+RU(/^(.+): (you|opponent) must remove 1 card from hand\.$/,function(m){return m[1]+": "+S(m[2])+" phải loại bỏ 1 lá từ tay."});
+RU(/^(.+): remove a card from hand\?$/,function(m){return m[1]+": loại bỏ một lá từ tay?"});
+RU(/^(You|Opponent) removes? (.+?) from hand( to use (.+))?\.$/,function(m){return S(m[1])+" loại bỏ "+m[2]+" từ tay"+(m[4]?" để dùng "+m[4]:"")+"."});
+function why(w){if(w==="switch")return "đổi chỗ";if(w==="lost the Contact")return "thua Tiếp xúc";var e=/^(.+)'s effect$/.exec(w);return e?"hiệu ứng của "+e[1]:w}
+RU(/^(.+) is removed from (the opponent's|your) Scene(?: \((.+)\))?\.$/,function(m){return m[1]+" bị loại bỏ khỏi Hiện trường "+(m[2]==="your"?"của bạn":"của đối thủ")+(m[3]?" ("+why(m[3])+")":"")+"."});
+RU(/^(You|Opponent) draws? (\d+) cards?(?: \((Jirokichi|Hakuba|Heizo)\))?\.$/,function(m){return S(m[1])+" rút "+m[2]+" lá"+(m[3]?" ("+m[3]+")":"")+"."});
+RU(/^(.+) is stunned\.$/,function(m){return m[1]+" bị choáng."});
+RU(/^Switch out one character to enter (.+)\.$/,function(m){return "Loại bỏ một nhân vật để cho "+m[1]+" vào Hiện trường."});
+RU(/^Remove (.+)$/,function(m){return "Loại bỏ "+m[1]});
+RU(/^(You|Opponent) enters? (.+) \(level (\d+)\)( asleep)?\.$/,function(m){return S(m[1])+" cho "+m[2]+" (cấp "+m[3]+") vào Hiện trường"+(m[4]?" ở trạng thái ngủ":"")+"."});
+RU(/^(You|Opponent) reveals? (your|their) hand: (.*)\.$/,function(m){return S(m[1])+" lật bài trên tay: "+(m[3]==="no cards"?"không có lá nào":m[3])+"."});
+RU(/^(.+) falls asleep(?: \(Kazuha\))?\.$/,function(m){return m[1]+" đi ngủ"+(/\(Kazuha\)/.test(m[0])?" (Kazuha)":"")+"."});
+RU(/^(.+): stun which character\?$/,function(m){return m[1]+": làm choáng nhân vật nào?"});
+RU(/^(You|Opponent) gains? (\d+) evidence\.$/,function(m){return S(m[1])+" nhận "+m[2]+" chứng cứ."});
+RU(/^(You|Opponent) gains? 1 more evidence \((.+)\)\.$/,function(m){return S(m[1])+" nhận thêm 1 chứng cứ ("+m[2]+")."});
+RU(/^(.+): \+1000 AP to which character\?$/,function(m){return m[1]+": +1000 AP cho nhân vật nào?"});
+RU(/^(.+) gets \+(\d+) AP (this turn|during this Action)\.$/,function(m){return m[1]+" được +"+m[2]+" AP "+(m[3]==="this turn"?"trong lượt này":"trong Hành động này")+"."});
+RU(/^Look at your top (\d+) cards$/,function(m){return "Xem "+m[1]+" lá trên cùng bộ bài của bạn"});
+RU(/^(You|Opponent) looks? at the top (\d+) cards and adds? (.+) to hand\.$/,function(m){return S(m[1])+" xem "+m[2]+" lá trên cùng và thêm "+m[3]+" vào tay."});
+RU(/^(You|Opponent) looks? at the top (\d+) cards and adds? nothing\.$/,function(m){return S(m[1])+" xem "+m[2]+" lá trên cùng và không thêm lá nào."});
+RU(/^(.+): remove which character\?$/,function(m){return m[1]+": loại bỏ nhân vật nào?"});
+RU(/^(.+): enter a character$/,function(m){return m[1]+": cho một nhân vật vào Hiện trường"});
+RU(/^Level (\d+) or less \(your FILE count\)\.$/,function(m){return "Cấp "+m[1]+" trở xuống (số lá FILE của bạn)."});
+RU(/^Flash of insight: (.+)$/,function(m){return "Tia linh cảm: "+m[1]});
+RU(/^(You|Opponent) activates? the Flash of insight on (.+)\.$/,function(m){return S(m[1])+" kích hoạt Linh cảm của "+m[2]+"."});
+RU(/^Level (\d+) needs (\d+) cards in the FILE area\. You have (\d+)\.$/,function(m){return "Cấp "+m[1]+" cần "+m[2]+" lá trong Khu FILE. Bạn có "+m[3]+"."});
+RU(/^(You|Opponent) plays? the event (.+)\.$/,function(m){return S(m[1])+" đánh sự kiện "+m[2]+"."});
+RU(/^(You|Opponent) deduces? with (.+) \(LP (-?\d+)\)\.$/,function(m){return S(m[1])+" suy luận bằng "+(m[2]==="partner"?"cộng sự":m[2])+" (LP "+m[3]+")."});
+RU(/^Sleep a character with Misdirect to give the deducing card LP -(\d+) until the deduction ends\. Current LP: (-?\d+)\.$/,function(m){return "Cho một nhân vật có Đánh lạc hướng ngủ để lá đang suy luận bị LP -"+m[1]+" cho đến hết lần suy luận. LP hiện tại: "+m[2]+"."});
+RU(/^(.+) \(Misdirect (\d+)\)$/,function(m){return m[1]+" (Đánh lạc hướng "+m[2]+")"});
+RU(/^(You|Opponent) uses? Misdirect with (.+) \(LP now (\d+)\)\.$/,function(m){return S(m[1])+" dùng Đánh lạc hướng với "+m[2]+" (LP hiện còn "+m[3]+")."});
+RU(/^(You|Opponent) uses? Assist: the partner moves to the FILE area\.$/,function(m){return S(m[1])+" dùng Hỗ trợ: cộng sự chuyển vào Khu FILE."});
+RU(/^(Your|Opponent's) case moves to the solution phase \(7 or more FILE cards\)\.$/,function(m){return "Vụ án của "+(m[1]==="Your"?"bạn":"đối thủ")+" chuyển sang giai đoạn giải đáp (7 lá FILE trở lên)."});
+RU(/^(You|Opponent) used Evidence Destruction, removing (\d+) evidence\. (You lose|The opponent loses)\.$/,function(m){return S(m[1])+" đã dùng Tiêu hủy chứng cứ, loại bỏ "+m[2]+" chứng cứ. "+(m[3]==="You lose"?"Bạn thua.":"Đối thủ thua.")});
+RU(/^(You|Opponent) solved the case with (\d+) evidence against level (\d+)\.$/,function(m){return S(m[1])+" đã phá án với "+m[2]+" chứng cứ so với cấp "+m[3]+"."});
+RU(/^Case Solved declared with only (\d+) evidence\. It needs (\d+), so nothing happens and the partner falls asleep\.$/,function(m){return "Tuyên bố Phá án chỉ với "+m[1]+" chứng cứ. Cần "+m[2]+", nên không có gì xảy ra và cộng sự đi ngủ."});
+RU(/^Evidence Destruction needs (\d+) evidence to remove as its cost\. You have (\d+)\.$/,function(m){return "Tiêu hủy chứng cứ cần "+m[1]+" chứng cứ để loại bỏ làm chi phí. Bạn có "+m[2]+"."});
+RU(/^(.+) already used its ability this turn\.$/,function(m){return m[1]+" đã dùng năng lực của mình trong lượt này."});
+RU(/^(.+): sleep which character\?$/,function(m){return m[1]+": cho nhân vật nào ngủ?"});
+RU(/^(You|Opponent) sleeps? (.+) to use Conan's ability\.$/,function(m){return S(m[1])+" cho "+m[2]+" ngủ để dùng năng lực của Conan."});
+RU(/^(You|Opponent) uses? Ran's ability\.$/,function(m){return S(m[1])+" dùng năng lực của Ran."});
+RU(/^(.+): give Assault to which character\?$/,function(m){return m[1]+": trao Đột kích cho nhân vật nào?"});
+RU(/^(.+) gains Assault this turn\.$/,function(m){return m[1]+" có Đột kích trong lượt này."});
+RU(/^(You|Opponent) puts? Vermouth on the bottom of the deck\.$/,function(m){return S(m[1])+" đặt Vermouth xuống đáy bộ bài."});
+RU(/^Gin's ability triggers: (.+) \(level (\d+)\) is removed on contact\.$/,function(m){return "Năng lực của Gin được kích hoạt: "+m[1]+" (cấp "+m[2]+") bị loại bỏ khi Tiếp xúc."});
+RU(/^Contact: (.+) \(AP (\d+)\) vs (.+) \(AP (\d+)\)\. (You|Opponent) can act first because (equal AP puts the non-turn player first|the lower AP goes first)\.$/,function(m){return "Tiếp xúc: "+m[1]+" (AP "+m[2]+") đấu với "+m[3]+" (AP "+m[4]+"). "+S(m[5])+" hành động trước "+(m[6].indexOf("equal")===0?"vì AP bằng nhau nên người không có lượt đi trước.":"vì AP thấp hơn được đi trước.")});
+RU(/^(You|Opponent) cannot use Cut-in during this Action\.$/,function(m){return S(m[1])+" không thể dùng Cut-in trong Hành động này."});
+RU(/^Contact: your (.+) has AP (\d+) against (\d+)$/,function(m){return "Tiếp xúc: "+m[1]+" của bạn có AP "+m[2]+" so với "+m[3]});
+RU(/^(.+) \(Cut-in \+(\d+)\)$/,function(m){return m[1]+" (Cut-in +"+m[2]+")"});
+RU(/^(You|Opponent) plays? the Cut-in (.+) \(AP \+(\d+)\)\.$/,function(m){return S(m[1])+" đánh Cut-in "+m[2]+" (AP +"+m[3]+")."});
+RU(/^Result: attacker AP (\d+) vs (\d+)\. (.+) is removed\.$/,function(m){return "Kết quả: AP bên tấn công "+m[1]+" so với "+m[2]+". "+m[3]+" bị loại bỏ."});
+RU(/^Result: attacker AP (\d+) vs (\d+)\. Nothing happens\.$/,function(m){return "Kết quả: AP bên tấn công "+m[1]+" so với "+m[2]+". Không có gì xảy ra."});
+RU(/^Opponent's (.+) \(AP (\d+)\) attacks (your case|your sleeping (.+))\. Guard\?$/,function(m){return m[1]+" của đối thủ (AP "+m[2]+") tấn công "+(m[4]?"nhân vật đang ngủ "+m[4]+" của bạn":"vụ án của bạn")+". Đỡ đòn?"});
+RU(/^(You|Opponent) takes? an Action with (.+) against (the opposing case|the sleeping (.+))\.$/,function(m){return S(m[1])+" dùng Hành động với "+m[2]+" nhắm vào "+(m[4]?"nhân vật đang ngủ "+m[4]:"vụ án đối phương")+"."});
+RU(/^(.+) has Bullet: this Action cannot be guarded\.$/,function(m){return m[1]+" có Đạn: Hành động này không thể bị đỡ."});
+RU(/^(You|Opponent) guards? with (.+)\.$/,function(m){return S(m[1])+" đỡ đòn bằng "+m[2]+"."});
+RU(/^Not guarded: the top evidence card of the opposing case is removed, and (you|opponent) gains? 1 evidence\.$/,function(m){return "Không bị đỡ: lá chứng cứ trên cùng của vụ án đối phương bị loại bỏ, và "+S(m[1])+" nhận 1 chứng cứ."});
+RU(/^(You|Opponent) declares (Evidence Destruction|Case Solved)\.$/,function(m){return S(m[1])+" tuyên bố "+(m[2]==="Case Solved"?"Phá án":"Tiêu hủy chứng cứ")+"."});
+RU(/^(You|Opponent) ends? (the|your) turn\.$/,function(m){return S(m[1])+" kết thúc "+(m[2]==="the"?"lượt":"lượt của mình")+"."});
+RU(/^(.+): remove a card to become active\?$/,function(m){return m[1]+": loại bỏ một lá để trở lại hoạt động?"});
+RU(/^At the end of your turn you may remove 1 card from hand to make this character active( \(a stunned character becomes sleeping instead\))?\.$/,function(m){return "Cuối lượt của bạn, bạn có thể loại bỏ 1 lá từ tay để cho nhân vật này hoạt động"+(m[1]?" (nhân vật bị choáng sẽ chuyển sang ngủ)":"")+"."});
+RU(/^(.+) is (active again|now sleeping)\.$/,function(m){return m[1]+(m[2]==="active again"?" lại hoạt động.":" giờ đang ngủ.")});
+RU(/^Played (.+?)\.( It cannot deduce or take Actions this turn(, except it has Swift, so it can\.|, except it has Assault, so it can take Actions\.|, but it can still guard and use abilities\.))?$/,function(m){var t="Đã đánh "+m[1]+".";if(m[2]){t+=" Nó không thể suy luận hay dùng Hành động trong lượt này"+(m[3].indexOf("Swift")>-1?", nhưng nó có Nhanh nhẹn nên làm được.":(m[3].indexOf("Assault")>-1?", nhưng nó có Đột kích nên dùng được Hành động.":", song nó vẫn đỡ đòn và dùng năng lực được."))}return t});
+RU(/^Now play one card of level (\d+) or lower, or skip\. The card you just took does not count toward the FILE total, but you may play it\.$/,function(m){return "Bây giờ hãy đánh một lá cấp "+m[1]+" trở xuống, hoặc bỏ qua. Lá bạn vừa lấy không được tính vào tổng số lá FILE, nhưng bạn có thể đánh nó."});
+RU(/^Partner (.+) \(LP (\d+)\)$/,function(m){return "Cộng sự "+m[1]+" (LP "+m[2]+")"});
+RU(/^Opposing case \((\d+) evidence\)$/,function(m){return "Vụ án đối phương ("+m[1]+" chứng cứ)"});
+RU(/^(.+) \(AP (-?\d+), (stunned|sleeping)\)$/,function(m){return m[1]+" (AP "+m[2]+", "+(m[3]==="stunned"?"bị choáng":"đang ngủ")+")"});
+RU(/^(.+) \(AP (-?\d+), (sleeping|stunned)$/,function(m){return m[0]});
+RU(/^Target of (.+)'s Action$/,function(m){return "Mục tiêu Hành động của "+m[1]});
+RU(/^(You|Opponent) redraws? (\d+) cards?\.$/,function(m){return S(m[1])+" rút lại "+m[2]+" lá."});
+RU(/^(You go|The opponent goes) first \(coin toss\)\. Case levels: first player (\d+) evidence, second player (\d+)(?: evidence)?\. Each side draws 5 cards\.$/,function(m){return (m[1]==="You go"?"Bạn đi trước":"Đối thủ đi trước")+" (tung đồng xu). Cấp vụ án: người đi trước cần "+m[2]+" chứng cứ, người đi sau cần "+m[3]+". Mỗi bên rút 5 lá."});
+RU(/^Opponent evidence: (\d+) → (\d+)\. Your evidence: (\d+) → (\d+)\.$/,function(m){return "Chứng cứ đối thủ: "+m[1]+" → "+m[2]+". Chứng cứ của bạn: "+m[3]+" → "+m[4]+"."});
+function tr(c){
+  if(EX.hasOwnProperty(c))return EX[c];
+  for(var i=0;i<RULES.length;i++){var m=RULES[i][0].exec(c);if(m)return RULES[i][1](m)}
+  return c;
+}
+function V(s){
+  if(LANG!=="vi"||typeof s!=="string")return s;
+  var m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s);if(!m[2])return s;
+  return m[1]+nmz(tr(m[2]))+m[3];
+}
+function xlate(el){
+  if(LANG!=="vi"||!el)return;
+  var w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false),n,arr=[];
+  while(n=w.nextNode())arr.push(n);
+  arr.forEach(function(t){var v=V(t.nodeValue);if(v!==t.nodeValue)t.nodeValue=v});
+  el.querySelectorAll("[title]").forEach(function(e){e.title=V(e.title)});
+}
+function setLang(l,fromEvent){
+  if(l!=="en"&&l!=="vi")return;LANG=l;
+  try{localStorage.setItem("conanLang",l)}catch(e){}
+  syncSw();
+  if(typeof render==="function")render();
+  if(!fromEvent)try{document.dispatchEvent(new CustomEvent("conan-lang",{detail:{lang:l}}))}catch(e){}
+}
+function syncSw(){var b=document.querySelectorAll("[data-gamelang] button");for(var i=0;i<b.length;i++)b[i].setAttribute("aria-pressed",String(b[i].dataset.l===LANG))}
+(function mountSwitch(){
+  if(!document.getElementById("conan-lang-css")){var st=document.createElement("style");st.id="conan-lang-css";st.textContent=".plang{display:flex;justify-content:flex-end;align-items:center;gap:0;margin:10px 0 0}.plang span{font:600 .7rem/1 ui-monospace,Menlo,monospace;letter-spacing:.05em;margin-right:8px;opacity:.7}.plang button{font:inherit;font-weight:700;font-size:.8rem;padding:6px 12px;cursor:pointer;border:2px solid #8a5a3c;background:transparent;color:inherit}.plang button:first-of-type{border-radius:6px 0 0 6px}.plang button:last-of-type{border-radius:0 6px 6px 0;border-left-width:0}.plang button[aria-pressed=true]{background:#8a5a3c;color:#fff}";document.head.appendChild(st)}
+  var bar=document.createElement("div");bar.className="plang";bar.setAttribute("data-gamelang","1");bar.setAttribute("role","group");bar.setAttribute("aria-label","Language");
+  bar.innerHTML='<span>LANG</span><button type="button" data-l="en" aria-pressed="false">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button>';
+  var host=root.parentNode&&root.parentNode.classList&&root.parentNode.classList.contains("pwide")?root.parentNode:root;
+  host.parentNode.insertBefore(bar,host);
+  bar.addEventListener("click",function(e){var b=e.target.closest("button[data-l]");if(b)setLang(b.dataset.l)});
+  syncSw();
+})();
+document.addEventListener("conan-lang",function(e){if(e.detail&&e.detail.lang&&e.detail.lang!==LANG)setLang(e.detail.lang,true)});
+window.addEventListener("storage",function(e){if(e.key==="conanLang"&&e.newValue&&e.newValue!==LANG)setLang(e.newValue,true)});
+
+
+/* ---------- Card data (read from the two starter deck images) ---------- */
+var DECKS={
+ conan:{key:"conan",name:"Conan",color:"blue",
+  blurb:"Blue. Fast Swift and Assault attackers, many Cut-ins, and big removal effects.",
+  partner:{n:"Conan",lp:1},
+  caze:{n:"Piano Sonata “Moonlight” Murder Case",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"c7",n:"Conan",lv:7,ap:6000,lp:1,tr:["det","mouri","boys"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"c4",n:"Conan",lv:4,ap:4000,lp:1,tr:["det","mouri","boys"],x:3,decl:"conan4",hira:"draw1",txt:"Declare, once per turn: sleep another of your characters to draw 1, remove 1 card from hand, and give this +1 LP this turn. Flash: draw 1."},
+   {k:"shin",n:"Shinichi Kudo",lv:8,ap:7000,lp:2,tr:["det","hs"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"kogoro",n:"Kogoro Mouri",lv:5,ap:5000,lp:0,tr:["det","mouri"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"ran6",n:"Ran Mouri",lv:6,ap:6000,lp:0,tr:["hs","mouri","karate"],x:3,decl:"ran6",enter:"boost",hira:"draw1",txt:"Declare, once per turn, and on entry: up to 1 character gets +1000 AP this turn. Flash: draw 1."},
+   {k:"ran3",n:"Ran Mouri",lv:3,ap:2000,lp:1,tr:["hs","mouri","karate"],x:3,cutin:2000,txt:"Cut-in: during a Contact, remove from hand to give +2000 AP."},
+   {k:"agasa",n:"Dr. Agasa",lv:6,ap:5000,lp:1,tr:["inv"],x:3,enter:"agasa",txt:"On entry: you may enter a Detective Boys character of level 4 or less from hand, asleep. If you do not, up to 1 character gets +1000 AP this turn."},
+   {k:"ayumi",n:"Ayumi Yoshida",lv:4,ap:4000,lp:1,tr:["boys"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"mitsu",n:"Mitsuhiko Tsuburaya",lv:3,ap:2000,lp:1,tr:["boys"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"genta",n:"Genta Kojima",lv:2,ap:1000,lp:1,tr:["boys"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"ai5",n:"Ai Haibara",lv:5,ap:5000,lp:1,tr:["boys","sci"],x:3,leave:"haibara",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: look at your top 3, enter up to 1 blue character of level 4 or less asleep, put the rest on the bottom. Flash: sleep up to 1 character."},
+   {k:"ai4",n:"Ai Haibara",lv:4,ap:4000,lp:1,tr:["boys","sci"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 blue card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"ev1",n:"The Detective Who Shrank",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 blue character to hand, put the rest on the bottom. Then enter a blue character from hand whose level is at most your FILE count."},
+   {k:"ev5",n:"Ran's Blow",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ org:{key:"org",name:"Black Organization",color:"black",
+  blurb:"Black. Powerful removal, Rum's team boost, and Evidence Destruction to win.",
+  partner:{n:"Sherry",lp:1},
+  caze:{n:"Codename: Sherry",lv:[7,6],alt:1,txt:"Evidence needed: 7 if you go first, 6 if you go second. Your partner's Case Solved becomes Evidence Destruction: in the solution phase, sleep the partner and remove evidence equal to the case level. The opponent then loses."},
+  cards:[
+   {k:"sh2",n:"Sherry",lv:2,ap:1000,lp:1,tr:["org"],x:3,cutin:2000,txt:"Cut-in: during a Contact, remove from hand to give +2000 AP."},
+   {k:"gin8",n:"Gin",lv:8,ap:7000,lp:2,tr:["org"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"bourbon",n:"Bourbon",lv:7,ap:6000,lp:1,tr:["org"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"vermouth",n:"Vermouth",lv:6,ap:5000,lp:1,tr:["org"],x:3,decl:"vermouth",hira:"sleep1",txt:"Declare: sleep this character and put it on the bottom of your deck. Enter a character of level 5 or less from hand and give it Assault this turn. Flash: sleep up to 1 character."},
+   {k:"rum",n:"Rum",lv:6,ap:6000,lp:1,tr:["org"],x:3,stat:"rum",hira:"draw1",txt:"During your turn: your other black characters get +1000 AP. Flash: draw 1."},
+   {k:"vodka",n:"Vodka",lv:5,ap:5000,lp:0,tr:["org"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"rye",n:"Rye",lv:5,ap:5000,lp:1,tr:["org"],x:3,leave:"rye",txt:"When removed from Scene during the opponent's turn: remove up to 1 opposing character of level 4 or less. If you do, the opponent draws 1."},
+   {k:"kir",n:"Kir",lv:3,ap:2000,lp:1,tr:["org"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"gin4",n:"Gin",lv:4,ap:4000,lp:1,tr:["org"],x:3,contact:"gin4",hira:"draw1",txt:"During your turn: when this contacts a character of level 6 or less, remove that character. Flash: draw 1."},
+   {k:"sh4",n:"Sherry",lv:4,ap:4000,lp:1,tr:["org"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 black card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"chianti",n:"Chianti",lv:2,ap:1000,lp:1,tr:["org"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"korn",n:"Korn",lv:3,ap:2000,lp:1,tr:["org"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"ev5b",n:"“Traitors can't hide their scent...”",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."},
+   {k:"ev1b",n:"Shadow of Renya Karasuma",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 black character to hand, put the rest on the bottom. Then enter a black character from hand whose level is at most your FILE count."}
+  ]},
+ heiji:{key:"heiji",name:"Heiji Hattori",color:"green",
+  blurb:"Green. Heiji and Kazuha put opposing characters to sleep, Heizo blocks Cut-ins, and Shizuka hands out Assault.",
+  partner:{n:"Heiji Hattori",lp:1},
+  caze:{n:"And Then the Mermaid Vanished",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"h8",n:"Heiji Hattori",lv:8,ap:7000,lp:2,tr:["det","hs"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"h7",n:"Heiji Hattori",lv:7,ap:6000,lp:1,tr:["det","hs"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"h4",n:"Heiji Hattori",lv:4,ap:4000,lp:1,tr:["det","hs"],x:3,actbonus:1,hira:"draw1",txt:"When this takes an Action: it gets +1000 AP until the Action ends for each sleeping or stunned character in the opponent's Scene. Flash: draw 1."},
+   {k:"kaz6",n:"Kazuha Toyama",lv:6,ap:5000,lp:1,tr:["hs"],x:3,kazuha:1,hira:"sleep1",txt:"Once per turn: when this or a card named Heiji Hattori enters your Scene, sleep up to 1 character. Flash: sleep up to 1 character."},
+   {k:"kaz3",n:"Kazuha Toyama",lv:3,ap:2000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"oki",n:"Soji Okita",lv:5,ap:5000,lp:0,tr:["hs"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"heizo",n:"Heizo Hattori",lv:6,ap:6000,lp:1,tr:["police"],x:3,nocut:1,heizodraw:1,hira:"draw1",txt:"When this takes an Action: the opponent cannot use Cut-in until the Action ends. When an opposing character is removed by a Contact with this, draw 1. Flash: draw 1."},
+   {k:"ginshiro",n:"Ginshiro Toyama",lv:3,ap:2000,lp:1,tr:["police"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"muga",n:"Muga Iori",lv:4,ap:4000,lp:1,tr:["magistrate"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"momi4",n:"Momiji Ooka",lv:4,ap:4000,lp:1,tr:["hs"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 green card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"momi2",n:"Momiji Ooka",lv:2,ap:1000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"shizuka",n:"Shizuka Hattori",lv:5,ap:5000,lp:1,tr:[],x:3,decl:"shizuka",txt:"Declare, once per turn, remove 1 card from hand: give another of your characters of level 6 or less Assault until end of turn. Can only be declared while the opponent has 2 or more sleeping or stunned characters in total."},
+   {k:"ev1h",n:"Omamori (Charm)",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 green character to hand, put the rest on the bottom. Then enter a green character from hand whose level is at most your FILE count."},
+   {k:"ev5h",n:"Heiji's Insight",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ kid:{key:"kid",name:"Kid the Phantom Thief",color:"white",
+  blurb:"White. Stun effects keep opposing characters down longer, plus Makoto's tough comeback and Hakuba's card draw.",
+  partner:{n:"Kid the Phantom Thief",lp:1},
+  caze:{n:"Reunion",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"k8",n:"Kid the Phantom Thief",lv:8,ap:7000,lp:2,tr:["thief"],x:3,enter:"stungain",txt:"On entry: you may remove 1 card from hand. If you do, stun up to 1 character and gain 1 evidence. (Activating a stunned character puts it to sleep instead.)"},
+   {k:"k7",n:"Kid the Phantom Thief",lv:7,ap:6000,lp:1,tr:["thief"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"k4",n:"Kid the Phantom Thief",lv:4,ap:4000,lp:1,tr:["thief"],x:3,leave:"kid4",hira:"draw1",txt:"When removed from Scene during the opponent's turn: stun up to 1 sleeping character of level 5 or less. Flash: draw 1."},
+   {k:"aoko",n:"Aoko Nakamori",lv:2,ap:1000,lp:1,tr:["hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"ginzo",n:"Ginzo Nakamori",lv:5,ap:5000,lp:0,tr:["police"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"saguru6",n:"Saguru Hakuba",lv:6,ap:5000,lp:1,tr:["det","hs"],x:3,hakdraw:1,txt:"Once per turn: when this deduces or takes an Action, draw 1."},
+   {k:"saguru3",n:"Saguru Hakuba",lv:3,ap:2000,lp:1,tr:["det","hs"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"son4",n:"Sonoko Suzuki",lv:4,ap:4000,lp:1,tr:["hs","suzuki"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 white card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"son3",n:"Sonoko Suzuki",lv:3,ap:2000,lp:1,tr:["hs","suzuki"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"makoto",n:"Makoto Kyogoku",lv:6,ap:7000,lp:0,tr:["hs","karate"],x:3,endact:1,hira:"draw1",txt:"At the end of your turn: you may remove 1 card from hand. If you do, make this character active. Flash: draw 1."},
+   {k:"tomoko",n:"Tomoko Suzuki",lv:4,ap:4000,lp:1,tr:["suzuki"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"jiro",n:"Jirokichi Suzuki",lv:5,ap:5000,lp:1,tr:["suzuki"],x:3,leave:"jiro",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: draw 1. Flash: sleep up to 1 character."},
+   {k:"ev1k",n:"\u201cLadies and... Gentlemen!!\u201d",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 white character to hand, put the rest on the bottom. Then enter a white character from hand whose level is at most your FILE count."},
+   {k:"ev5k",n:"\u201cApril Fool...\u201d",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ akai:{key:"akai",name:"Akai",color:"red",
+  blurb:"Red (CT-D04). FBI attackers with unguardable Actions, case-hitting bonuses and hand disruption.",
+  partner:{n:"Shuichi Akai",lp:1},
+  caze:{n:"The Scarlet Return",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"a8",n:"Shuichi Akai",lv:8,ap:7000,lp:2,tr:["fbi","akai"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"a7",n:"Shuichi Akai",lv:7,ap:6000,lp:1,tr:["fbi","akai"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"a4",n:"Shuichi Akai",lv:4,ap:4000,lp:1,tr:["fbi","akai"],x:3,bullet:1,hira:"draw1",txt:"Bullet: this character's Actions cannot be guarded. Flash: draw 1."},
+   {k:"mas6",n:"Masumi Sera",lv:6,ap:5000,lp:1,tr:["det","hs","akai"],x:3,masumi:1,hira:"draw1",txt:"When a character in your Scene takes an Action against a case: this character gains Assault until end of turn. Flash: draw 1."},
+   {k:"shu",n:"Shukichi Haneda",lv:3,ap:2000,lp:1,tr:["shogi","akai"],x:3,cutin:2000,txt:"Cut-in: during a Contact, remove from hand to give +2000 AP."},
+   {k:"mary",n:"Mary Sera",lv:6,ap:6000,lp:1,tr:["akai"],x:3,md:1,mary:1,txt:"Misdirect 1. Once per turn, when an Action by a character in your Scene against a case gains you evidence: you may remove 1 card from hand. If you do, gain 1 evidence."},
+   {k:"mas3",n:"Masumi Sera",lv:3,ap:2000,lp:1,tr:["det","hs","akai"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"hondo",n:"Hidemi Hondo",lv:2,ap:1000,lp:1,tr:["cia"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"jodie5",n:"Jodie Starling",lv:5,ap:5000,lp:1,tr:["fbi"],x:3,leave:"jodie",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: the opponent removes 1 card from hand. Flash: sleep up to 1 character."},
+   {k:"jodie4",n:"Jodie Starling",lv:4,ap:4000,lp:1,tr:["fbi"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 red card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"james",n:"James Black",lv:4,ap:4000,lp:1,tr:["fbi"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"camel",n:"Andre Camel",lv:5,ap:5000,lp:0,tr:["fbi"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"ev1a",n:"The Mysterious Passenger",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 red character to hand, put the rest on the bottom. Then enter a red character from hand whose level is at most your FILE count."},
+   {k:"ev5a",n:"Akai's Shot",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]},
+ amuro:{key:"amuro",name:"Amuro",color:"yellow",
+  blurb:"Yellow (CT-D05). Public Security and Metropolitan Police: team AP boosts and bringing characters back from the Remove area.",
+  partner:{n:"Toru Amuro",lp:1},
+  caze:{n:"The Scarlet Suspicion",lv:[7,6],alt:0,txt:"Evidence needed: 7 if you go first, 6 if you go second."},
+  cards:[
+   {k:"f8",n:"Rei Furuya",lv:8,ap:7000,lp:2,tr:["police","koan"],x:3,enter:"snipe",txt:"On entry: you may remove 1 card from hand. If you do, remove up to 1 character with AP 8000 or less."},
+   {k:"f7",n:"Rei Furuya",lv:7,ap:6000,lp:1,tr:["police","koan"],x:3,swift:1,txt:"Swift: can deduce or take Actions the turn it enters."},
+   {k:"f4",n:"Rei Furuya",lv:4,ap:4000,lp:1,tr:["police","koan"],x:3,enter:"reveal",hira:"draw1",txt:"On entry: the opponent reveals their hand (then returns it). Flash: draw 1."},
+   {k:"kuroda",n:"Hyoe Kuroda",lv:6,ap:6000,lp:1,tr:["police","mpd"],x:3,stat:"rum",hira:"draw1",txt:"During your turn: your other yellow characters get +1000 AP. Flash: draw 1."},
+   {k:"megure",n:"Juzo Megure",lv:6,ap:5000,lp:1,tr:["police","mpd"],x:3,enter:"megure",txt:"On entry: you may remove 1 card from hand. If you do, enter a yellow character of level 4 or less from your Remove area, asleep."},
+   {k:"mat5",n:"Jinpei Matsuda",lv:5,ap:5000,lp:1,tr:["police","mpd"],x:3,leave:"haibara",hira:"sleep1",txt:"When removed from Scene during the opponent's turn: look at your top 3, enter up to 1 yellow character of level 4 or less asleep, put the rest on the bottom. Flash: sleep up to 1 character."},
+   {k:"mat3",n:"Jinpei Matsuda",lv:3,ap:2000,lp:1,tr:["police","mpd"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"kaz5",n:"Yusuke Kazami",lv:5,ap:5000,lp:0,tr:["police","mpd","koan"],x:3,assault:1,txt:"Assault: can take Actions the turn it enters."},
+   {k:"kaz2",n:"Yusuke Kazami",lv:2,ap:1000,lp:1,tr:["police","mpd","koan"],x:3,cutin:2000,txt:"Cut-in: +2000 AP."},
+   {k:"shira",n:"Ninzaburo Shiratori",lv:3,ap:2000,lp:1,tr:["police","mpd"],x:3,md:1,cutin:1000,txt:"Misdirect 1. Cut-in: +1000 AP."},
+   {k:"sato",n:"Miwako Sato",lv:4,ap:4000,lp:1,tr:["police","mpd"],x:2,enter:"search4",hira:"draw1",txt:"On entry: look at your top 4, add up to 1 yellow card to hand, put the rest on the bottom, then remove 1 card from hand if you added one. Flash: draw 1."},
+   {k:"taka",n:"Wataru Takagi",lv:4,ap:4000,lp:1,tr:["police","mpd"],x:3,cutin:1000,txt:"Cut-in: +1000 AP."},
+   {k:"ev1y",n:"Private Eye",t:"e",lv:1,x:2,ev:"search3enter",txt:"Look at your top 3, add up to 1 yellow character to hand, put the rest on the bottom. Then enter a yellow character from hand whose level is at most your FILE count."},
+   {k:"ev5y",n:"Amuro's Strike",t:"e",lv:5,x:3,ev:"snipeEv",txt:"Remove up to 1 character with AP 8000 or less."}
+  ]}
+};
+
+/* ---------- card images (optional, from a local Card_List folder) ---------- */
+var SETS={conan:["CT-D01","D01",null,16],heiji:["CT-D02","D02",null,16],kid:["CT-D03","D03",null,16],akai:["CT-D04","D04",null,16],amuro:["CT-D05","D05",null,16],org:["CT-D07","D07",[2,4,6,8,10,12,14,16,18,19,20,21,22,23],24]};
+Object.keys(DECKS).forEach(function(k){
+  var S=SETS[k],d=DECKS[k];
+  d.set=S[0];d.cardNo=S[1]+("00"+S[3]).slice(-3);d.partnerNo=S[1]+"001";
+  d.cards.forEach(function(c,i){c.set=S[0];c.img=S[1]+("00"+(S[2]?S[2][i]:i+2)).slice(-3)});
+});
+var BASES=["Card_List/{s}/","Card_List/","Card_list/{s}/","Card list/{s}/","Card_List/Card list/{s}/","Card_List/Card_List/{s}/"];
+var baseOK=-1;
+function imgUrl(set,no,b){return BASES[b].replace("{s}",set)+no+".webp"}
+function cimg(set,no,cls,alt){
+  if(!no||baseOK===-2)return "";
+  var b=baseOK>=0?baseOK:0;
+  return '<img class="cimg '+cls+'" data-b="'+b+'" data-s="'+set+'" data-n="'+no+'" alt="'+(alt||"")+'" src="'+imgUrl(set,no,b)+'">';
+}
+function probe(){
+  var i=0;(function t(){
+    var im=new Image();
+    im.onload=function(){baseOK=i;if(!G)render()};
+    im.onerror=function(){i++;if(i<BASES.length)t();else{baseOK=-2;if(!G)render()}};
+    im.src=imgUrl("CT-D01","D01002",i);
+  })();
+}
+root.addEventListener("error",function(e){
+  var im=e.target;if(!im||im.tagName!=="IMG"||!im.classList.contains("cimg"))return;
+  var b=+im.dataset.b+1;
+  if(baseOK>=0&&b-1!==baseOK){im.dataset.b=baseOK;im.src=imgUrl(im.dataset.s,im.dataset.n,baseOK);return}
+  if(baseOK===-1&&b<BASES.length){im.dataset.b=b;im.src=imgUrl(im.dataset.s,im.dataset.n,b);return}
+  if(baseOK===-1)baseOK=-2;
+  im.style.display="none";
+},true);
+root.addEventListener("load",function(e){var im=e.target;if(im&&im.classList&&im.classList.contains("cimg")&&baseOK===-1)baseOK=+im.dataset.b},true);
+
+/* ---------- helpers ---------- */
+function rnd(n){return Math.floor(Math.random()*n)}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+function sleep(ms){return (G&&G.sim)?Promise.resolve():new Promise(function(r){setTimeout(r,ms)})}
+function nm(i){return i?"Opponent":"You"}
+function isHuman(pi){return !G.sim&&pi===0}
+function mkDeck(def){var d=[];def.cards.forEach(function(k){for(var i=0;i<k.x;i++)d.push(Object.assign({t:"c"},k,{uid:++UID}))});return shuffle(d)}
+function mkP(i,def){return {i:i,def:def,deck:mkDeck(def),hand:[],file:[],ev:[],rem:[],scene:[],partner:"active",phase:"case",lv:7,usedHand:false,usedHint:false}}
+function cap(p){return p.file.length+(p.partner==="file"?1:0)}
+function apOf(c,o){
+  var b=c.ap+(c.mod||0)+(c.actBonus||0);
+  if(G.cur===o.i){var n=o.scene.filter(function(x){return x!==c&&x.stat==="rum"}).length;b+=1000*n}
+  return b;
+}
+function lpOf(c){return c.lp+(c.lpm||0)}
+function isDown(c){return c.state==="sleep"||c.state==="stun"}
+function activate(c){c.state=c.state==="stun"?"sleep":"active"}
+function downCount(o){return o.scene.filter(isDown).length}
+function canAct(c){return c.state==="active"&&(!c.fresh||!!c.swift||!!c.assault||!!c.tmpAssault)}
+function canDeduce(c){return c.state==="active"&&(!c.fresh||!!c.swift)}
+function score(c){return c.lp*2+c.ap/2000+(c.swift?1:0)+(c.assault?0.6:0)+(c.cutin?0.8:0)+(c.hira?0.5:0)}
+function cardVal(c){if(c.t==="e")return c.ev==="snipeEv"?4:2.5;return score(c)+c.lv*0.1}
+function val(c,o){return lpOf(c)*2+apOf(c,o)/2000}
+function best(list){return list.slice().sort(function(a,b){return cardVal(b)-cardVal(a)})[0]}
+function log(t){if(G.cur===1&&G.recap)G.recap.push(t);G.log.unshift(t);if(G.log.length>40)G.log.pop();render()}
+function tip(t){G.tip=t;render()}
+function mkChar(b){var c=Object.assign({},b);c.base=b;c.state="active";c.fresh=true;c.mod=0;c.lpm=0;c.usedTurn=false;c.tmpAssault=false;return c}
+function trName(c){var T={police:"Police",thief:"Phantom thief",magistrate:"Magistrate",suzuki:"Suzuki family",det:"Detective",mouri:"Mouri Detective Agency",boys:"Detective Boys",hs:"High schooler",karate:"Karate",inv:"Inventor",sci:"Scientist",org:"Black Organization",fbi:"FBI",akai:"Akai family",cia:"CIA",shogi:"Shogi player",mpd:"Metropolitan Police",koan:"Public Security"};return (c.tr||[]).map(function(x){return V(T[x])}).join(", ")}
+
+/* ---------- game end, deck handling ---------- */
+function endGame(w,why){G.over={w:w,why:why};G.act=null;G.ask=null;render();throw OVER}
+function takeTop(p){var c=p.deck.pop();if(!p.deck.length)refresh(p);return c}
+function refresh(p){
+  if(!p.rem.length){endGame(1-p.i,nm(p.i)+(p.i?" had":" had")+" to refresh with an empty Remove area.")}
+  log(nm(p.i)+" refresh: the Remove area becomes the new deck, and "+(p.i?"you gain":"the opponent gains")+" 1 evidence.");
+  p.deck=shuffle(p.rem.splice(0));
+  var o=G.p[1-p.i];o.ev.push(takeTop(o));
+}
+function draw(p,n){for(var i=0;i<n;i++)p.hand.push(takeTop(p))}
+function cleanup(){G.p.forEach(function(p){p.scene.forEach(function(c){c.mod=0;c.lpm=0;c.tmpAssault=false;c.trig=false})})}
+function autoPhase(p){
+  p.partner="active";
+  p.scene.forEach(function(c){activate(c);c.fresh=false;c.usedTurn=false});
+  draw(p,1);
+  var n=G.turn===1?1:2;
+  for(var i=0;i<n;i++)p.file.push(takeTop(p));
+  p.usedHand=false;p.usedHint=false;
+  log("Auto phase for "+nm(p.i).toLowerCase()+": activate everything, draw 1, put "+n+" card"+(n>1?"s":"")+" in the FILE area.");
+}
+
+/* ---------- prompts ---------- */
+function ask(title,note,opts){return new Promise(function(r){G.ask={title:title,note:note,opts:opts,r:r};render()})}
+async function pick(pi,title,note,opts,pref){
+  if(isHuman(pi))return await ask(title,note,opts);
+  return pref===undefined?opts[0].v:pref;
+}
+function waitAct(){return new Promise(function(r){G.act=r;render()})}
+function allChars(filter){var r=[];G.p.forEach(function(o){o.scene.forEach(function(c){if(!filter||filter(c,o))r.push({c:c,o:o})})});return r}
+async function pickChar(pi,title,note,filter,mode){
+  var cands=allChars(filter);
+  if(!cands.length)return null;
+  var opts=cands.map(function(x){return {l:(x.o.i===pi?"Your ":"Their ")+x.c.n+" (AP "+apOf(x.c,x.o)+(x.c.state==="sleep"?", sleeping":(x.c.state==="stun"?", stunned":""))+")",v:x.c.uid}});
+  opts.push({l:"No target",v:null});
+  var pref=null;
+  if(!isHuman(pi)){
+    var en=cands.filter(function(x){return x.o.i!==pi}),own=cands.filter(function(x){return x.o.i===pi}),pool=[];
+    if(mode==="harm")pool=en;
+    else if(mode==="sleep")pool=en.filter(function(x){return x.c.state==="active"});
+    else if(mode==="boost"){pool=own.filter(function(x){return canAct(x.c)||canDeduce(x.c)});if(!pool.length)pool=own}
+    pool.sort(function(a,b){return val(b.c,b.o)-val(a.c,a.o)});
+    pref=pool.length?pool[0].c.uid:null;
+  }
+  var v=await pick(pi,title,note,opts,pref);
+  if(v===null||v===undefined)return null;
+  return cands.find(function(x){return x.c.uid===v})||null;
+}
+async function removeHandCard(p,title){
+  if(!p.hand.length)return;
+  var v=await pick(p.i,title,"Choose a card from your hand to remove.",p.hand.map(function(c){return {l:c.n+(c.t==="c"?" (Lv "+c.lv+")":" (event)"),v:c.uid}}),p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0].uid);
+  var c=p.hand.find(function(x){return x.uid===v})||p.hand[0];
+  p.hand=p.hand.filter(function(x){return x.uid!==c.uid});p.rem.push(c);
+  log(nm(p.i)+" remove"+(p.i?"s":"")+" "+c.n+" from hand.");
+}
+
+/* ---------- Scene changes and triggers ---------- */
+async function removeChar(o,c,why){
+  var i=o.scene.indexOf(c);if(i<0)return false;
+  o.scene.splice(i,1);o.rem.push(c.base);
+  log(c.n+" is removed from "+(o.i?"the opponent's":"your")+" Scene"+(why?" ("+why+")":"")+".");
+  await onLeave(o,c);
+  return true;
+}
+async function onLeave(o,c){
+  if(G.cur===o.i)return;
+  if(c.leave==="jiro"){draw(o,1);log(nm(o.i)+" draw"+(o.i?"s":"")+" 1 card (Jirokichi).")}
+  else if(c.leave==="jodie"){
+    var op2=G.p[1-o.i];
+    if(op2.hand.length){log(c.n+": "+nm(op2.i).toLowerCase()+" must remove 1 card from hand.");await removeHandCard(op2,c.n+": you must remove 1 card from hand")}
+  }
+  else if(c.leave==="kid4"){
+    var kt=await pickChar(o.i,"Kid: stun a sleeping character?","Up to 1 sleeping character of level 5 or less.",function(x){return x.state==="sleep"&&x.lv<=5},"harm");
+    if(kt){kt.c.state="stun";log(kt.c.n+" is stunned.")}
+  }
+  else if(c.leave==="rye"){
+    var opp=G.p[1-o.i];
+    var t=await pickChar(o.i,"Rye: remove an opposing character?","Level 4 or less. If you remove one, the opponent draws 1.",function(x,ow){return ow.i!==o.i&&x.lv<=4},"harm");
+    if(t){await removeChar(t.o,t.c,"Rye");draw(opp,1);log(nm(opp.i)+" draw"+(opp.i?"s":"")+" 1 card.")}
+  }else if(c.leave==="haibara"){
+    var added=await lookEnter(o,3,function(x){return x.t==="c"&&x.lv<=4});
+  }
+}
+async function enterChar(p,b,opts){
+  opts=opts||{};
+  if(p.scene.length>=5){
+    var v=await pick(p.i,"Your Scene is full","Switch out one character to enter "+b.n+".",p.scene.map(function(x){return {l:"Remove "+x.n,v:x.uid}}).concat([{l:"Cancel",v:null}]),p.scene.slice().sort(function(a,c){return val(a,p)-val(c,p)})[0].uid);
+    if(v===null||v===undefined)return null;
+    var sw=p.scene.find(function(x){return x.uid===v});
+    if(!sw)return null;
+    await removeChar(p,sw,"switch");
+  }
+  p.hand=p.hand.filter(function(x){return x.uid!==b.uid});
+  var ch=mkChar(b);
+  if(opts.sleep)ch.state="sleep";
+  if(opts.assault)ch.tmpAssault=true;
+  p.scene.push(ch);
+  log(nm(p.i)+" enter"+(p.i?"s":"")+" "+b.n+" (level "+b.lv+")"+(opts.sleep?" asleep":"")+".");
+  await onEnter(p,ch);
+  await kazuhaTrig(p,ch);
+  return ch;
+}
+async function onEnter(p,ch){
+  if(ch.enter==="snipe")await snipe(p,ch);
+  else if(ch.enter==="boost")await boost(p,ch);
+  else if(ch.enter==="agasa")await agasa(p,ch);
+  else if(ch.enter==="stungain")await stunGain(p,ch);
+  else if(ch.enter==="reveal"){
+    var ro=G.p[1-p.i];
+    if(p.i===0){OPP_HAND_REVEALED=true;render()}
+    log(nm(ro.i)+" reveal"+(ro.i?"s":"")+" "+(ro.i?"their":"your")+" hand: "+(ro.hand.length?ro.hand.map(function(x){return x.n}).join(", "):"no cards")+".");
+  }
+  else if(ch.enter==="megure")await megure(p,ch);
+  else if(ch.enter==="search4"){
+    var added=await lookAdd(p,4,function(){return true});
+    if(added)await removeHandCard(p,ch.n+": remove 1 card from hand");
+  }
+}
+async function megure(p,src){
+  var cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
+  if(!cands.length||!p.hand.length)return;
+  var card=null;
+  if(isHuman(p.i)){
+    var v=await ask(src.n+": remove a card from hand?","If you do, enter a character of level 4 or less from your Remove area, asleep.",p.hand.map(function(c){return {l:c.n,v:c.uid}}).concat([{l:"Do not use",v:null}]));
+    if(v===null)return;
+    card=p.hand.find(function(c){return c.uid===v});
+  }else{
+    var lo=p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0];
+    if(cardVal(best(cands))<=cardVal(lo)+0.5)return;
+    card=lo;
+  }
+  p.hand=p.hand.filter(function(c){return c.uid!==card.uid});p.rem.push(card);
+  log(nm(p.i)+" remove"+(p.i?"s":"")+" "+card.n+" from hand to use "+src.n+".");
+  cands=p.rem.filter(function(c){return c.t==="c"&&c.lv<=4});
+  if(!cands.length)return;
+  var cv=await pick(p.i,"Enter which character from your Remove area?","Level 4 or less, entering asleep.",cands.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}),best(cands).uid);
+  var b=cands.find(function(c){return c.uid===cv})||cands[0];
+  p.rem=p.rem.filter(function(c){return c.uid!==b.uid});
+  var e=await enterChar(p,b,{sleep:true});
+  if(!e)p.rem.push(b);
+}
+async function kazuhaTrig(p,ch){
+  var ks=p.scene.filter(function(k){return k.kazuha&&!k.trig&&(k===ch||ch.n==="Heiji Hattori")});
+  if(!ks.length)return;
+  var k=ks[0];k.trig=true;
+  var t=await pickChar(p.i,"Kazuha: sleep a character?","Once per turn, when she or Heiji Hattori enters your Scene. Up to 1 character, either side.",function(x){return x.state==="active"},"sleep");
+  if(t){t.c.state="sleep";log(t.c.n+" falls asleep (Kazuha).")}
+}
+async function stunGain(p,src){
+  if(!p.hand.length)return;
+  var yes=await pick(p.i,src.n+": remove a card from hand?","If you do, stun up to 1 character and gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],true);
+  if(!yes)return;
+  await removeHandCard(p,src.n+": remove 1 card from hand");
+  var t=await pickChar(p.i,src.n+": stun which character?","Up to 1 character, either side. Stunned characters become sleeping instead of active in the Auto phase.",function(x){return x!==src&&x.state!=="stun"},"sleep");
+  if(t){t.c.state="stun";log(t.c.n+" is stunned.")}
+  p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 evidence.");
+}
+async function snipe(p,src){
+  if(!p.hand.length)return;
+  var cands=allChars(function(c,o){return apOf(c,o)<=8000});
+  if(!cands.length)return;
+  var card=null;
+  if(isHuman(p.i)){
+    var v=await ask(src.n+": remove a card from hand?","If you do, you may then remove one character with AP 8000 or less, from either side.",p.hand.map(function(c){return {l:c.n,v:c.uid}}).concat([{l:"Do not use",v:null}]));
+    if(v===null)return;
+    card=p.hand.find(function(c){return c.uid===v});
+  }else{
+    if(!cands.some(function(x){return x.o.i!==p.i}))return;
+    card=p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0];
+  }
+  p.hand=p.hand.filter(function(c){return c.uid!==card.uid});p.rem.push(card);
+  log(nm(p.i)+" remove"+(p.i?"s":"")+" "+card.n+" from hand to use "+src.n+".");
+  var t=await pickChar(p.i,"Remove which character?","AP 8000 or less, either side.",function(c,o){return apOf(c,o)<=8000},"harm");
+  if(t)await removeChar(t.o,t.c,src.n+"'s effect");
+}
+async function boost(p,src){
+  var t=await pickChar(p.i,src.n+": +1000 AP to which character?","Up to 1 character, either side, until end of turn.",function(){return true},"boost");
+  if(t){t.c.mod=(t.c.mod||0)+1000;log(t.c.n+" gets +1000 AP this turn.")}
+}
+async function agasa(p,src){
+  var opts=p.hand.filter(function(c){return c.t==="c"&&c.lv<=4&&c.tr&&c.tr.indexOf("boys")>-1});
+  var entered=false;
+  if(opts.length){
+    var v=await pick(p.i,"Dr. Agasa: enter a Detective Boys character?","You may enter one of level 4 or less from your hand, asleep.",opts.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}).concat([{l:"Do not enter",v:null}]),best(opts).uid);
+    if(v!==null&&v!==undefined){
+      var b=opts.find(function(c){return c.uid===v});
+      if(b){var e=await enterChar(p,b,{sleep:true});entered=!!e}
+    }
+  }
+  if(!entered)await boost(p,src);
+}
+async function lookAdd(p,n,filter){
+  var k=Math.min(n,p.deck.length),looked=p.deck.splice(p.deck.length-k,k);
+  var cands=looked.filter(filter),chosen=null;
+  if(cands.length){
+    var v=await pick(p.i,"Look at your top "+k+" cards","Add up to 1 of them to your hand. The rest go to the bottom of your deck.",cands.map(function(c){return {l:c.n+(c.t==="c"?" (Lv "+c.lv+")":" (event)"),v:c.uid}}).concat([{l:"Add nothing",v:null}]),best(cands).uid);
+    if(v!==null&&v!==undefined)chosen=cands.find(function(c){return c.uid===v})||null;
+  }
+  p.deck=looked.filter(function(c){return c!==chosen}).concat(p.deck);
+  if(chosen)p.hand.push(chosen);
+  log(nm(p.i)+" look"+(p.i?"s":"")+" at the top "+k+" cards"+(chosen?" and add"+(p.i?"s ":" ")+chosen.n+" to hand.":" and add"+(p.i?"s":"")+" nothing."));
+  if(!p.deck.length)refresh(p);
+  return chosen;
+}
+async function lookEnter(p,n,filter){
+  var k=Math.min(n,p.deck.length),looked=p.deck.splice(p.deck.length-k,k);
+  var cands=looked.filter(filter),chosen=null;
+  if(cands.length){
+    var v=await pick(p.i,"Look at your top "+k+" cards","Enter up to 1 character of level 4 or less, asleep. The rest go to the bottom of your deck.",cands.map(function(c){return {l:c.n+" (Lv "+c.lv+")",v:c.uid}}).concat([{l:"Enter nothing",v:null}]),best(cands).uid);
+    if(v!==null&&v!==undefined)chosen=cands.find(function(c){return c.uid===v})||null;
+  }
+  p.deck=looked.filter(function(c){return c!==chosen}).concat(p.deck);
+  if(!p.deck.length&&!chosen)refresh(p);
+  if(chosen){
+    var e=null;
+    if(p.scene.length<5||isHuman(p.i)||true)e=await enterChar(p,chosen,{sleep:true});
+    if(!e)p.deck=[chosen].concat(p.deck);
+    if(!p.deck.length)refresh(p);
+  }
+  return chosen;
+}
+async function resolveEvent(p,c){
+  if(c.ev==="snipeEv"){
+    var t=await pickChar(p.i,c.n+": remove which character?","AP 8000 or less, either side.",function(x,o){return apOf(x,o)<=8000},"harm");
+    if(t)await removeChar(t.o,t.c,c.n);
+  }else if(c.ev==="search3enter"){
+    await lookAdd(p,3,function(x){return x.t==="c"});
+    var opts=p.hand.filter(function(x){return x.t==="c"&&x.lv<=cap(p)});
+    if(opts.length){
+      var v=await pick(p.i,c.n+": enter a character","Level "+cap(p)+" or less (your FILE count).",opts.map(function(x){return {l:x.n+" (Lv "+x.lv+")",v:x.uid}}).concat([{l:"Do not enter",v:null}]),best(opts).uid);
+      if(v!==null&&v!==undefined){var b=opts.find(function(x){return x.uid===v});if(b)await enterChar(p,b,{})}
+    }
+  }
+}
+async function hirameki(o,c){
+  if(!c.hira)return;
+  var yes=await pick(o.i,"Flash of insight: "+c.n,"This card was removed from your evidence by an Action. Activate it?",[{l:"Activate",v:true},{l:"Skip",v:false}],true);
+  if(!yes)return;
+  log(nm(o.i)+" activate"+(o.i?"s":"")+" the Flash of insight on "+c.n+".");
+  if(c.hira==="draw1")draw(o,1);
+  else if(c.hira==="sleep1"){
+    var t=await pickChar(o.i,"Flash: sleep which character?","Up to 1 character, either side.",function(){return true},"sleep");
+    if(t){if(t.c.state==="active")t.c.state="sleep";log(t.c.n+" falls asleep.")}
+  }
+}
+
+/* ---------- main-phase actions ---------- */
+function canPlay(p,c,viaHint){
+  if(!viaHint){
+    if(p.usedHint)return "You used Next Hint this turn, so you cannot play from hand.";
+    if(p.usedHand)return "You already played from hand this turn. It is limited to once per turn.";
+  }
+  if(c.lv>cap(p))return "Level "+c.lv+" needs "+c.lv+" cards in the FILE area. You have "+cap(p)+".";
+  return "";
+}
+async function playFromHand(p,c,viaHint){
+  if(c.t==="c"){
+    var e=await enterChar(p,c,{});
+    if(!e)return false;
+  }else{
+    p.hand=p.hand.filter(function(x){return x.uid!==c.uid});
+    log(nm(p.i)+" play"+(p.i?"s":"")+" the event "+c.n+".");
+    await resolveEvent(p,c);
+    p.rem.push(c);
+  }
+  if(!viaHint)p.usedHand=true;
+  return true;
+}
+async function deduce(p,src){
+  var o=G.p[1-p.i],lp,who;
+  if(src==="partner"){p.partner="sleep";lp=p.def.partner.lp;who="partner"}
+  else{src.state="sleep";lp=lpOf(src);who=src.n}
+  log(nm(p.i)+" deduce"+(p.i?"s":"")+" with "+who+" (LP "+lp+").");
+  if(src!=="partner"&&src.hakdraw&&!src.trig){src.trig=true;draw(p,1);log(nm(p.i)+" draw"+(p.i?"s":"")+" 1 card (Hakuba).")}
+  var md=o.scene.filter(function(c){return c.state==="active"&&c.md});
+  while(md.length&&lp>0){
+    var v=await pick(o.i,"Misdirect?","Sleep a character with Misdirect to give the deducing card LP -"+md[0].md+" until the deduction ends. Current LP: "+lp+".",md.map(function(c){return {l:c.n+" (Misdirect "+c.md+")",v:c.uid}}).concat([{l:"No",v:null}]),md[0].uid);
+    if(v===null||v===undefined)break;
+    var m=md.find(function(c){return c.uid===v});if(!m)break;
+    m.state="sleep";lp-=m.md;log(nm(o.i)+" use"+(o.i?"s":"")+" Misdirect with "+m.n+" (LP now "+Math.max(lp,0)+").");
+    md=o.scene.filter(function(c){return c.state==="active"&&c.md});
+  }
+  var g=Math.max(lp,0);
+  for(var i=0;i<g;i++)p.ev.push(takeTop(p));
+  log(nm(p.i)+" gain"+(p.i?"s ":" ")+g+" evidence.");
+}
+function assist(p){
+  p.partner="file";
+  log(nm(p.i)+" use"+(p.i?"s":"")+" Assist: the partner moves to the FILE area.");
+  if(p.phase==="case"&&cap(p)>=7){p.phase="solution";log(nm(p.i)+(p.i?"'s":"r")+" case moves to the solution phase (7 or more FILE cards).")}
+}
+function solveCase(p){
+  p.partner="sleep";
+  if(p.def.caze.alt){
+    for(var i=0;i<p.lv;i++)p.rem.push(p.ev.pop());
+    endGame(p.i,nm(p.i)+" used Evidence Destruction, removing "+p.lv+" evidence. "+(p.i?"You lose.":"The opponent loses."));
+  }
+  if(p.ev.length>=p.lv)endGame(p.i,nm(p.i)+" solved the case with "+p.ev.length+" evidence against level "+p.lv+".");
+  log("Case Solved declared with only "+p.ev.length+" evidence. It needs "+p.lv+", so nothing happens and the partner falls asleep.");
+}
+function solveReason(p){
+  if(p.phase!=="solution")return "Case Solved needs your case in its solution phase. Get there with an Assist while holding 7 or more FILE cards.";
+  if(p.partner!=="active")return "Case Solved needs an active partner.";
+  if(p.def.caze.alt&&p.ev.length<p.lv)return "Evidence Destruction needs "+p.lv+" evidence to remove as its cost. You have "+p.ev.length+".";
+  return "";
+}
+function declReason(p,c){
+  if(c.usedTurn)return c.n+" already used its ability this turn.";
+  if(c.decl==="conan4"&&!p.scene.some(function(x){return x!==c&&x.state==="active"}))return "Conan's ability needs another active character to sleep.";
+  if(c.decl==="shizuka"){
+    if(!p.hand.length)return "Shizuka's ability needs a card in hand to remove.";
+    if(downCount(G.p[1-p.i])<2)return "Shizuka's ability needs 2 or more sleeping or stunned characters in the opponent's Scene.";
+    if(!p.scene.some(function(x){return x!==c&&x.lv<=6}))return "Shizuka needs another character of level 6 or less in your Scene.";
+  }
+  if(c.decl==="vermouth"){
+    if(c.state!=="active")return "Vermouth must be active to use her ability.";
+    if(!p.hand.some(function(x){return x.t==="c"&&x.lv<=5}))return "Vermouth's ability needs a level 5 or lower character in your hand.";
+  }
+  return "";
+}
+async function useDecl(p,c){
+  c.usedTurn=true;
+  if(c.decl==="conan4"){
+    var others=p.scene.filter(function(x){return x!==c&&x.state==="active"});
+    var opts=others.map(function(x){return {l:x.n+" (AP "+apOf(x,p)+")",v:x.uid}});
+    if(isHuman(p.i))opts.push({l:"Cancel",v:null});
+    var pref=others.slice().sort(function(a,b){return val(a,p)-val(b,p)})[0].uid;
+    var v=await pick(p.i,"Conan: sleep which character?","Cost: put another of your active characters to sleep.",opts,pref);
+    if(v===null||v===undefined){c.usedTurn=false;return}
+    var s=others.find(function(x){return x.uid===v});if(!s){c.usedTurn=false;return}
+    s.state="sleep";log(nm(p.i)+" sleep"+(p.i?"s ":" ")+s.n+" to use Conan's ability.");
+    draw(p,1);await removeHandCard(p,"Conan: remove 1 card from hand");
+    c.lpm=(c.lpm||0)+1;log("Conan gets +1 LP this turn.");
+  }else if(c.decl==="ran6"){
+    log(nm(p.i)+" use"+(p.i?"s":"")+" Ran's ability.");
+    await boost(p,c);
+  }else if(c.decl==="shizuka"){
+    var tg=p.scene.filter(function(x){return x!==c&&x.lv<=6});
+    var sv=await pick(p.i,"Shizuka: give Assault to which character?","Level 6 or less. First remove 1 card from your hand as the cost.",tg.map(function(x){return {l:x.n+" (AP "+apOf(x,p)+")",v:x.uid}}).concat(isHuman(p.i)?[{l:"Cancel",v:null}]:[]),(tg.filter(function(x){return x.fresh&&x.state==="active"}).sort(function(a,b){return val(b,p)-val(a,p)})[0]||tg[0]).uid);
+    if(sv===null||sv===undefined){c.usedTurn=false;return}
+    await removeHandCard(p,"Shizuka: remove 1 card from hand");
+    var tt=tg.find(function(x){return x.uid===sv});
+    if(tt){tt.tmpAssault=true;log(tt.n+" gains Assault this turn.")}
+  }else if(c.decl==="vermouth"){
+    p.scene=p.scene.filter(function(x){return x!==c});p.deck=[c.base].concat(p.deck);
+    log(nm(p.i)+" put"+(p.i?"s":"")+" Vermouth on the bottom of the deck.");
+    var hs=p.hand.filter(function(x){return x.t==="c"&&x.lv<=5});
+    var hv=await pick(p.i,"Vermouth: enter a character","Level 5 or less. It gets Assault this turn.",hs.map(function(x){return {l:x.n+" (Lv "+x.lv+")",v:x.uid}}),best(hs).uid);
+    var b=hs.find(function(x){return x.uid===hv})||hs[0];
+    await enterChar(p,b,{assault:true});
+  }
+}
+
+/* ---------- Actions and Contact ---------- */
+async function contact(pi,atk,def){
+  var dpi=1-pi,p=G.p[pi],o=G.p[dpi];
+  if(atk.contact==="gin4"&&G.cur===pi&&def.lv<=6){
+    log("Gin's ability triggers: "+def.n+" (level "+def.lv+") is removed on contact.");
+    await removeChar(o,def,"Gin");return;
+  }
+  var ba=0,bd=0,a0=apOf(atk,p),d0=apOf(def,o);
+  var first=a0<d0?pi:dpi;
+  log("Contact: "+atk.n+" (AP "+a0+") vs "+def.n+" (AP "+d0+"). "+nm(first)+" can act first"+(a0===d0?" because equal AP puts the non-turn player first.":" because the lower AP goes first."));
+  async function turnOf(pl){
+    if(G.noCutin===pl){log(nm(pl)+" cannot use Cut-in during this Action.");return null}
+    var cis=G.p[pl].hand.filter(function(c){return c.t==="c"&&c.cutin});
+    if(!cis.length)return null;
+    var mineA=(pl===pi),my=mineA?a0+ba:d0+bd,their=mineA?d0+bd:a0+ba,card=null;
+    if(isHuman(pl)){
+      var opts=cis.map(function(c){return {l:c.n+" (Cut-in +"+c.cutin+")",v:c.uid}});opts.push({l:"Pass",v:null});
+      var v=await ask("Contact: your "+(mineA?atk:def).n+" has AP "+my+" against "+their,"Play one Cut-in from hand or pass. Each player acts at most once per Contact.",opts);
+      card=v===null?null:cis.find(function(c){return c.uid===v});
+    }else{
+      await sleep(500);
+      card=cis.slice().sort(function(x,y){return x.cutin-y.cutin}).find(function(c){return mineA?(my<their&&my+c.cutin>=their):(their>=my&&my+c.cutin>their)})||null;
+    }
+    if(card){
+      G.p[pl].hand=G.p[pl].hand.filter(function(c){return c.uid!==card.uid});G.p[pl].rem.push(card);
+      if(mineA)ba+=card.cutin;else bd+=card.cutin;
+      log(nm(pl)+" play"+(pl?"s":"")+" the Cut-in "+card.n+" (AP +"+card.cutin+").");
+    }else if(isHuman(pl)){log("You pass.")}
+    return card;
+  }
+  var r1=await turnOf(first);
+  var r2=await turnOf(1-first);
+  if(!r1&&r2)await turnOf(first);
+  var fa=a0+ba,fd=d0+bd;
+  if(fa>=fd){
+    log("Result: attacker AP "+fa+" vs "+fd+". "+def.n+" is removed.");
+    await removeChar(o,def,"lost the Contact");
+    if(atk.heizodraw){draw(p,1);log(nm(pi)+" draw"+(pi?"s":"")+" 1 card (Heizo).")}
+  }else log("Result: attacker AP "+fa+" vs "+fd+". Nothing happens.");
+}
+async function chooseGuard(dpi,atk,tgt,guards,pi){
+  var p=G.p[pi],o=G.p[dpi];
+  if(isHuman(dpi)){
+    var what=tgt.kind==="case"?"your case":"your sleeping "+tgt.c.n;
+    var opts=guards.map(function(c){return {l:c.n+" (AP "+apOf(c,o)+")",v:c.uid}});opts.push({l:"Do not guard",v:null});
+    var v=await ask("Opponent's "+atk.n+" (AP "+apOf(atk,p)+") attacks "+what+". Guard?","Guarding puts the guard to sleep and starts a Contact with it. The guard is removed if the attacker's AP is equal or higher. Any active character can guard, even one that just arrived.",opts);
+    return v===null?null:guards.find(function(c){return c.uid===v});
+  }
+  var s=guards.filter(function(c){return apOf(c,o)>apOf(atk,p)}).sort(function(a,b){return apOf(a,o)-apOf(b,o)})[0];
+  if(s)return s;
+  if(tgt.kind==="case"&&rnd(10)<3)return guards.slice().sort(function(a,b){return val(a,o)-val(b,o)})[0];
+  return null;
+}
+async function doAction(pi,atk,tgt){
+  var p=G.p[pi],o=G.p[1-pi];
+  atk.state="sleep";
+  if(atk.actbonus){atk.actBonus=1000*downCount(o);if(atk.actBonus)log(atk.n+" gets +"+atk.actBonus+" AP during this Action.")}
+  if(atk.nocut)G.noCutin=1-pi;
+  if(tgt.kind==="case")p.scene.forEach(function(m){if(m.masumi){m.tmpAssault=true;log(m.n+" gains Assault this turn.")}});
+  if(atk.hakdraw&&!atk.trig){atk.trig=true;draw(p,1);log(nm(pi)+" draw"+(pi?"s":"")+" 1 card (Hakuba).")}
+  try{await doActionInner(pi,atk,tgt)}finally{atk.actBonus=0;G.noCutin=null}
+}
+async function doActionInner(pi,atk,tgt){
+  var p=G.p[pi],o=G.p[1-pi];
+  log(nm(pi)+" take"+(pi?"s":"")+" an Action with "+atk.n+" against "+(tgt.kind==="case"?"the opposing case":"the sleeping "+tgt.c.n)+".");
+  var guards=o.scene.filter(function(c){return c.state==="active"});
+  if(atk.bullet&&guards.length){guards=[];log(atk.n+" has Bullet: this Action cannot be guarded.")}
+  var g=guards.length?await chooseGuard(1-pi,atk,tgt,guards,pi):null;
+  if(g){g.state="sleep";log(nm(1-pi)+" guard"+(pi?"":"s")+" with "+g.n+".");await contact(pi,atk,g);return}
+  if(tgt.kind==="char"){await contact(pi,atk,tgt.c);return}
+  if(o.ev.length){
+    var c=o.ev.pop();
+    log("Not guarded: the top evidence card of the opposing case is removed, and "+nm(pi).toLowerCase()+" gain"+(pi?"s":"")+" 1 evidence.");
+    await hirameki(o,c);
+    o.rem.push(c);
+    p.ev.push(takeTop(p));
+    for(var mi=0;mi<p.scene.length;mi++){
+      var mm=p.scene[mi];
+      if(mm.mary&&!mm.trig&&p.hand.length){
+        var my=await pick(p.i,mm.n+": remove a card from hand?","If you do, gain 1 evidence.",[{l:"Remove a card",v:true},{l:"Do not use",v:false}],p.hand.length>2);
+        if(my){mm.trig=true;await removeHandCard(p,mm.n+": remove 1 card from hand");p.ev.push(takeTop(p));log(nm(p.i)+" gain"+(p.i?"s":"")+" 1 more evidence ("+mm.n+").")}
+        break;
+      }
+    }
+  }
+}
+
+/* ---------- bot ---------- */
+async function aiPlays(p){
+  async function tryPlay(){
+    var cands=p.hand.filter(function(c){
+      if(c.lv>cap(p))return false;
+      if(c.t==="c")return true;
+      if(c.ev==="snipeEv")return G.p[1-p.i].scene.some(function(x){return apOf(x,G.p[1-p.i])<=8000});
+      return p.scene.length<5;
+    }).sort(function(a,b){return cardVal(b)-cardVal(a)});
+    for(var i=0;i<cands.length;i++){
+      var c=cands[i];
+      if(c.t==="c"&&p.scene.length>=5){
+        var w=p.scene.slice().sort(function(a,b){return val(a,p)-val(b,p)})[0];
+        if(val(w,p)>=score(c))continue;
+      }
+      if(await playFromHand(p,c,false))return true;
+    }
+    return false;
+  }
+  var played=await tryPlay();
+  if(!played&&p.file.length>=2&&p.scene.length<3&&p.hand.some(function(c){return c.t==="c"&&c.lv<=cap(p)-1})){
+    p.hand.push(p.file.pop());p.usedHint=true;log("Opponent uses Next Hint.");log("The top FILE card of the opponent moves to their hand. This is not a free draw: their FILE area is 1 smaller.");
+    var c2=p.hand.filter(function(c){return c.t==="c"&&c.lv<=cap(p)}).sort(function(a,b){return cardVal(b)-cardVal(a)})[0];
+    if(c2)await playFromHand(p,c2,true);
+  }
+}
+async function aiSolve(p){
+  if(p.phase==="solution"&&p.partner==="active"&&p.ev.length>=p.lv){
+    log(nm(p.i)+" declares "+(p.def.caze.alt?"Evidence Destruction.":"Case Solved."));solveCase(p);
+  }
+}
+async function aiDeclares(p){
+  var list=p.scene.slice();
+  for(var i=0;i<list.length;i++){
+    var c=list[i];
+    if(!c.decl||p.scene.indexOf(c)<0||declReason(p,c))continue;
+    if(c.decl==="ran6")await useDecl(p,c);
+    else if(c.decl==="conan4"){
+      if(p.scene.some(function(x){return x!==c&&x.state==="active"&&!canAct(x)&&!canDeduce(x)}))await useDecl(p,c);
+    }else if(c.decl==="vermouth"){
+      var hs=p.hand.filter(function(x){return x.t==="c"&&x.lv<=5});
+      if(hs.length&&score(best(hs))>score(c))await useDecl(p,c);
+    }else if(c.decl==="shizuka"){
+      if(p.scene.some(function(x){return x!==c&&x.lv<=6&&x.fresh&&x.state==="active"&&!canAct(x)}))await useDecl(p,c);
+    }
+    await sleep(400);
+  }
+}
+async function endTurnEffects(p){
+  var list=p.scene.filter(function(c){return c.endact&&c.state!=="active"});
+  for(var i=0;i<list.length;i++){
+    var c=list[i];if(!p.hand.length||p.scene.indexOf(c)<0)continue;
+    var low=p.hand.slice().sort(function(a,b){return cardVal(a)-cardVal(b)})[0];
+    var yes=await pick(p.i,c.n+": remove a card to become active?","At the end of your turn you may remove 1 card from hand to make this character active"+(c.state==="stun"?" (a stunned character becomes sleeping instead)":"")+".",[{l:"Remove a card",v:true},{l:"No",v:false}],cardVal(low)<3);
+    if(yes){await removeHandCard(p,c.n+": remove 1 card from hand");activate(c);log(c.n+" is "+(c.state==="active"?"active again.":"now sleeping."))}
+  }
+}
+async function aiTurn(pi){
+  var p=G.p[pi],o=G.p[1-pi];
+  await sleep(700);
+  await aiSolve(p);
+  await aiPlays(p);await sleep(600);
+  await aiDeclares(p);
+  if(p.phase==="case"&&p.partner==="active"&&p.file.length>=6){assist(p);await sleep(600)}
+  var units=p.scene.filter(function(c){return canAct(c)||canDeduce(c)});
+  for(var i=0;i<units.length;i++){
+    var c=units[i];
+    if(c.state!=="active"||p.scene.indexOf(c)<0)continue;
+    var sl=o.scene.filter(function(x){return isDown(x)&&apOf(x,o)<=apOf(c,p)}).sort(function(a,b){return val(b,o)-val(a,o)});
+    if(canAct(c)&&sl.length&&rnd(10)<7)await doAction(pi,c,{kind:"char",c:sl[0]});
+    else if(canAct(c)&&o.ev.length>0&&rnd(10)<4)await doAction(pi,c,{kind:"case"});
+    else if(canDeduce(c))await deduce(p,c);
+    await sleep(650);
+  }
+  await aiSolve(p);
+  if(p.partner==="active"){await deduce(p,"partner");await sleep(500)}
+  await endTurnEffects(p);
+  log(nm(pi)+" end"+(pi?"s":"")+" the turn.");
+}
+
+/* ---------- human turn ---------- */
+async function humanPlay(p,uid,viaHint){
+  var c=p.hand.find(function(x){return x.uid===uid});if(!c)return false;
+  var r=canPlay(p,c,viaHint);
+  if(r){tip(r);return false}
+  var ok=await playFromHand(p,c,viaHint);
+  if(ok)tip("Played "+c.n+"."+(c.t==="c"?(" It cannot deduce or take Actions this turn"+(c.swift?", except it has Swift, so it can.":(c.assault?", except it has Assault, so it can take Actions.":", but it can still guard and use abilities."))):""));
+  return ok;
+}
+async function humanTurn(){
+  var p=G.p[0],o=G.p[1];
+  for(;;){
+    var a=await waitAct();
+    if(a.t==="end"){await endTurnEffects(p);log("You end your turn.");G.tip="";return}
+    if(a.t==="hand"){await humanPlay(p,a.v,false)}
+    else if(a.t==="hint"){
+      var sure=await ask("Use Next Hint?","This is not a free draw. The top card of your FILE area moves to your hand, so your FILE area gets 1 smaller. Then you may play one card.",[{l:"Use Next Hint",v:true},{l:"Back",v:null}]);
+      if(!sure)continue;
+      p.hand.push(p.file.pop());p.usedHint=true;
+      log("You use Next Hint: the top FILE card goes to your hand.");
+      G.hintMode=true;tip("Now play one card of level "+cap(p)+" or lower, or skip. The card you just took does not count toward the FILE total, but you may play it.");
+      for(;;){
+        var b=await waitAct();
+        if(b.t==="skip"){log("You skip the play.");break}
+        if(b.t==="hand"){var ok=await humanPlay(p,b.v,true);if(ok)break}
+      }
+      G.hintMode=false;
+    }
+    else if(a.t==="assist"){assist(p);tip("Assist: the partner sleeps in the FILE area and counts as a FILE card. With 7 or more FILE cards your case moves to the solution phase.")}
+    else if(a.t==="solve"){solveCase(p)}
+    else if(a.t==="abil"){
+      var us=[];
+      p.scene.filter(function(c){return c.decl}).forEach(function(c){if(!declReason(p,c))us.push({l:c.n+" (AP "+apOf(c,p)+")",v:c.uid})});
+      us.push({l:"Back",v:null});
+      var av=await ask("Use which ability?","Declare abilities can be used once per turn, even the turn the character enters.",us);
+      if(av!==null){var cc=p.scene.find(function(c){return c.uid===av});if(cc)await useDecl(p,cc)}
+    }
+    else if(a.t==="deduce"){
+      var uu=[];
+      if(p.partner==="active")uu.push({l:"Partner "+p.def.partner.n+" (LP "+p.def.partner.lp+")",v:"partner"});
+      p.scene.filter(canDeduce).forEach(function(c){uu.push({l:c.n+" (LP "+lpOf(c)+")",v:c.uid})});
+      uu.push({l:"Back",v:null});
+      var v=await ask("Deduce with which card?","It goes to sleep and you gain evidence equal to its LP, taken from the top of your deck. The opponent may use Misdirect.",uu);
+      if(v!==null){await deduce(p,v==="partner"?"partner":p.scene.find(function(c){return c.uid===v}));tip("Evidence cards come face down from your deck. Watch your deck size: running out means a refresh.")}
+    }
+    else if(a.t==="action"){
+      var ats=p.scene.filter(canAct).map(function(c){return {l:c.n+" (AP "+apOf(c,p)+")",v:c.uid}});ats.push({l:"Back",v:null});
+      var av2=await ask("Take an Action with which character?","The character goes to sleep. The opponent may guard before anything else happens.",ats);
+      if(av2===null)continue;
+      var atk=p.scene.find(function(c){return c.uid===av2});
+      var ts=[];
+      if(o.ev.length)ts.push({l:"Opposing case ("+o.ev.length+" evidence)",v:"case"});
+      o.scene.filter(isDown).forEach(function(c){ts.push({l:c.n+" (AP "+apOf(c,o)+(c.state==="stun"?", stunned)":", sleeping)"),v:c.uid})});
+      ts.push({l:"Back",v:null});
+      var tv=await ask("Target of "+atk.n+"'s Action","You can only target the opposing case if it has evidence, or an opposing character that is sleeping.",ts);
+      if(tv===null)continue;
+      await doAction(0,atk,tv==="case"?{kind:"case"}:{kind:"char",c:o.scene.find(function(c){return c.uid===tv})});
+    }
+  }
+}
+
+/* ---------- game setup ---------- */
+async function startGame(keyA,keyB,sim){
+  G={p:[mkP(0,DECKS[keyA]),mkP(1,DECKS[keyB])],turn:0,cur:0,over:null,log:[],tip:"",act:null,ask:null,mull:null,hintMode:false,info:null,sim:!!sim};
+  var first=rnd(2);
+  G.p[first].lv=G.p[first].def.caze.lv[0];
+  G.p[1-first].lv=G.p[1-first].def.caze.lv[1];
+  try{
+    log((first===0?"You go":"The opponent goes")+" first (coin toss). Case levels: first player "+G.p[first].lv+" evidence, second player "+G.p[1-first].lv+". Each side draws 5 cards.");
+    [0,1].forEach(function(i){draw(G.p[i],5)});
+    var humanMull=!G.sim;
+    if(humanMull){
+      var sel=await new Promise(function(r){G.mull={sel:{},r:r};render()});
+      G.mull=null;
+      var h=G.p[0];
+      if(sel.length){
+        var back=h.hand.filter(function(c){return sel.indexOf(c.uid)>-1});
+        h.hand=h.hand.filter(function(c){return sel.indexOf(c.uid)<0});
+        h.deck=shuffle(h.deck.concat(back));
+        draw(h,back.length);
+        log("You redraw "+back.length+" card"+(back.length>1?"s":"")+".");
+      }
+    }
+    var mullers=G.sim?[0,1]:[1];
+    mullers.forEach(function(i){
+      var ai=G.p[i],ab=ai.hand.filter(function(c){return c.t==="c"&&c.lv>=6});
+      if(ab.length){
+        ai.hand=ai.hand.filter(function(c){return !(c.t==="c"&&c.lv>=6)});ai.deck=shuffle(ai.deck.concat(ab));
+        draw(ai,ab.length);
+        log(nm(i)+" redraw"+(i?"s ":" ")+ab.length+" card"+(ab.length>1?"s":"")+".");
+      }
+    });
+    for(;;){
+      G.turn++;G.cur=(first+G.turn-1)%2;
+      if(G.sim&&G.turn>200){G.over={w:-1,why:"turn cap"};throw OVER}
+      var p=G.p[G.cur];
+      if(G.sim){
+        G.p.forEach(function(q){
+          var n=q.deck.length+q.hand.length+q.file.length+q.ev.length+q.rem.length+q.scene.length;
+          if(n!==40)throw new Error("card count "+n+" for player "+q.i+" on turn "+G.turn);
+        });
+      }
+      cleanup();
+      if(G.cur===1){G.recap=[];G.recapStart=[G.p[0].ev.length,G.p[1].ev.length]}
+      autoPhase(p);
+      if(G.sim||G.cur===1)await aiTurn(G.cur);
+      else{G.tip="Main phase: play, deduce, take Actions, or end your turn.";await humanTurn()}
+      cleanup();
+    }
+  }catch(e){if(e!==OVER)throw e}
+  render();
+  return G;
+}
+
+/* ---------- rendering ---------- */
+function slot(c,o){
+  if(!c)return '<div class="slot"></div>';
+  var st=c.state==="sleep"?"Sleeping":c.state==="stun"?"Stunned":(c.fresh?"Just arrived":"Active");
+  return '<button class="slot ch '+c.state+(c.fresh&&c.state==="active"?" fresh":"")+'" data-a="info" data-v="'+c.uid+'">'+cimg(c.set,c.img,"sl",c.n)+'<b>'+c.n+'</b><span>AP '+apOf(c,o)+' · LP '+lpOf(c)+'</span><span class="s2">'+st+'</span></button>';
+}
+function mat(p,isMe){
+  var d=p.def,pt={active:"Active",sleep:"Sleeping",file:"In FILE area"}[p.partner],pips="";
+  for(var k=0;k<p.lv;k++)pips+='<i class="'+(k<p.ev.length?"on":"")+'"></i>';
+  var last=p.rem[p.rem.length-1];
+  var h='<div class="mat '+(isMe?"mat-me":"mat-op")+'"><div class="mono matlabel">'+(isMe?"You":"Opponent")+' · '+d.name+'</div>';
+  h+='<div class="cell c-scene"><div class="mono">Scene</div><div class="slotrow">'+[0,1,2,3,4].map(function(n){return slot(p.scene[n],p)}).join("")+'</div></div>';
+  h+='<div class="cell c-partner"><div class="mono">Partner</div><button type="button" class="imgbtn" data-a="zoomp" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.partnerNo,"pt",d.partner.n)+'</button><b>'+d.partner.n+'</b><span>'+pt+' · LP '+d.partner.lp+'</span></div>';
+  h+='<div class="cell c-case"><div class="mono">Case</div><button type="button" class="imgbtn" data-a="zoomk" data-v="'+p.i+'" title="Enlarge">'+cimg(d.set,d.cardNo,"cs",d.caze.n)+'</button><b>'+d.caze.n+'</b><span class="'+(p.phase==="solution"?"hotx":"")+'">'+(p.phase==="case"?"Case phase":"Solution phase")+'</span></div>';
+  h+='<div class="cell c-evidence"><div class="mono">Evidence area</div><div class="big">'+p.ev.length+' / '+p.lv+'</div><div class="pips">'+pips+'</div><span>Needed to solve the case</span></div>';
+  h+='<div class="cell c-file"><div class="mono">FILE area</div><div class="big">'+p.file.length+(p.partner==="file"?" + 1":"")+'</div><span>Level cap '+cap(p)+(p.partner==="file"?" (partner counts)":"")+'</span></div>';
+  h+='<div class="cell c-deck"><div class="mono">Deck</div><div class="big">'+p.deck.length+'</div><span>cards left</span></div>';
+  h+='<div class="cell c-remove"><div class="mono">Remove area</div><button type="button" class="chip" data-a="rem" data-v="'+p.i+'">'+p.rem.length+' card'+(p.rem.length===1?"":"s")+' · view list</button>'+(last?'<span class="lastrem">Latest: '+last.n+'</span>':'')+(isMe?'<button type="button" class="chip" data-a="log">Game log · view</button>':'')+'</div>';
+  if(isMe)h+='<div class="cell c-hand"><div class="mono">Hand ('+p.hand.length+')</div><div class="hand">'+p.hand.map(function(c){return handCard(c,p)}).join("")+'</div></div><div class="cell c-act"><div class="mono">Your turn actions</div>'+controls(p)+'<div class="action-prompt-slot"></div>'+((G.over||G.act)?'<div><button class="btn ghost" data-a="menu">'+(G.over?"Play again":"Back to deck choice")+'</button></div>':'')+'</div>';
+  else {var rev=OPP_HAND_REVEALED;h+='<div class="cell c-hand opp-hand'+(rev?' opp-revealed':'')+'"><div class="mono">Opponent hand ('+p.hand.length+')</div>'+(rev?'<span class="reveal-note">Revealed by card effect</span><button type="button" class="btn ghost finish-reveal" data-a="finishReveal">Finish reveal</button><div class="hand">'+p.hand.map(opponentHandCard).join("")+'</div>':'<div class="hand">'+p.hand.map(function(){return '<div class="card-back">Hidden<br>card</div>'}).join("")+'</div><span>Hidden until a reveal effect resolves.</span>')+'</div>'; }
+  return h+'</div>';
+}
+function opponentHandCard(c){var head=c.t==="c"?'<b>'+c.n+'</b><span>Level '+c.lv+' · AP '+c.ap+' · LP '+c.lp+'</span>':'<b>'+c.n+'</b><span>Event · Level '+c.lv+'</span>';return '<div class="pc opp-card" data-v="'+c.uid+'">'+cimg(c.set,c.img,"th",c.n)+head+'<small>'+c.txt+'</small></div>';}
+function handCard(c,p){
+  var ok=!canPlay(p,c,G.hintMode);
+  var sel=G.mull&&G.mull.sel[c.uid];
+  var cls="pc"+(ok&&G.act?" ok":"")+(sel?" sel":"");
+  var en=G.mull||G.act;
+  var head=c.t==="c"?'<b>'+c.n+'</b><span>Level '+c.lv+' · AP '+c.ap+' · LP '+c.lp+'</span>':'<b>'+c.n+'</b><span>Event · Level '+c.lv+'</span>';
+  var im=c.img?'<span class="zm" data-a="zoom" data-v="'+c.uid+'" title="Enlarge">'+cimg(c.set,c.img,"th",c.n)+'</span>':"";
+  return '<button class="'+cls+'" data-a="'+(G.mull?"mull":"hand")+'" data-v="'+c.uid+'"'+(en?"":" disabled")+'>'+im+head+'<i>'+c.txt+'</i></button>';
+}
+function controls(p){
+  var o=G.p[1],live=!!G.act&&!G.over,hm=G.hintMode,R={};
+  var atk=p.scene.some(canAct),tg=o.ev.length>0||o.scene.some(isDown);
+  var units=p.scene.some(canDeduce)||p.partner==="active";
+  var decls=p.scene.filter(function(c){return c.decl});
+  var usable=decls.filter(function(c){return !declReason(p,c)});
+  if(!p.file.length)R.hint="Next Hint needs at least 1 card in your FILE area.";
+  if(p.partner!=="active")R.assist="Assist needs an active partner.";
+  var sr=solveReason(p);if(sr)R.solve=sr;
+  if(!units)R.deduce="Deduce needs an active partner, or an active character that did not just arrive unless it has Swift.";
+  if(!atk)R.action="Action needs an active character that did not just arrive unless it has Swift or Assault.";
+  else if(!tg)R.action="There is no target: the opposing case has no evidence and no opposing character is sleeping.";
+  if(!decls.length)R.abil="None of your characters in Scene has a Declare ability.";
+  else if(!usable.length)R.abil=declReason(p,decls[0]);
+  var defs=[["hint","Next Hint"],["assist","Assist"],["solve",p.def.caze.alt?"Evidence Destruction":"Case Solved"],["deduce","Deduce"],["action","Action"],["abil","Ability"]];
+  var h='<div class="pbtns">';
+  defs.forEach(function(d){h+='<button class="btn ghost" data-a="'+d[0]+'"'+((!live||hm||R[d[0]])?" disabled":"")+'>'+d[1]+'</button>'});
+  h+=hm?'<button class="btn" data-a="skip"'+(live?"":" disabled")+'>Skip playing</button>':'<button class="btn" data-a="end"'+(live?"":" disabled")+'>End turn</button>';
+  h+='</div>';
+  if(live&&!hm){
+    var w=defs.filter(function(d){return R[d[0]]}).map(function(d){return "<li>"+R[d[0]]+"</li>"}).join("");
+    if(w)h+='<div class="why">Greyed out because:<ul class="tight">'+w+'</ul></div>';
+  }
+  return h;
+}
+function findChar(uid){var r=null;G.p.forEach(function(o){o.scene.forEach(function(c){if(c.uid===uid)r=c})});return r}
+function render(){if(G&&G.sim)return;render0();xlate(root)}
+function render0(){
+  if(G&&G.sim)return;
+  if(!G){
+    root.innerHTML='<div class="panel">'+(baseOK===-2?'<div class="note" style="margin:0 0 12px">Card images were not found. To see them, keep this HTML file next to your <b>Card_List</b> folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.</div>':'')+'<p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
+      Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype dk dk-'+d.color+'"><h3 class="dkh">'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div></div>';
+    return;
+  }
+  var me=G.p[0],op=G.p[1],h="";
+  if(G.turn>0)h+='<div class="turnbar">Turn '+G.turn+' · '+(G.cur===0?"Your turn":"Opponent\'s turn")+'</div>';
+  if(G.recap&&G.recap.length)h+='<div class="note recap" style="margin:0"><b>'+(G.cur===1?"What the opponent is doing":"What the opponent did last turn")+'</b><ol class="tight" style="margin:6px 0">'+G.recap.map(function(l){return "<li>"+l+"</li>"}).join("")+'</ol><span>'+"Opponent evidence: "+G.recapStart[1]+" → "+op.ev.length+". Your evidence: "+G.recapStart[0]+" → "+me.ev.length+"."+'</span></div>';
+  h+=mat(op,false)+mat(me,true);
+  h+='<div class="under">';
+  h+='<div class="mid">';
+  if(G.over){
+    h+='<div class="out '+(G.over.w===0?"good":"bad")+'"><b>'+(G.over.w===0?"You win.":"You lose.")+'</b> '+G.over.why+'</div>';
+  }
+  if(G.mull){
+    var n=Object.keys(G.mull.sel).filter(function(k){return G.mull.sel[k]}).length;
+    h+='<div class="prompt"><b>Opening hand</b><p>Tap the cards in your Hand area that you want to put back and redraw, or keep your hand. You may do this once.</p><button class="btn" data-a="mullok">'+(n?"Redraw "+n+" card"+(n>1?"s":""):"Keep this hand")+'</button></div>';
+  }
+  if(G.ask){
+    h+='<div class="prompt"><b>'+G.ask.title+'</b><p>'+G.ask.note+'</p><div class="pbtns">'+G.ask.opts.map(function(o,i){return '<button class="btn ghost" data-a="ask" data-v="'+i+'">'+o.l+'</button>'}).join("")+'</div></div>';
+  }
+  if(G.remView!==null&&G.remView!==undefined){
+    var rp=G.p[G.remView];
+    h+='<div class="note" style="margin:0"><b>'+(G.remView?"Opponent":"Your")+' Remove area</b> · '+rp.rem.length+' card'+(rp.rem.length===1?"":"s")+', newest first. The number shows the order they were removed (1 is the oldest).'+
+      (rp.rem.length?'<div class="remgrid">'+rp.rem.map(function(c,i){return {c:c,n:i+1}}).reverse().map(function(x){var c=x.c;return '<div class="remc"><span class="rn">'+x.n+'</span>'+cimg(c.set,c.img,"rm",c.n)+'<small>'+c.n+'</small></div>'}).join("")+'</div>':'<div class="why" style="margin-top:6px">Nothing has been removed yet.</div>')+
+      '<div><button class="btn ghost" data-a="remclose" style="margin-top:8px">Close</button></div></div>';
+  }
+  if(G.logView){
+    h+='<div class="note" style="margin:0"><b>Game log</b> · newest first.<ul class="plog" style="margin-top:6px;max-height:18em">'+G.log.slice(0,40).map(function(l){return "<li>"+l+"</li>"}).join("")+'</ul><div><button class="btn ghost" data-a="logclose" style="margin-top:8px">Close</button></div></div>';
+  }
+  if(G.info){var ic=findChar(G.info);if(ic)h+='<div class="note infoimg" style="margin:0">'+cimg(ic.set,ic.img,"big",ic.n)+'<div><b>'+ic.n+'</b> · Level '+ic.lv+' · '+trName(ic)+'<br>'+ic.txt+'</div></div>'}
+  if(G.zoom){h+='<div class="note infoimg" style="margin:0">'+cimg(G.zoom.set,G.zoom.img,"big",G.zoom.n)+'<div><b>'+G.zoom.n+'</b>'+(G.zoom.lv!==undefined?' · Level '+G.zoom.lv:'')+'<br>'+G.zoom.txt+'<br><button class="btn ghost" data-a="unzoom" style="margin-top:8px">Close</button></div></div>'}
+  if(G.tip&&!G.over)h+='<div class="note" style="margin:0">'+G.tip+'</div>';
+  h+='</div></div>';
+  root.innerHTML=h;
+  var ps=root.querySelector(".mat-me .action-prompt-slot"),pp=root.querySelector(".under .prompt");if(ps&&pp)ps.appendChild(pp);
+  if(G.ask&&G.ask!==lastAsk){var pr=root.querySelector(".prompt");if(pr&&pr.scrollIntoView)try{pr.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}
+  lastAsk=G.ask||null;
+}
+var lens=document.createElement("aside");lens.className="lens";document.body.appendChild(lens);var lt=null,lx=20,ly=20,lf=0;
+function E(v){return String(v==null?"":v).replace(/[&<>\"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function R(k,v){return '<div class="lr"><span class="lk">'+E(k)+'</span><span class="lv">'+E(v)+'</span></div>'}
+function B(img,rows){return '<div class="lb">'+img+'<div>'+rows+'</div></div>'}
+function cardBody(c,o){var st=c.state?(c.state==="sleep"?"Sleeping":c.state==="stun"?"Stunned":c.fresh?"Just arrived":"Active"):"In hand";return B(cimg(c.set,c.img,"lensimg",c.n),R("Level",c.lv)+R("Current AP",c.ap===undefined?"Not applicable":o?apOf(c,o):c.ap)+R("LP",c.lp===undefined?"Not applicable":o?lpOf(c):c.lp)+R("Status",st)+R("Traits",c.tr&&c.tr.length?trName(c):"None")+R("Ability",c.txt||"No additional card text."))}
+function content(t){if(!G)return null;var p,c,o,title="Details",uid=+(t.dataset.v||0);if(t.classList.contains("pc")){var hp=t.classList.contains("opp-card")?G.p[1]:G.p[0];c=hp.hand.find(function(x){return x.uid===uid});if(!c)return null;title=c.n;return [title,cardBody(c,null)]}if(t.classList.contains("slot")){G.p.forEach(function(q){var x=q.scene.find(function(z){return z.uid===uid});if(x){c=x;o=q}});return [c.n,cardBody(c,o)]}if(t.classList.contains("c-partner")){p=G.p[+(t.querySelector('[data-a="zoomp"]').dataset.v)];var d=p.def,st={active:"Active",sleep:"Sleeping",file:"In FILE area"}[p.partner];return [d.partner.n,B(cimg(d.set,d.partnerNo,"lensimg",d.partner.n),R("Level","Partner")+R("Current AP","Not applicable")+R("LP",d.partner.lp)+R("Status",st)+R("Traits","Partner")+R("Ability","Deduce for LP "+d.partner.lp+". Assist moves this card to the FILE area. Case Solved is available in the solution phase when the evidence requirement is met."))]}if(t.classList.contains("c-case")){p=G.p[+(t.querySelector('[data-a="zoomk"]').dataset.v)];var d=p.def;return [d.caze.n,B(cimg(d.set,d.cardNo,"lensimg",d.caze.n),R("Level",p.lv)+R("Current AP","Not applicable")+R("LP","Not applicable")+R("Status",p.phase==="case"?"Case phase":"Solution phase")+R("Traits",d.caze.alt?"Alternative win condition":"Standard case")+R("Ability",d.caze.txt))]}if(t.dataset.a==="rem"){p=G.p[+t.dataset.v];return [(p.i?"Opponent":"Your")+" Remove area",'<div>'+p.rem.slice().reverse().slice(0,14).map(function(x){return R(x.t==="e"?"Event":"Card",x.n)}).join("")+'</div>']}if(t.dataset.a==="log")return ["Game log",G.log.slice(0,14).map(function(x){return R("Event",x)}).join("")];return null}
+function pos(){lf=0;var w=lens.offsetWidth,h=lens.offsetHeight,x=lx+18,y=ly+18;if(x+w>innerWidth-10)x=lx-w-18;if(y+h>innerHeight-10)y=innerHeight-h-10;lens.style.left=Math.max(10,x)+"px";lens.style.top=Math.max(10,y)+"px"}
+root.addEventListener("pointerover",function(e){var t=e.target.closest('.pc,.slot.ch,.c-partner,.c-case,[data-a="rem"],[data-a="log"]');if(!t||t===lt)return;var z=content(t);if(!z)return;if(lt)lt.classList.remove("lens-target");lt=t;t.classList.add("lens-target");lens.innerHTML='<div class="lh">'+E(z[0])+'</div>'+z[1];xlate(lens);lens.classList.add("on");pos()});root.addEventListener("pointermove",function(e){lx=e.clientX;ly=e.clientY;if(!lf)lf=requestAnimationFrame(pos)});root.addEventListener("pointerout",function(e){if(!lt)return;if(e.relatedTarget&&lt.contains(e.relatedTarget))return;lt.classList.remove("lens-target");lt=null;lens.classList.remove("on")});
+root.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
+  var a=b.dataset.a,v=b.dataset.v,nv=(v!==undefined&&v!==""&&!isNaN(v))?+v:v;
+  if(a==="finishReveal"){OPP_HAND_REVEALED=false;render();return}
+  if(a==="opp"){OPP=v;render();return}
+  if(a==="start"){var ks=Object.keys(DECKS),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
+  if(a==="menu"){G=null;render();return}
+  if(a==="rem"&&G){G.remView=(G.remView===nv?null:nv);render();return}
+  if(a==="remclose"&&G){G.remView=null;render();return}
+  if(a==="log"&&G){G.logView=!G.logView;render();return}
+  if(a==="logclose"&&G){G.logView=false;render();return}
+  if(a==="zoomp"&&G){var d=G.p[nv].def;G.zoom={n:"Partner: "+d.partner.n,set:d.set,img:d.partnerNo,txt:"Partner (LP "+d.partner.lp+"). While active it can deduce, use Assist (moves to the FILE area) and declare Case Solved."};render();return}
+  if(a==="zoomk"&&G){var d2=G.p[nv].def;G.zoom={n:"Case: "+d2.caze.n,set:d2.set,img:d2.cardNo,txt:d2.caze.txt};render();return}
+  if(a==="zoom"&&G){var zc=G.p[0].hand.find(function(c){return c.uid===nv});G.zoom=zc||null;render();return}
+  if(a==="unzoom"&&G){G.zoom=null;render();return}
+  if(a==="info"&&G){G.info=(G.info===nv?null:nv);render();return}
+  if(a==="ask"&&G&&G.ask){var q=G.ask;G.ask=null;var val2=q.opts[+v].v;render();q.r(val2);return}
+  if(a==="mull"&&G&&G.mull){G.mull.sel[nv]=!G.mull.sel[nv];render();return}
+  if(a==="mullok"&&G&&G.mull){var m=G.mull;m.r(Object.keys(m.sel).filter(function(k){return m.sel[k]}).map(Number));return}
+  if(G&&G.act){var f=G.act;G.act=null;f({t:a,v:nv===undefined?null:nv})}
+});
+render();
+probe();
+if(typeof window!=="undefined")window.__practice={sim:startGame,DECKS:DECKS,dbg:function(){return G},render:render};
+})();
+

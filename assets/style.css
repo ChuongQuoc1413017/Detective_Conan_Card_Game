@@ -449,3 +449,41 @@ span.noimg{display:flex;align-items:center;justify-content:center;text-align:cen
   #jump{display:block;position:fixed;right:12px;bottom:12px;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 }
 @media (max-width:560px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.cardgrid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr))}#viewbody{grid-template-columns:minmax(0,1fr)}.big2{max-width:240px;margin:auto}}
+
+/* ---------- deck numbers, odds, sample hand, keyword tips ---------- */
+.dstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0}
+.dstats div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
+.dstats b{display:block;font:700 1.1rem var(--font-display)}
+.dstats small{color:var(--muted);font-size:.72rem}
+table.odds,table.ttable{width:100%;border-collapse:collapse;font-size:.82rem;margin:6px 0}
+.odds th,.odds td,.ttable th,.ttable td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+.odds td+td,.odds th+th{text-align:right;white-space:nowrap}
+.samplehand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.samplehand .cc-img{padding:0;border:0;background:none;cursor:zoom-in}
+.kw{font:inherit;color:inherit;background:var(--gold-bg);border:0;border-bottom:1px dotted var(--gold);border-radius:3px;padding:0 2px;cursor:help}
+.kw:hover,.kw:focus-visible{background:color-mix(in srgb,var(--gold) 25%,var(--gold-bg))}
+.kwtip{margin:6px 0}
+.dot[data-l]{width:1.2em;height:1.2em;line-height:1.2em;text-align:center;font:800 .62rem/1.2em var(--font-mono);color:var(--dkfg);vertical-align:-3px}
+.dot[data-l]::after{content:attr(data-l)}
+/* practice: deck test and hint */
+.tbar{display:inline-block;width:70px;height:8px;background:var(--surface2);border-radius:4px;vertical-align:middle;overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--good)}
+.hintbtn{border-style:dashed}
+/* print only the deck sheet */
+#printsheet{display:none}
+@media print{
+  body>*:not(#printsheet):not(main),main>*:not(#printsheet){display:none!important}
+  body,main{background:#fff!important;margin:0;padding:0}
+  #printsheet{display:block;color:#000;font:11pt/1.35 Nunito,Arial,sans-serif}
+  #printsheet h1{font-size:18pt;margin:0 0 6pt}
+  #printsheet table{width:100%;border-collapse:collapse}
+  #printsheet th,#printsheet td{border:1px solid #888;padding:3pt 5pt;text-align:left;vertical-align:top}
+  #printsheet small{color:#444}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important}}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+/* phones: show Scene characters three to a row and keep one empty slot, so names and numbers fit */
+@media (max-width:520px){
+  .slotrow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .slotrow .slot:not(.ch)~.slot:not(.ch){display:none}
+}

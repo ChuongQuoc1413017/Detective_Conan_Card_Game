@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A turn · Conan TCG</title>
+<link rel="icon" href="logo.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-title="A turn · Conan TCG" data-title-vi="Lượt chơi · Conan TCG">
+<nav class="top"><div class="wrap">
+<a class="brand" href="index.html"><img src="logo.jpeg" alt="Detective Conan Card Game"></a><a href="index.html" data-vi="🏠 Trang chủ">🏠 Home</a><a href="board.html" data-vi="🧩 Bàn &amp; lá bài">🧩 Table & cards</a><a href="turn.html" aria-current="page" data-vi="⏰ Lượt chơi">⏰ A turn</a><a href="actions.html" data-vi="⚡ Hành động">⚡ Moves</a><a href="demo.html" data-vi="🎬 Ván mẫu">🎬 Demo</a><a href="practice.html" data-vi="🎮 Chơi thử">🎮 Play</a><a href="deck.html" data-vi="🃏 Bộ bài">🃏 Deck</a><a href="quiz.html" data-vi="⭐ Đố vui">⭐ Quiz</a><a href="words.html" data-vi="📖 Từ điển">📖 Words</a>
+<div class="langsw" data-langsw role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="vi" aria-pressed="false">VI</button></div>
+</div></nav>
+<main class="wrap">
+<div class="pagehead"><h1 data-vi="Chơi một lượt ⏰">Play a turn ⏰</h1><p data-vi="Bấm “Bước tiếp” và làm theo.">Press “Next step” and follow along.</p></div><section id="turn">
+  <span class="mono">Manual FILE.2 · Turn flow</span>
+  <h2>One turn, three phases</h2>
+  <p>Players alternate turns. Each turn runs Auto, Main, then End. Step through it below.</p>
+  <div class="panel">
+    <label class="check"><input type="checkbox" id="firstTurn"> This is the first player's very first turn</label>
+    <ol class="phases" id="phaseList" style="margin-top:14px"></ol>
+    <div class="controls">
+      <button class="btn ghost" id="prevStep">Back</button>
+      <button class="btn" id="nextStep">Next step</button>
+    </div>
+  </div>
+
+  <details class="more"><summary data-vi="🧮 Trợ giúp: mình đánh được lá này không?">🧮 Helper: can I play this card?</summary><div class="inside"><div class="tool panel">
+    <h3>Can I play this card? Level check</h3>
+    <p>You can play a card whose level is no higher than the number of cards in your FILE area. Your partner counts while it sits in the FILE area after an Assist.</p>
+    <div class="row">
+      <div class="field"><label for="fileCount">Face-down cards in FILE area</label><input type="number" id="fileCount" min="0" max="12" value="4"></div>
+      <div class="field"><label for="lvlMode">Way of playing</label>
+        <select id="lvlMode"><option value="hand">From hand</option><option value="hint">With Next Hint</option></select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="partnerIn"> My partner is in the FILE area (Assist)</label>
+    <div class="lvl" id="lvlChips" aria-label="Levels you can play"></div>
+    <div class="out" id="lvlOut"></div>
+  </div></div></details>
+</section><section id="setup">
+  <span class="mono">Manual FILE.2 · Flow of the game</span>
+  <h2>Setup and deck rules</h2>
+  <details class="more"><summary data-vi="🎒 Xem các bước chuẩn bị">🎒 Show the setup steps</summary><div class="inside"><div class="cols">
+    <div class="panel">
+      <h3>Build the deck</h3>
+      <ul class="tight">
+        <li>Exactly <b>40</b> cards, characters and events only.</li>
+        <li>At most <b>3</b> of the same card (same ID).</li>
+        <li>Any colors may go in the deck. Colors limit what you can play during the game.</li>
+        <li>Besides the deck you need one partner and one case, 42 cards in total.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Before turn one</h3>
+      <ol class="tight">
+        <li>Place your case and partner face down.</li>
+        <li>Shuffle your deck and place it.</li>
+        <li>Decide first player at random, for example rock-paper-scissors. The winner goes first.</li>
+        <li>Draw 5 cards.</li>
+        <li>You may redraw once: put any number back, shuffle, draw that many. The first player decides first.</li>
+        <li>Flip your case and partner face up and begin.</li>
+      </ol>
+    </div>
+  </div></div></details>
+</section><div class="pager"><a class="btn ghost" href="board.html" data-vi="◀ 🧩 Bàn &amp; lá bài">◀ 🧩 Table & cards</a><a class="btn next" href="actions.html" data-vi="⚡ Hành động ▶">⚡ Moves ▶</a></div>
+</main>
+<footer>
+  <p>This is an unofficial study aid based on the Detective Conan Trading Card Game <a href="https://www.takaratomy.co.jp/products/conan-cardgame/pdf/rule/rule_manual.pdf" target="_blank" rel="noopener">Official Rule Manual</a> Ver.2.6. It is not made or endorsed by the rights holders. Individual card text can override the general rules here, and the official manual and rulings take priority.</p>
+  <p><span data-vi="Tạo bởi Quoc Chuong Nguyen. <a href=&quot;about.html&quot;>Liên hệ</a>">Made by Quoc Chuong Nguyen. <a href="about.html">Get in touch</a></span></p>
+</footer>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

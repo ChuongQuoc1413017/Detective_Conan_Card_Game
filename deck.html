@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deck builder · Conan TCG</title>
 <link rel="icon" href="logo.jpeg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#8f5a36">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -34,12 +37,13 @@
 <h2 data-vi="Bộ bài của bạn">Your deck</h2>
 <p class="why" id="msg" role="status"></p>
 <div id="deck"></div>
-<div class="pbtns"><button type="button" class="btn" id="copy" data-vi="📋 Sao chép">📋 Copy list</button><button type="button" class="btn ghost" id="clear" data-vi="Xóa hết">Clear</button></div>
-<details class="more" id="iobox"><summary data-vi="Nhập / xuất danh sách">Import / export list</summary><div class="inside"><textarea id="io" rows="8" aria-label="Deck list" placeholder="1 D01001&#10;3 D01002"></textarea><button type="button" class="btn ghost" id="import" data-vi="Nhập (thay bộ hiện tại)">Import (replaces deck)</button></div></details>
+<div class="pbtns"><button type="button" class="btn" id="copy" data-vi="📋 Sao chép">📋 Copy list</button><button type="button" class="btn ghost" id="share" data-vi="🔗 Liên kết chia sẻ">🔗 Share link</button><button type="button" class="btn ghost" id="print" data-vi="🖨️ In danh sách">🖨️ Print</button><button type="button" class="btn ghost" id="clear" data-vi="Xóa hết">Clear</button></div>
+<details class="more" id="iobox"><summary data-vi="Nhập / xuất danh sách">Import / export list</summary><div class="inside"><textarea id="io" rows="8" aria-label="Deck list" placeholder="1 D01001&#10;3 D01002&#10;(or paste a share link)"></textarea><button type="button" class="btn ghost" id="import" data-vi="Nhập (thay bộ hiện tại)">Import (replaces deck)</button></div></details>
 </aside>
 </div>
 <button type="button" class="btn" id="jump"></button>
 <dialog id="view"><div id="viewbody"></div></dialog>
+<div id="printsheet"></div>
 <div class="pager"><a class="btn ghost" href="practice.html" data-vi="◀ 🎮 Chơi thử">◀ 🎮 Play</a><a class="btn next" href="quiz.html" data-vi="⭐ Đố vui ▶">⭐ Quiz ▶</a></div>
 </main>
 <footer>

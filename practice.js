@@ -1926,7 +1926,7 @@ async function humanTurn(){
       G.hintMode=false;
     }
     else if(a.t==="assist"){await assist(p);tip("Assist: the partner sleeps in the FILE area and counts as a FILE card. With 7 or more FILE cards your case moves to the solution phase.")}
-    else if(a.t==="solve"){solveCase(p)}
+    else if(a.t==="solve"){var sr=solveReason(p);if(sr)tip(sr);else solveCase(p)}
     else if(a.t==="abil"){
       var us=[];
       declarers(p).forEach(function(c){if(!declReason(p,c))us.push({l:c.isCase?TT("Case: ","Vụ án: ")+c.n:c.n+" (AP "+apOf(c,p)+")",v:c.uid})});
@@ -2015,6 +2015,91 @@ async function startGame(keyA,keyB,sim,bots){
   return G;
 }
 
+/* ---------- hint for the player ---------- */
+function suggest(){
+  var p=G.p[0],o=G.p[1];
+  if(!solveReason(p)&&p.ev.length>=p.lv)return TT("💡 You have enough evidence and an active partner: declare Case Solved now to win!","💡 Bạn đã đủ chứng cứ và Cộng sự đang thức: tuyên bố Phá án ngay để thắng!");
+  var hand=p.hand.filter(function(c){return !canPlay(p,c,false)}).sort(function(a,b){return playValue(p,b)-playValue(p,a)});
+  var swift=hand.filter(function(c){return c.t==="c"&&c.swift&&lpOf(c)>0})[0];
+  if(p.phase==="solution"&&swift)return TT("💡 Play "+swift.n+" first. It has Swift, so it can deduce this turn.","💡 Hãy chơi "+swift.n+" trước. Lá này có Nhanh nhẹn nên suy luận được ngay lượt này.");
+  if(!swift&&!p.usedHint&&p.file.length&&!p.noHint&&p.phase==="solution"&&p.scene.length<5){
+    var top=p.file[p.file.length-1];
+    if(top&&top.t==="c"&&top.swift&&top.lv<=cap(p)-1)return TT("💡 Nothing in your hand helps. Try Next Hint: the top FILE card ("+top.n+") comes to your hand and you may play it.","💡 Bài trên tay không giúp được. Thử Gợi ý kế tiếp: lá FILE trên cùng ("+top.n+") về tay và bạn có thể chơi nó.");
+  }
+  if(hand.length&&p.scene.length<5)return TT("💡 Play "+hand[0].n+" from your hand. It is your strongest card you can play now.","💡 Chơi "+hand[0].n+" từ tay. Đây là lá mạnh nhất bạn chơi được lúc này.");
+  if(p.phase==="case"&&p.partner==="active"&&p.file.length>=6)return TT("💡 Use Assist: your partner joins the FILE area, you reach 7 FILE cards and your case moves to the solution phase.","💡 Dùng Hỗ trợ: Cộng sự vào khu FILE, bạn có 7 lá FILE và Vụ án chuyển sang giai đoạn phá án.");
+  var m=hardMove(p,o);
+  if(m){
+    if(m.kind==="deduce")return TT("💡 Deduce with "+m.c.n+" (LP "+lpOf(m.c)+")."+(p.phase==="solution"?" Keep your partner awake: it must be active to declare Case Solved.":""),"💡 Suy luận với "+m.c.n+" (LP "+lpOf(m.c)+")."+(p.phase==="solution"?" Giữ Cộng sự thức: phải thức mới tuyên bố Phá án được.":""));
+    if(m.kind==="case")return TT("💡 Take an Action with "+m.c.n+" against the opposing case to knock away their evidence.","💡 Dùng "+m.c.n+" thực hiện Hành động vào Vụ án của đối thủ để loại chứng cứ của họ.");
+    return TT("💡 Take an Action with "+m.c.n+" (AP "+apOf(m.c,p)+") against the sleeping "+m.t.n+" (AP "+apOf(m.t,o)+").","💡 Dùng "+m.c.n+" (AP "+apOf(m.c,p)+") thực hiện Hành động vào "+m.t.n+" đang ngủ (AP "+apOf(m.t,o)+").");
+  }
+  if(p.partner==="active"&&p.phase==="case")return TT("💡 Deduce with your partner before you end the turn: free evidence.","💡 Suy luận bằng Cộng sự trước khi kết thúc lượt: chứng cứ miễn phí.");
+  return TT("💡 Nothing more to gain this turn. End your turn.","💡 Lượt này không còn gì để làm. Kết thúc lượt.");
+}
+
+/* ---------- puzzles: win this turn ---------- */
+var PUZZLES=[
+ {name:["Partner last","Cộng sự sau cùng"],goal:["You have 6 of 7 evidence in the solution phase. Solve the case this turn.","Bạn có 6/7 chứng cứ ở giai đoạn phá án. Hãy phá án trong lượt này."],
+  setup:function(me){me.scene=[onScene(me,"ayumi")];me.ev=takeN(me,6);me.file=takeN(me,7)}},
+ {name:["Swift arrival","Đến thật nhanh"],goal:["5 of 7 evidence and one awake character. Which card do you play to win?","5/7 chứng cứ và một nhân vật đang thức. Bạn chơi lá nào để thắng?"],
+  setup:function(me){me.scene=[onScene(me,"genta")];me.hand=[take(me,"kogoro"),take(me,"ayumi"),take(me,"c7")];me.ev=takeN(me,5);me.file=takeN(me,7)}},
+ {name:["A hint from the FILE","Gợi ý từ FILE"],goal:["5 of 7 evidence, and your hand cannot help. Look at your FILE area and solve the case this turn.","5/7 chứng cứ và bài trên tay không giúp được. Hãy nhìn khu FILE và phá án trong lượt này."],
+  setup:function(me){var top=take(me,"c7");me.scene=[onScene(me,"ran3")];me.hand=[take(me,"shin")];me.ev=takeN(me,5);me.file=takeN(me,7).concat([top])}}
+];
+function take(p,k){var i=p.deck.findIndex(function(c){return c.k===k});return i<0?null:p.deck.splice(i,1)[0]}
+function takeN(p,n){var out=[];for(var i=0;i<n;i++){var j=p.deck.findIndex(function(c){return c.t==="c"&&!c.swift&&c.k!=="c4"});out.push(p.deck.splice(j,1)[0])}return out}
+function onScene(p,k){var c=mkChar(take(p,k));c.fresh=false;return c}
+async function startPuzzle(i){
+  var z=PUZZLES[i];
+  G={p:[mkP(0,DECKS.conan),mkP(1,DECKS.org)],turn:5,cur:0,over:null,log:[],tip:"",act:null,ask:null,mull:null,hintMode:false,info:null,sim:false,bot:["normal","normal"],puzzle:i};
+  var me=G.p[0],op=G.p[1];
+  me.hand=[];me.lv=7;me.phase="solution";z.setup(me);
+  op.lv=6;op.scene=[onScene(op,"vodka"),onScene(op,"korn")];op.scene.forEach(function(c){c.state="sleep"});op.hand=[take(op,"chianti")];op.ev=takeN(op,2);op.file=takeN(op,5);
+  log(TT("Puzzle "+(i+1)+": "+z.name[0]+".","Câu đố "+(i+1)+": "+z.name[1]+"."));
+  G.tip="🧩 "+TT(z.goal[0],z.goal[1]);
+  try{
+    await humanTurn();
+    G.over={w:1,why:TT("The turn ended before the case was solved. Try again!","Lượt đã hết mà chưa phá được án. Thử lại nhé!")};
+  }catch(e){if(e!==OVER)throw e}
+  G.act=null;G.ask=null;
+  if(G.over&&G.over.w===0){try{var d=JSON.parse(localStorage.getItem("conanPuzzles")||"{}");d[i]=1;localStorage.setItem("conanPuzzles",JSON.stringify(d))}catch(e){}}
+  render();
+  return G;
+}
+function puzzlesDone(){try{return JSON.parse(localStorage.getItem("conanPuzzles")||"{}")}catch(e){return {}}}
+
+/* ---------- deck test: own deck against each starter deck, bot vs bot ---------- */
+var TEST=null;
+async function deckTest(per){
+  per=per||50;
+  var ks=Object.keys(DECKS).filter(function(k){return k!=="custom"});
+  TEST={running:true,done:0,total:ks.length*per*2,res:{},errors:0};
+  render();
+  for(var i=0;i<ks.length;i++){
+    var r=TEST.res[ks[i]]=[0,0];
+    for(var n=0;n<per*2;n++){
+      var mineFirst=n%2===0;
+      try{
+        var g=await startGame(mineFirst?"custom":ks[i],mineFirst?ks[i]:"custom",true,["normal","normal"]);
+        var w=g.over&&g.over.w;if(w===(mineFirst?0:1))r[0]++;else if(w===0||w===1)r[1]++;
+      }catch(e){TEST.errors++}
+      G=null;TEST.done++;
+      if(TEST.done%4===0){render();await new Promise(function(res){setTimeout(res,0)})}
+    }
+  }
+  TEST.running=false;render();
+}
+function testPanel(){
+  if(!TEST)return "";
+  var h='<div class="note" style="margin:0 0 12px"><b>'+TT("🧪 Deck test","🧪 Thử bộ bài")+'</b> · '+(TEST.running?TT("Playing "+TEST.done+" of "+TEST.total+" bot-vs-bot games…","Đang chơi "+TEST.done+"/"+TEST.total+" ván bot đấu bot…"):TT("Your deck, played by the Sleuth bot against each starter deck.","Bộ bài của bạn do bot Thám tử chơi, đấu với từng bộ khởi đầu."));
+  h+='<table class="ttable"><tr><th>'+TT("Against","Đấu với")+'</th><th>'+TT("Won","Thắng")+'</th><th>'+TT("Win rate","Tỉ lệ thắng")+'</th></tr>';
+  Object.keys(TEST.res).forEach(function(k){var r=TEST.res[k],n=r[0]+r[1];h+='<tr><td><span class="dot dk-'+DECKS[k].color+'"></span>'+DECKS[k].name+'</td><td>'+r[0]+' / '+n+'</td><td><span class="tbar"><i style="width:'+(n?Math.round(100*r[0]/n):0)+'%"></i></span> '+(n?Math.round(100*r[0]/n):0)+'%</td></tr>'});
+  h+='</table>';
+  if(!TEST.running)h+='<p class="why" style="margin:6px 0 0">'+TT("Each match-up is played "+(TEST.total/6)+" times, half going first. Only the abilities the game understands are used, so treat this as a rough guide.","Mỗi cặp đấu chơi "+(TEST.total/6)+" ván, một nửa đi trước. Chỉ những năng lực trò chơi hiểu mới được dùng, nên đây chỉ là gợi ý tham khảo.")+(TEST.errors?" ("+TEST.errors+" errors)":"")+'</p>';
+  return h+'</div>';
+}
+
 /* ---------- rendering ---------- */
 function slot(c,o){
   if(!c)return '<div class="slot"></div>';
@@ -2065,6 +2150,7 @@ function controls(p){
   var defs=[["hint","Next Hint"],["assist","Assist"],["solve",p.def.caze.alt?"Evidence Destruction":"Case Solved"],["deduce","Deduce"],["action","Action"],["abil","Ability"]];
   var h='<div class="pbtns">';
   defs.forEach(function(d){h+='<button class="btn ghost" data-a="'+d[0]+'"'+((!live||hm||R[d[0]])?" disabled":"")+'>'+d[1]+'</button>'});
+  h+='<button class="btn ghost hintbtn" data-a="hintme"'+(live?"":" disabled")+'>'+TT("💡 Hint","💡 Gợi ý")+'</button>';
   h+=hm?'<button class="btn" data-a="skip"'+(live?"":" disabled")+'>Skip playing</button>':'<button class="btn" data-a="end"'+(live?"":" disabled")+'>End turn</button>';
   h+='</div>';
   if(live&&!hm){
@@ -2073,6 +2159,11 @@ function controls(p){
   }
   return h;
 }
+function puzzleMenu(){
+  var done=puzzlesDone();
+  return '<h3 style="margin-top:18px">'+TT("🧩 Puzzles: win this turn","🧩 Câu đố: thắng trong lượt này")+'</h3><p class="why">'+TT("Short challenges with a fixed board. Find the moves that solve the case in one turn. Stuck? Press 💡 Hint.","Thử thách ngắn với bàn chơi cố định. Tìm nước đi để phá án trong một lượt. Bí quá? Bấm 💡 Gợi ý.")+'</p><div class="pbtns">'+
+    PUZZLES.map(function(z,i){return '<button class="btn '+(done[i]?'':'ghost')+'" data-a="puzzle" data-v="'+i+'">'+(done[i]?'✅ ':'')+(i+1)+'. '+(LANG==="vi"?z.name[1]:z.name[0])+'</button>'}).join("")+'</div>';
+}
 function findChar(uid){var r=null;G.p.forEach(function(o){o.scene.forEach(function(c){if(c.uid===uid)r=c})});return r}
 function render(){if(G&&G.sim)return;render0();xlate(root)}
 function render0(){
@@ -2080,8 +2171,8 @@ function render0(){
   if(!G){
     var mine=loadCustom();
     var note=mine.deck?TT("Your saved deck is ready: "+mine.full+" of its 40 cards are fully automated. The others still work as characters, but some of their text does nothing.","Bộ bài đã lưu sẵn sàng: "+mine.full+"/40 lá được tự động hóa đầy đủ. Các lá còn lại vẫn dùng được làm nhân vật, nhưng một phần chữ không có tác dụng."):(mine.error||TT("To play your own cards, build a deck first.","Muốn chơi bài của riêng bạn, hãy xếp bộ bài trước."));
-    root.innerHTML='<div class="panel"><div class="note" style="margin:0 0 12px">🃏 '+note+' <a href="deck.html">'+TT("Open the Deck page","Mở trang Bộ bài")+'</a></div>'+(baseOK===-2?'<div class="note" style="margin:0 0 12px">Card images were not found. To see them, keep this HTML file next to your <b>Card_List</b> folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.</div>':'')+'<p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns botpick" style="margin-bottom:4px"><span class="mono" style="align-self:center">Bot level</span>'+Object.keys(BOTS).map(function(k){var b=BOTS[k];return '<button class="btn '+(BOT===k?'':'ghost')+'" data-a="botlv" data-v="'+k+'" aria-pressed="'+(BOT===k)+'"><span>'+b.name+'</span> · <small>'+b.tag+'</small></button>'}).join('')+'</div><p class="why" style="margin:0 0 14px">'+BOTS[BOT].desc+'</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
-      Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype dk dk-'+d.color+'"><h3 class="dkh">'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div></div>';
+    root.innerHTML='<div class="panel"><div class="note" style="margin:0 0 12px">🃏 '+note+' <a href="deck.html">'+TT("Open the Deck page","Mở trang Bộ bài")+'</a>'+(mine.deck?' <button class="btn ghost" data-a="decktest"'+(TEST&&TEST.running?' disabled':'')+'>'+TT("🧪 Test my deck","🧪 Thử bộ bài")+'</button>':'')+'</div>'+testPanel()+(baseOK===-2?'<div class="note" style="margin:0 0 12px">Card images were not found. To see them, keep this HTML file next to your <b>Card_List</b> folder (with the CT-D01 to CT-D07 subfolders) and open it from there. The game works without them.</div>':'')+'<p>Choose your deck, and which deck the bot plays. You play first or second by coin toss, start with 5 cards and one redraw, and win by gathering enough evidence and solving the case in its solution phase.</p><div class="pbtns botpick" style="margin-bottom:4px"><span class="mono" style="align-self:center">Bot level</span>'+Object.keys(BOTS).map(function(k){var b=BOTS[k];return '<button class="btn '+(BOT===k?'':'ghost')+'" data-a="botlv" data-v="'+k+'" aria-pressed="'+(BOT===k)+'"><span>'+b.name+'</span> · <small>'+b.tag+'</small></button>'}).join('')+'</div><p class="why" style="margin:0 0 14px">'+BOTS[BOT].desc+'</p><div class="pbtns" style="margin-bottom:12px"><span class="mono" style="align-self:center">Bot plays</span>'+['random'].concat(Object.keys(DECKS)).map(function(k){return '<button class="btn '+(OPP===k?'':'ghost')+'" data-a="opp" data-v="'+k+'">'+(k==='random'?'':'<span class="dot dk-'+DECKS[k].color+'"></span>')+(k==='random'?'Random':DECKS[k].name)+'</button>'}).join('')+'</div><div class="cols">'+
+      Object.keys(DECKS).map(function(k){var d=DECKS[k];return '<div class="panel ctype dk dk-'+d.color+'"><h3 class="dkh">'+d.name+'</h3><p>'+d.blurb+'</p><p class="why">Partner: '+d.partner.n+'. Case: '+d.caze.n+'.</p><button class="btn" data-a="start" data-v="'+k+'">Play '+d.name+'</button></div>'}).join("")+'</div>'+puzzleMenu()+'</div>';
     return;
   }
   var me=G.p[0],op=G.p[1],h="";
@@ -2091,7 +2182,8 @@ function render0(){
   h+='<div class="under">';
   h+='<div class="mid">';
   if(G.over){
-    h+='<div class="out '+(G.over.w===0?"good":"bad")+'"><b>'+(G.over.w===0?"You win.":"You lose.")+'</b> '+G.over.why+'</div>';
+    h+='<div class="out '+(G.over.w===0?"good":"bad")+'"><b>'+(G.puzzle!==undefined?(G.over.w===0?TT("🧩 Puzzle solved!","🧩 Giải được câu đố!"):TT("🧩 Not yet.","🧩 Chưa được.")):(G.over.w===0?"You win.":"You lose."))+'</b> '+G.over.why+
+      (G.puzzle!==undefined?'<div class="pbtns" style="margin-top:8px"><button class="btn ghost" data-a="puzzle" data-v="'+G.puzzle+'">'+TT("Try again","Thử lại")+'</button>'+(G.puzzle+1<PUZZLES.length?'<button class="btn" data-a="puzzle" data-v="'+(G.puzzle+1)+'">'+TT("Next puzzle ▶","Câu đố tiếp ▶")+'</button>':'')+'</div>':'')+'</div>';
   }
   if(G.mull){
     var n=Object.keys(G.mull.sel).filter(function(k){return G.mull.sel[k]}).length;
@@ -2129,10 +2221,13 @@ root.addEventListener("pointerover",function(e){var t=e.target.closest('.pc,.slo
 root.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
   var a=b.dataset.a,v=b.dataset.v,nv=(v!==undefined&&v!==""&&!isNaN(v))?+v:v;
+  if(a==="hintme"&&G&&G.act){tip(suggest());return}
+  if(a==="puzzle"){if(G&&!G.over)return;startPuzzle(+v);return}
+  if(a==="decktest"){if(TEST&&TEST.running)return;loadCustom();if(DECKS.custom)deckTest();return}
   if(a==="finishReveal"){OPP_HAND_REVEALED=false;render();return}
   if(a==="opp"){OPP=v;render();return}
   if(a==="botlv"&&BOTS[v]){BOT=v;try{localStorage.setItem("conanBot",v)}catch(x){}render();return}
-  if(a==="start"){loadCustom();if(!DECKS[nv]){render();return}if(!DECKS[OPP])OPP="random";var ks=Object.keys(DECKS).filter(function(k){return k!=="custom"}),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
+  if(a==="start"){if(TEST&&TEST.running)return;loadCustom();if(!DECKS[nv]){render();return}if(!DECKS[OPP])OPP="random";var ks=Object.keys(DECKS).filter(function(k){return k!=="custom"}),other=OPP==="random"?ks[rnd(ks.length)]:OPP;startGame(nv,other,false);return}
   if(a==="menu"){G=null;render();return}
   if(a==="rem"&&G){G.remView=(G.remView===nv?null:nv);render();return}
   if(a==="remclose"&&G){G.remView=null;render();return}
@@ -2151,6 +2246,6 @@ root.addEventListener("click",function(e){
 loadCustom();
 render();
 probe();
-if(typeof window!=="undefined")window.__practice={sim:startGame,loadCustom:loadCustom,DECKS:DECKS,dbg:function(){return G},render:render};
+if(typeof window!=="undefined")window.__practice={sim:startGame,puzzle:startPuzzle,PUZZLES:PUZZLES,suggest:function(){return suggest()},act:function(a){var f=G&&G.act;if(f){G.act=null;f(a)}return !!f},answer:function(i){var q=G&&G.ask;if(!q)return false;G.ask=null;q.r(q.opts[i].v);return true},loadCustom:loadCustom,DECKS:DECKS,dbg:function(){return G},render:render};
 })();
 
